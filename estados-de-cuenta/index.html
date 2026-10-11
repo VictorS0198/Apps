@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Estados de cuenta unificados</title>
+<link href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#eef1f4;--card:#fff;--ink:#1b2430;--mut:#5d6b7a;--line:#d6dde5;--acc:#0e6f7a;--pos:#2b7a4b;--neg:#b3402f;--warn:#b7791f;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#10161d;--card:#18212b;--ink:#e6ecf2;--mut:#93a1b0;--line:#2b3846;--acc:#4fc0cc;--pos:#5fc088;--neg:#ee8672;--warn:#e0b25a}}
+:root[data-theme="dark"]{--bg:#10161d;--card:#18212b;--ink:#e6ecf2;--mut:#93a1b0;--line:#2b3846;--acc:#4fc0cc;--pos:#5fc088;--neg:#ee8672;--warn:#e0b25a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 "Schibsted Grotesk",system-ui,sans-serif}
+main{max-width:1000px;margin:0 auto;padding:20px 16px 48px}
+h1{font-size:26px;font-weight:800;margin:0 0 4px;letter-spacing:-.02em}p.sub{margin:0 0 16px;color:var(--mut)}
+nav{display:flex;gap:4px;border-bottom:1px solid var(--line);margin-bottom:16px;overflow-x:auto}
+nav button{background:none;border:0;border-bottom:3px solid transparent;padding:10px 14px;font:inherit;color:var(--mut);cursor:pointer;white-space:nowrap}
+nav button.on{color:var(--ink);border-color:var(--acc);font-weight:600}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--acc);outline-offset:2px}
+.box{background:var(--card);border:1px solid var(--line);border-radius:8px;padding:14px;margin-bottom:14px}
+.sum{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:14px}.sum div{flex:1 1 200px;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px}
+.sum b{display:block;font-size:22px;font-variant-numeric:tabular-nums}.sum span{color:var(--mut);font-size:13px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+input,select,textarea{font:inherit;color:var(--ink);background:var(--card);border:1px solid var(--line);border-radius:6px;padding:7px 9px}
+textarea{width:100%;min-height:120px;font-family:ui-monospace,monospace;font-size:12px}
+.btn{background:var(--acc);color:var(--bg);border:0;border-radius:6px;padding:8px 14px;font:inherit;font-weight:600;cursor:pointer}
+.btn.g{background:none;color:var(--ink);border:1px solid var(--line)}
+.tw{overflow-x:auto}table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-weight:600;color:var(--mut);border-bottom:1px solid var(--line);padding:6px 8px;white-space:nowrap}
+td{padding:7px 8px;border-bottom:1px solid var(--line);vertical-align:top}
+.n{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}.neg{color:var(--neg)}.pos{color:var(--pos)}
+.tag{font-size:12px;border:1px solid var(--line);border-radius:10px;padding:1px 8px;color:var(--mut)}.tag.ok{color:var(--pos);border-color:var(--pos)}.tag.bad{color:var(--neg);border-color:var(--neg)}
+.mut{color:var(--mut);font-size:13px}.msg{margin:8px 0;color:var(--warn)}
+.hb{display:grid;grid-template-columns:minmax(110px,190px) 1fr 96px;gap:8px;align-items:center;margin-top:8px}.trk{background:var(--line);border-radius:4px;height:14px}.trk i{display:block;height:100%;background:var(--acc);border-radius:4px}svg text{font-family:inherit}
+.warnb{border-color:var(--warn);display:flex;gap:10px;align-items:center;flex-wrap:wrap}.warnb span{flex:1 1 260px}
+.tg{display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-top:10px}.tb{border:2px solid var(--line);border-radius:8px;padding:8px;background:var(--card);color:var(--ink);cursor:pointer;text-align:left;font:inherit}.tb.on{border-color:var(--acc)}
+.sw{height:44px;border-radius:5px;display:flex;gap:4px;padding:6px;margin-bottom:6px;border:1px solid var(--line)}.sw i{flex:1;border-radius:3px}.why{color:var(--mut);font-size:13px;margin:6px 0 0}.rec{font-size:12px;border:1px solid var(--acc);color:var(--acc);border-radius:10px;padding:1px 8px;margin-left:8px}
+tr[data-r]{cursor:pointer}tr[data-r]:hover{background:var(--bg)}[data-dens="compacta"] td,[data-dens="compacta"] th{padding:3px 8px}
+:root[data-theme="gris"]{--bg:#e7e8ea;--card:#f5f5f6;--ink:#26292e;--mut:#666b73;--line:#cfd1d5;--acc:#4b5563;--pos:#3f7d55;--neg:#a64b3f;--warn:#9a7324}
+:root[data-theme="grafito"]{--bg:#1f2125;--card:#2a2d32;--ink:#e4e6ea;--mut:#9aa0a8;--line:#3a3e45;--acc:#8fb4d9;--pos:#7bc29a;--neg:#e08f84;--warn:#d6ae63}
+:root[data-theme="marino"]{--bg:#eef1f6;--card:#ffffff;--ink:#14213d;--mut:#5a6478;--line:#d5dbe6;--acc:#1f3a68;--pos:#2e6b4f;--neg:#a33b3b;--warn:#a2711d}
+:root[data-theme="papel"]{--bg:#f4f1ea;--card:#fbf9f4;--ink:#2a2622;--mut:#6e675c;--line:#ddd6c8;--acc:#6b4f2a;--pos:#4f6f3f;--neg:#9a4538;--warn:#94681f}
+.mk{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:13px}.mk b{font-variant-numeric:tabular-nums}.mk .btn{padding:3px 10px;font-weight:400;margin-left:auto}
+.srt{cursor:pointer;user-select:none}.srt:hover{color:var(--ink)}.hh{color:var(--mut);font-size:13px;margin-bottom:2px}.dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 4px 0 10px}tr.sel{background:var(--bg)}.chk label{display:block;margin:6px 0}
+</style></head><body><main>
+<h1>Estados de cuenta unificados</h1>
+<p class="sub">Un solo formato para Banamex y BBVA. Tus datos se quedan en este navegador.</p>
+<div class="mk" id="mk"><span id="clk"></span><span id="mkv"></span><button class="btn g" id="mkr" title="Actualizar precios ahora">Actualizar</button></div>
+<nav id="nav"></nav><div id="v"></div>
+</main>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+const TIPOS=["compra","msi_mensualidad","reembolso","pago_tdc","transferencia","envio_tercero","ingreso","nomina","retiro_efectivo","comision","interes","ajuste"];
+const NOGASTO=["pago_tdc","transferencia"],SINGASTO=[...NOGASTO,"ingreso","nomina","ajuste"];
+const CATS=["Supermercado y abarrotes","Restaurantes y entregas","Gasolina","Suscripciones y software","Compras en línea","Entretenimiento","Salud y deporte","Hogar y oficina","Educación","Transporte","Servicios","Envíos a terceros","Retiro de efectivo","Tiendas","Comisiones e intereses","Otros"];
+const SU="Supermercado y abarrotes",RE="Restaurantes y entregas",SW="Suscripciones y software",CO_="Compras en línea";
+const RULES=[["totalplay","Servicios"],["lumen","Servicios"],["capagas","Servicios"],["gas serv","Gasolina"],["pza cobro","Transporte"],["plaza de cobro","Transporte"],["at t ","Servicios"],["sams",SU],["wal mart",SU],["walmart",SU],["frut",SU],["nutrisa",RE],["7eleven",SU],["facebook",SW],["patreon",SW],["blocks subscription",SW],["samsung",CO_],["ebay",CO_],["booking","Transporte"],["didi","Transporte"],["uber","Transporte"],["estrella blanca","Transporte"],["uaa ","Educación"],["univ ","Educación"],["mi att","Servicios"],["cfe ","Servicios"],["servigaz","Servicios"],["mercado pago",CO_],["temu",CO_],["wish",CO_],["miniso","Tiendas"],["h m mx","Tiendas"],["sanborns","Tiendas"],["bestbuy","Tiendas"],["chedraui",SU],["la comer",SU],["don burguer",RE],["caffenio",RE],["microsoft",SW],["spotify","Entretenimiento"],["netflix","Entretenimiento"],["udemy","Educación"],["gasoxxo","Gasolina"],["oxxo gas","Gasolina"],["gasol","Gasolina"],["soriana",SU],["abarrotes",SU],["pingos",SU],["las troj",SU],["oxxo",SU],["cafe",RE],["café",RE],["mundo corona",RE],["la gula",RE],["jugos",RE],["rappi",RE],["openai",SW],["paddle",SW],["tripo",SW],["google",SW],["amazon prime",SW],["steam","Entretenimiento"],["smart fit","Salud y deporte"],["smartfit","Salud y deporte"],["at&t","Servicios"],["amazon",CO_],["shein",CO_],["cashi",CO_],["ledger",CO_],["costco",SU],["mahatma",SU],["supercenter",SU],["heb ",SU],["minisuper",SU],["f ahorro","Salud y deporte"],["farmacia","Salud y deporte"],["serv comb","Gasolina"],["gloria jean",RE],["cafe del codo",RE],["rest ",RE],["office max","Hogar y oficina"],["home depot","Hogar y oficina"],["tradingview",SW],["adobe",SW],["tiktok",CO_],["alipay",CO_],["ebanx",CO_],["mercadolibre",CO_],["merpago",CO_],["boletiland","Entretenimiento"],["primera plus","Transporte"],["miaa","Servicios"]];
+const G={y:null,c:"",g:"mes",t:"egr",k:""},MES=["Ene","Feb","Mar","Abr","May","Jun","Jul","Ago","Sep","Oct","Nov","Dic"];
+const ckey=x=>(x.comercio||x.desc).toLowerCase();
+function CF(k,d){return S&&S.cfg&&S.cfg[k]!==undefined?S.cfg[k]:d}
+const fm=x=>CF("fmes","fop")=="cargo"?x.fcar:x.fop,mlab=k=>MES[+k.slice(5,7)-1]+" "+k.slice(0,4),R={m:null,y:null,c:""};
+const inE=(x,e)=>!!e&&x.cuenta==e.cuenta&&(x.estado?x.estado==e.id:x.fcar>=e.ini&&x.fcar<=e.fin);
+function applyCfg(){const t=CF("tema","auto"),r=document.documentElement;if(t=="auto")r.removeAttribute("data-theme");else r.setAttribute("data-theme",t);r.setAttribute("data-dens",CF("dens","comoda"));
+try{$("#mk").style.display=CF("vis","1")=="0"?"none":""}catch(e){}SINGASTO.length=0;SINGASTO.push("pago_tdc","transferencia","ingreso","nomina","ajuste");if(CF("terc","1")=="0")SINGASTO.push("envio_tercero");if(CF("ret","1")=="0")SINGASTO.push("retiro_efectivo")}
+const THEMES=[["auto","Automático","#eef1f4","#10161d","#0e6f7a"],["light","Claro","#eef1f4","#ffffff","#0e6f7a"],["dark","Oscuro","#10161d","#18212b","#4fc0cc"],["gris","Gris","#e7e8ea","#f5f5f6","#4b5563"],["grafito","Grafito (gris oscuro)","#1f2125","#2a2d32","#8fb4d9"],["marino","Marino (formal)","#eef1f6","#ffffff","#1f3a68"],["papel","Papel (formal)","#f4f1ea","#fbf9f4","#6b4f2a"]];
+const SETS=[
+{k:"per",l:"Periodo por defecto en Resumen",o:[["mes","Mes calendario"],["corte","Por estado de cuenta (corte)"]],d:"mes",r:"mes",w:"Mes calendario sirve para presupuestar y comparar meses entre todas tus cuentas. Por corte muestra lo que cargaste en cada ciclo de una tarjeta, que es lo que luego pagas. Puedes alternar en la pestaña Resumen cuando quieras."},
+{k:"fmes",l:"Fecha para asignar un gasto a un mes",o:[["fop","Fecha de la operación"],["cargo","Fecha de cargo"]],d:"fop",r:"fop",w:"La fecha de operación es cuándo gastaste; la de cargo es cuándo el banco lo registró y puede caer en el mes siguiente. Para saber cuánto gastas al mes conviene la operación. Los cortes de estado siempre respetan lo que imprime el banco."},
+{k:"terc",l:"Contar envíos a terceros como gasto",o:[["1","Sí"],["0","No"]],d:"1",r:"1",w:"Los envíos a otras personas pueden ser gastos reales, como pagos o tandas, o préstamos. Contarlos evita subestimar el dinero que sale; no contarlos te deja ver solo compras. Los pagos entre tus propias cuentas nunca cuentan."},
+{k:"ret",l:"Contar retiros de efectivo como gasto",o:[["1","Sí"],["0","No"]],d:"1",r:"1",w:"Un retiro casi siempre se gasta, pero no dice en qué. Contarlo evita que el gasto parezca menor de lo que fue."},
+{k:"centavos",l:"Mostrar centavos",o:[["1","Con centavos"],["0","Sin centavos"]],d:"1",r:"1",w:"Sin centavos las cifras se leen más limpias, pero dejan de coincidir exactamente con tu estado de cuenta. Con centavos puedes conciliar al peso."},
+{k:"lim",l:"Movimientos mostrados en la lista",o:[["100","100"],["300","300"],["1000","1,000"]],d:"300",r:"300",w:"Mostrar miles de filas hace lenta la página. 300 es un buen punto medio; usa los filtros de mes y de corte para ver más detalle sin perder velocidad."},
+{k:"dens",l:"Densidad de las tablas",o:[["comoda","Cómoda"],["compacta","Compacta"]],d:"comoda",r:"comoda",w:"Compacta muestra más movimientos por pantalla; cómoda se lee mejor en el celular."},
+{k:"ini",l:"Pestaña al abrir la aplicación",o:[["Movimientos","Movimientos"],["Resumen","Resumen"],["Gráficas","Gráficas"],["Estados","Estados"]],d:"Movimientos",r:"Resumen",w:"Empezar en Resumen te da una vista por mes o por corte al abrir, sin revisar fila por fila."},
+{k:"bk",l:"Aviso de respaldo",o:[["3","Cada 3 días"],["7","Cada 7 días"],["14","Cada 14 días"],["30","Cada 30 días"],["0","Nunca"]],d:"7",r:"7",w:"Tus datos viven solo en este navegador y pueden perderse si borras los datos del sitio. Un aviso frecuente te recuerda exportar el JSON antes de que sea tarde."},
+{k:"vis",l:"Visor de dólar, BTC, ETH y reloj",o:[["1","Mostrar"],["0","Ocultar"]],d:"1",r:"1",w:"El visor se actualiza solo cada hora y te da contexto para convertir saldos y valorar cripto. Funciona en el archivo .html descargado; en el enlace publicado no puede consultar precios. Si no lo necesitas, ocultarlo despeja la pantalla."},
+{k:"nom",l:"Nombre estándar de los PDF de respaldo",o:[["iso","AAAA-MM-DD_Banco_Producto_Últ4_EdoCta"],["per","Banco_Producto_Últ4_AAAA-MM_EdoCta"]],d:"iso",r:"iso",w:"Poner la fecha de corte primero hace que cualquier carpeta ordene los estados cronológicamente. Sin espacios ni acentos evita errores al compartir o archivar, y el último dígito de la cuenta distingue productos del mismo banco."}];
+function vCfg(){const t=CF("tema","auto");
+return`<div class="box"><b>Tema</b><p class="why">Elige cómo se ve la aplicación. Marino y Papel son sobrios, buenos para revisar con calma o mostrar la información a otra persona. Automático sigue el modo claro u oscuro de tu dispositivo, que es lo recomendado.</p><div class="tg">${THEMES.map(h=>`<button class="tb${t==h[0]?" on":""}" data-t="${h[0]}"><div class="sw" style="background:${h[0]=="auto"?"linear-gradient(90deg,#eef1f4 50%,#10161d 50%)":h[2]}"><i style="background:${h[3]}"></i><i style="background:${h[4]}"></i></div>${h[1]}</button>`).join("")}</div></div>
+${SETS.map(x=>`<div class="box"><b>${x.l}</b><span class="rec">Recomendado: ${(x.o.find(o=>o[0]==x.r)||[])[1]}</span><div style="margin-top:8px"><select data-s="${x.k}">${x.o.map(o=>`<option value="${o[0]}"${CF(x.k,x.d)==o[0]?" selected":""}>${o[1]}</option>`).join("")}</select></div><p class="why">${x.w}</p></div>`).join("")}
+<div class="bar"><button class="btn" id="cfgrec">Aplicar valores recomendados</button><button class="btn g" id="cfgdef">Restablecer configuración</button></div>`}
+function vRes(){
+const mode=R.m||CF("per","mes"),ms=S.m.filter(x=>!R.c||x.cuenta==R.c),crd=x=>(S.c[x.cuenta]||{}).tipo=="credito";
+const gasto=a=>-a.filter(x=>!SINGASTO.includes(x.tipo)).reduce((t,x)=>t+x.monto,0),ing=a=>a.filter(x=>x.tipo=="nomina"||x.tipo=="ingreso").reduce((t,x)=>t+x.monto,0),pag=a=>a.filter(x=>x.tipo=="pago_tdc"&&crd(x)).reduce((t,x)=>t+x.monto,0);
+let yrs=mode=="mes"?[...new Set(ms.map(x=>fm(x).slice(0,4)))]:[...new Set(S.e.filter(e=>!R.c||e.cuenta==R.c).map(e=>e.fin.slice(0,4)))];yrs=yrs.sort().reverse();
+if(R.y===null||(R.y&&!yrs.includes(R.y)))R.y=yrs[0]||"";
+let rows=[];
+if(mode=="mes"){const g={};ms.filter(x=>!R.y||fm(x).slice(0,4)==R.y).forEach(x=>(g[fm(x).slice(0,7)]=g[fm(x).slice(0,7)]||[]).push(x));rows=Object.keys(g).sort().reverse().map(k=>({r:"mes|"+k,t:mlab(k),g:gasto(g[k]),i:ing(g[k]),p:pag(g[k]),n:g[k].length}))}
+else rows=S.e.filter(e=>(!R.c||e.cuenta==R.c)&&(!R.y||e.fin.slice(0,4)==R.y)).sort((a,b)=>a.fin<b.fin?1:a.fin>b.fin?-1:0).map(e=>{const a=S.m.filter(x=>inE(x,e)),c=S.c[e.cuenta]||{};return{r:"est|"+e.id,e,c,g:gasto(a),p:pag(a),n:a.length}});
+const D=mode=="mes"?"t":"per";rows.sort(cmp("res",mode=="mes"?{t:x=>x.r,g:x=>x.g,i:x=>x.i,p:x=>x.p,n:x=>x.n}:{cuenta:x=>x.c.producto||"",per:x=>x.e.fin,g:x=>x.g,p:x=>x.p,sf:x=>x.e.sf,pni:x=>x.e.pni||0,lim:x=>x.e.limite||""},D,-1));const tot=rows.reduce((t,x)=>t+x.g,0);
+const H=(c,l,cls)=>TH("res",c,l,cls,D,-1),head=mode=="mes"?H("t","Mes")+H("g","Gasto neto","n")+H("i","Ingresos","n")+H("p","Pagos a tarjetas","n")+H("n","Mov.","n"):H("cuenta","Cuenta")+H("per","Periodo del estado")+H("g","Gasto neto","n")+H("p","Pagos recibidos","n")+H("sf","Saldo al corte","n")+H("pni","Pago p/ no generar intereses","n")+H("lim","Fecha límite");
+const body=rows.map(x=>mode=="mes"?`<tr data-r="${x.r}"><td>${x.t}</td><td class="n">${$$(x.g)}</td><td class="n pos">${$$(x.i)}</td><td class="n">${$$(x.p)}</td><td class="n">${x.n}</td></tr>`:`<tr data-r="${x.r}"><td>${esc(x.c.banco+" "+x.c.producto)}</td><td>${x.e.ini} a ${x.e.fin}</td><td class="n">${$$(x.g)}</td><td class="n">${x.c.tipo=="credito"?$$(x.p):"—"}</td><td class="n ${x.e.sf<0?"neg":""}">${$$(x.e.sf)}</td><td class="n">${x.e.pni!=null&&x.e.limite?$$(x.e.pni):"—"}</td><td>${x.e.limite||"—"}</td></tr>`).join("");
+return`${saldos()}<div class="bar"><select id="rm"><option value="mes"${mode=="mes"?" selected":""}>Por mes calendario</option><option value="corte"${mode=="corte"?" selected":""}>Por fecha de corte (estado)</option></select><select id="ry"><option value="">Todos los años</option>${yrs.map(y=>`<option${R.y==y?" selected":""}>${y}</option>`).join("")}</select><select id="rc"><option value="">Todas las cuentas</option>${Object.entries(S.c).map(([k,c])=>`<option value="${k}"${R.c==k?" selected":""}>${esc(c.banco+" "+c.producto)}</option>`).join("")}</select></div>
+<div class="sum"><div><span>Gasto neto (filas mostradas)</span><b>${$$(tot)}</b></div><div><span>Promedio por ${mode=="mes"?"mes":"estado"}</span><b>${$$(rows.length?tot/rows.length:0)}</b></div><div><span>${mode=="mes"?"Meses":"Estados"}</span><b>${rows.length}</b></div></div>
+<div class="box tw"><table><tr>${head}</tr>${body||'<tr><td class="mut">Sin datos para este filtro.</td></tr>'}</table></div>
+<p class="mut">Toca una fila para ver sus movimientos. ${mode=="mes"?"Los meses usan la "+(CF("fmes","fop")=="cargo"?"fecha de cargo":"fecha de operación")+" (cámbialo en Configuración).":"Cada estado incluye los movimientos que aparecen en su PDF, con las mismas fechas de corte que imprime el banco."}</p>`}
+const SORT={},E={sel:null,y:"",c:"",csv:"",msg:""};
+function cmp(t,g,dc,dd){const s=SORT[t]||{c:dc,d:dd},f=g[s.c]||g[dc];return(a,b)=>{const x=f(a),y=f(b);return(x<y?-1:x>y?1:0)*s.d}}
+function TH(t,c,l,cls,dc,dd){const s=SORT[t]||{c:dc,d:dd};return`<th class="srt ${cls||""}" data-st="${t}|${c}" title="Ordenar">${l}${s.c==c?(s.d>0?" ▲":" ▼"):""}</th>`}
+const slug=x=>String(x||"").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^A-Za-z0-9]+/g,"-").replace(/^-|-$/g,"");
+function stdName(e,ext){const c=S.c[e.cuenta]||{};return CF("nom","iso")=="iso"?`${e.fin}_${slug(c.banco)}_${slug(c.producto)}_${c.ult4}_EdoCta.${ext}`:`${slug(c.banco)}_${slug(c.producto)}_${c.ult4}_${e.fin.slice(0,7)}_EdoCta.${ext}`}
+async function saveFile(name,data){try{const d=window.claude&&await claude.use("downloads");if(d){await d.save({filename:name,data});return"ok"}}catch(x){if(x&&x.code=="declined")return"declined"}
+try{const b=data instanceof Blob?data:new Blob([data]),u=URL.createObjectURL(b),a=document.createElement("a");a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),2000);return"ok"}catch(x){return"error"}}
+const DB={o:null,async open(){if(!this.o)this.o=await new Promise((ok,no)=>{const q=indexedDB.open("edoctas_pdf",1);q.onupgradeneeded=()=>q.result.createObjectStore("pdf");q.onsuccess=()=>ok(q.result);q.onerror=()=>no(q.error)});return this.o},
+async tx(m,f){const d=await this.open();return new Promise((ok,no)=>{const t=d.transaction("pdf",m),r=f(t.objectStore("pdf"));t.oncomplete=()=>ok(r.result);t.onerror=()=>no(t.error)})},
+get(k){return this.tx("readonly",s=>s.get(k))},put(k,v){return this.tx("readwrite",s=>s.put(v,k))},del(k){return this.tx("readwrite",s=>s.delete(k))}};
+const MK={usd:null,btc:null,eth:null,ts:0,err:""};try{Object.assign(MK,JSON.parse(localStorage.getItem("edoctas_mk")||"{}"))}catch(e){}
+const nf=(n,d)=>n==null?"—":Number(n).toLocaleString("en-US",{minimumFractionDigits:d,maximumFractionDigits:d});
+function renderMk(){const m=document.getElementById("mkv");if(!m)return;const h=MK.ts?new Date(MK.ts).toLocaleTimeString("es-MX",{hour:"2-digit",minute:"2-digit",hour12:false}):"";
+m.innerHTML=(MK.usd?`<span>Dólar <b>$${nf(MK.usd,4)}</b> MXN</span><span>BTC <b>$${nf(MK.btc,0)}</b> USD</span><span>ETH <b>$${nf(MK.eth,0)}</b> USD</span><span class="mut">act. ${h}</span>`:'<span class="mut">Precios no disponibles</span>')+(MK.err?`<span class="mut">${MK.err}</span>`:"")}
+async function jf(u){const r=await fetch(u,{cache:"no-store"});if(!r.ok)throw new Error("http");return r.json()}
+async function fetchMk(){try{let u,b,e;try{const[a,c,d]=await Promise.all([jf("https://api.coinbase.com/v2/exchange-rates?currency=USD"),jf("https://api.coinbase.com/v2/exchange-rates?currency=BTC"),jf("https://api.coinbase.com/v2/exchange-rates?currency=ETH")]);u=+a.data.rates.MXN;b=+c.data.rates.USD;e=+d.data.rates.USD}
+catch(x){const d=await jf("https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum&vs_currencies=usd,mxn");b=d.bitcoin.usd;e=d.ethereum.usd;u=d.bitcoin.mxn/d.bitcoin.usd}
+if(!(u>0&&b>0&&e>0))throw new Error("datos");Object.assign(MK,{usd:u,btc:b,eth:e,ts:Date.now(),err:""});try{localStorage.setItem("edoctas_mk",JSON.stringify(MK))}catch(x){}}
+catch(x){MK.err="Sin conexión con el servicio de precios. En el enlace publicado no está disponible; úsalo en el archivo .html descargado."}renderMk()}
+function tick(){const c=document.getElementById("clk");if(c)c.textContent=new Date().toLocaleString("es-MX",{weekday:"short",day:"2-digit",month:"short",year:"numeric",hour:"2-digit",minute:"2-digit",second:"2-digit",hour12:false})}
+function saldos(){
+const rs=Object.entries(S.c).map(([id,c])=>{const es=S.e.filter(e=>e.cuenta==id).sort((a,b)=>a.fin<b.fin?-1:1);if(!es.length)return null;
+const sum=es.reduce((t,e)=>t+S.m.filter(x=>inE(x,e)).reduce((u,x)=>u+x.monto,0),0),calc=Math.round((es[0].si+sum)*100)/100,l=es[es.length-1],cr=c.tipo=="credito",msi=l.saldo_msi_pendiente||0;
+return{id,c,cr,fin:l.fin,ok:Math.abs(calc-l.sf)<.011,have:cr?msi-calc:calc,disp:cr&&l.lc?l.lc-(msi-calc):null,pend:S.m.filter(x=>x.cuenta==id&&NOGASTO.includes(x.tipo)&&!x.link).length}}).filter(Boolean);
+rs.sort(cmp("sal",{cuenta:x=>x.c.banco+x.c.producto,tipo:x=>x.cr?1:0,fin:x=>x.fin,have:x=>x.have,disp:x=>x.disp||0,pend:x=>x.pend},"cuenta",1));
+const H=(c,l,cls)=>TH("sal",c,l,cls,"cuenta",1),deb=rs.filter(x=>!x.cr).reduce((t,x)=>t+x.have,0),deu=rs.filter(x=>x.cr).reduce((t,x)=>t+x.have,0),net=deb-deu;
+return`<div class="sum"><div><span>Debería haber en cuentas de débito</span><b>${$$(deb)}</b></div><div><span>Deuda en tarjetas de crédito</span><b class="neg">${$$(deu)}</b></div><div><span>Posición neta${MK.usd?" (≈ US$ "+nf(net/MK.usd,0)+")":""}</span><b class="${net<0?"neg":"pos"}">${$$(net)}</b></div></div>
+<div class="box tw"><b>Dinero que debería haber en cada cuenta</b><table style="margin-top:6px"><tr>${H("cuenta","Cuenta")}${H("tipo","Tipo")}${H("fin","Último corte")}${H("have","Debería haber / deuda","n")}${H("disp","Crédito disponible","n")}<th>Trazabilidad</th>${H("pend","Sin contraparte","n")}</tr>
+${rs.map(x=>`<tr><td>${esc(x.c.banco+" "+x.c.producto)}</td><td>${x.cr?"Crédito":"Débito"}</td><td>${x.fin}</td><td class="n ${x.cr?"neg":""}">${x.cr?"Debes ":""}${$$(x.have)}</td><td class="n">${x.disp!=null?$$(x.disp):"—"}</td><td>${x.ok?'<span class="tag ok">cuadra con el estado</span>':'<span class="tag bad">revisar</span>'}</td><td class="n">${x.pend}</td></tr>`).join("")}</table>
+<p class="mut">Saldo inicial del primer estado cargado más todos los movimientos, hasta el último corte de cada cuenta; lo posterior no está cargado. En tarjetas incluye lo pendiente de compras a meses. “Sin contraparte” son pagos o transferencias que aún no se enlazan con otra cuenta.</p></div>`}
+const vcount=v=>["a","b","c","d","e"].filter(k=>v[k]).length;
+function csvEst(e){const a=S.m.filter(x=>inE(x,e)).sort((x,y)=>x.fop<y.fop?-1:x.fop>y.fop?1:0);let b=e.si;const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+return"fecha_operacion,fecha_cargo,descripcion,comercio,tipo,categoria,tarjeta,referencia,monto,saldo_acumulado\n"+a.map(x=>{b=Math.round((b+x.monto)*100)/100;return[x.fop,x.fcar,x.desc,x.comercio,x.tipo,x.categoria,x.tarjeta,x.ref,x.monto.toFixed(2),b.toFixed(2)].map(q).join(",")}).join("\n")}
+function autoCat(){S.k=S.k||{};S.m.forEach(x=>{if(x.categoria||SINGASTO.includes(x.tipo))return;const t=((x.comercio||"")+" "+x.desc).toLowerCase();
+x.categoria=S.k[ckey(x)]||(x.tipo=="retiro_efectivo"?"Retiro de efectivo":x.tipo=="envio_tercero"?"Envíos a terceros":["comision","interes"].includes(x.tipo)?"Comisiones e intereses":(RULES.find(r=>t.includes(r[0]))||[])[1])||""})}
+const K="edoctas_v1";
+let S={c:{},e:[],m:[]},tab="Movimientos",F={q:"",c:"",t:""},msg="";
+const $=s=>document.querySelector(s),esc=s=>String(s??"").replace(/[&<>"]/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[x]));
+const $$=n=>{const d=CF("centavos","1")=="0"?0:2;return(n<0?"-":"")+"$"+Math.abs(n).toLocaleString("es-MX",{minimumFractionDigits:d,maximumFractionDigits:d})};
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(S))}catch(e){}};
+function addRows(rows){let n=0,d=0;const seen=new Set(S.m.map(x=>x.key)),cnt={};
+rows.forEach(r=>{r.monto=Number(r.monto);const b=[r.cuenta,r.fop,r.monto.toFixed(2),r.desc].join("|");cnt[b]=(cnt[b]||0)+1;r.key=b+"|"+cnt[b];
+if(seen.has(r.key)){d++;return}seen.add(r.key);S.m.push(r);n++});return{n,d}}
+function autoLink(){let k=0;const day=s=>Date.parse(s)/864e5,free=S.m.filter(x=>!x.link&&NOGASTO.includes(x.tipo));
+free.forEach(a=>{if(a.link)return;const b=free.find(o=>!o.link&&o!==a&&o.cuenta!==a.cuenta&&Math.abs(o.monto+a.monto)<.005&&Math.abs(day(o.fcar)-day(a.fcar))<=3);if(b){a.link=b.key;b.link=a.key;k++}});return k}
+function reset(){S={c:{},e:[],m:[],k:{},bk:S&&S.bk,cfg:S&&S.cfg,v:S&&S.v,pdfs:S&&S.pdfs};save()}
+try{const j=localStorage.getItem(K);if(j)S=JSON.parse(j)}catch(e){}
+if(!S.m.length)reset();
+function csvParse(t){const rows=[];let r=[],f="",q=false;t=t.replace(/\r/g,"");
+for(let i=0;i<t.length;i++){const ch=t[i];if(q){if(ch=='"'){if(t[i+1]=='"'){f+='"';i++}else q=false}else f+=ch}else if(ch=='"')q=true;else if(ch==","){r.push(f);f=""}else if(ch=="\n"){r.push(f);rows.push(r);r=[];f=""}else f+=ch}
+if(f||r.length){r.push(f);rows.push(r)}return rows.filter(x=>x.join("").trim())}
+const num=v=>typeof v=="number"?v:parseFloat(String(v).replace(/[$,\s]/g,""));
+function norm(o){return{cuenta:String(o.cuenta||"").trim(),estado:o.estado||"",fop:o.fop||o.fecha_operacion||"",fcar:o.fcar||o.fecha_cargo||o.fop||o.fecha_operacion||"",desc:o.desc||o.descripcion||"",comercio:o.comercio||"",monto:num(o.monto),tipo:o.tipo||"compra",tarjeta:o.tarjeta||"",ref:o.ref||o.referencia||"",categoria:o.categoria||"",moneda:o.moneda||"MXN",monto_orig:o.monto_orig||"",tc:o.tc||"",plan_msi:o.plan_msi||"",msi_num:o.msi_num||""}}
+const pk=(a,b)=>a??b;
+function normE(e){return{...e,ini:e.ini||e.periodo_inicio,fin:e.fin||e.periodo_fin,limite:e.limite||e.fecha_limite_pago,si:pk(e.si,e.saldo_inicial),sf:pk(e.sf,e.saldo_final),pni:pk(e.pni,e.pago_no_intereses),min:pk(e.min,e.pago_minimo),lc:pk(e.lc,e.limite_credito)}}
+function doImport(txt){txt=txt.trim();if(!txt)return"No hay nada que importar.";let rows=[],extra="",skip=new Set();
+try{if(txt[0]=="{"||txt[0]=="["){let j=JSON.parse(txt);if(Array.isArray(j))j={movimientos:j};
+if(j.cuentas)Object.assign(S.c,j.cuentas);if(j.verificacion)S.v=Object.assign(S.v||{},j.verificacion);if(j.estados){const have=new Set(S.e.map(e=>e.cuenta+"|"+e.ini+"|"+e.fin));j.estados.forEach(e=>{e=normE(e);const k=e.cuenta+"|"+e.ini+"|"+e.fin;if(have.has(k)||S.e.some(x=>x.id==e.id)){skip.add(e.id);return}S.e.push(e);have.add(k)});extra=" Estados nuevos: "+(j.estados.length-skip.size)+(skip.size?". Estados que ya tenías (omitidos): "+skip.size:"")+"."}rows=(j.movimientos||[]).map(norm).filter(r=>!skip.has(r.estado))}
+else{const t=csvParse(txt),h=t[0].map(x=>x.trim().toLowerCase());const ix=n=>h.indexOf(n);
+const need=["cuenta","fecha_operacion","descripcion","monto"];const miss=need.filter(n=>ix(n)<0);if(miss.length)return"Faltan columnas: "+miss.join(", ")+".";
+rows=t.slice(1).map(c=>norm(Object.fromEntries(h.map((k,i)=>[k,(c[i]||"").trim()]))))}
+const bad=rows.filter(r=>!S.c[r.cuenta]||isNaN(Number(r.monto))||!/^\d{4}-\d\d-\d\d$/.test(r.fop));
+if(bad.length)return"Hay "+bad.length+" filas con cuenta desconocida, monto inválido o fecha que no está en formato AAAA-MM-DD. No se importó nada.";
+rows.forEach(r=>{r.fcar=r.fcar||r.fop;r.link=""});const a=addRows(rows),l=autoLink();autoCat();save();return"Nuevos: "+a.n+". Duplicados omitidos: "+a.d+". Vínculos sugeridos: "+l+"."+extra}catch(e){return"No se pudo leer el texto: "+e.message}}
+function estRows(){return S.e.map(e=>{const ms=S.m.filter(x=>x.cuenta==e.cuenta&&(x.estado?x.estado==e.id:x.fcar>=e.ini&&x.fcar<=e.fin)),s=ms.reduce((a,x)=>a+x.monto,0),calc=e.si+s;return{e,n:ms.length,s,calc,d:calc-e.sf}})}
+function vMov(){const T=(c,l,cls)=>TH("mov",c,l,cls,"fecha",-1),eF=F.est&&S.e.find(z=>z.id==F.est),mons=[...new Set(S.m.map(x=>fm(x).slice(0,7)))].sort().reverse(),ests=S.e.filter(e=>!F.c||e.cuenta==F.c).sort((a,b)=>a.fin<b.fin?1:a.fin>b.fin?-1:0),ms=S.m.filter(x=>(!F.c||x.cuenta==F.c)&&(!F.t||x.tipo==F.t)&&(!F.mes||fm(x).startsWith(F.mes))&&(!eF||inE(x,eF))&&(!F.q||x.desc.toLowerCase().includes(F.q.toLowerCase()))).sort(cmp("mov",{fecha:x=>x.fcar,cuenta:x=>(S.c[x.cuenta]||{}).producto||"",desc:x=>x.desc,tipo:x=>x.tipo,cat:x=>x.categoria||"",monto:x=>x.monto},"fecha",-1));
+const g=ms.filter(x=>!SINGASTO.includes(x.tipo)).reduce((a,x)=>a+x.monto,0),mv=ms.filter(x=>NOGASTO.includes(x.tipo)),sl=mv.filter(x=>!x.link).length;
+return`<div class="sum"><div><span>Gasto neto real (sin pagos, transferencias ni ingresos)</span><b>${$$(-g)}</b></div><div><span>Pagos y transferencias</span><b>${mv.length}</b><span>${sl} sin contraparte</span></div><div><span>Movimientos mostrados</span><b>${ms.length}</b></div></div>
+<div class="bar"><input id="q" placeholder="Buscar descripción" value="${esc(F.q)}"><select id="fm"><option value="">Todos los meses</option>${mons.map(k=>`<option value="${k}"${F.mes==k?" selected":""}>${mlab(k)}</option>`).join("")}</select><select id="fe"><option value="">Todos los cortes</option>${ests.map(e=>`<option value="${e.id}"${F.est==e.id?" selected":""}>${esc((S.c[e.cuenta]||{}).producto)} · ${e.ini} a ${e.fin}</option>`).join("")}</select><select id="fc"><option value="">Todas las cuentas</option>${Object.entries(S.c).map(([k,c])=>`<option value="${k}"${F.c==k?" selected":""}>${esc(c.banco+" "+c.producto)}</option>`).join("")}</select>
+<select id="ft"><option value="">Todos los tipos</option>${TIPOS.map(t=>`<option${F.t==t?" selected":""}>${t}</option>`).join("")}</select></div>
+<div class="box tw"><table><tr>${T("fecha","Fecha cargo")}${T("cuenta","Cuenta")}${T("desc","Descripción")}${T("tipo","Tipo")}${T("cat","Categoría")}${T("monto","Monto","n")}<th>Vínculo</th></tr>
+${ms.slice(0,+CF("lim",300)).map(x=>{const c=S.c[x.cuenta]||{};const o=x.link&&S.m.find(y=>y.key==x.link);return`<tr><td>${x.fcar}</td><td>${esc(c.producto)}${x.tarjeta=="digital"?' <span class="tag">digital</span>':""}</td><td>${esc(x.desc)}</td>
+<td><select data-k="${esc(x.key)}">${TIPOS.map(t=>`<option${x.tipo==t?" selected":""}>${t}</option>`).join("")}</select></td><td>${SINGASTO.includes(x.tipo)?'<span class="mut">—</span>':`<select data-c="${esc(x.key)}"><option value="">Sin categoría</option>${CATS.map(c=>`<option${x.categoria==c?" selected":""}>${c}</option>`).join("")}</select>`}</td><td class="n ${x.monto<0?"neg":"pos"}">${$$(x.monto)}</td>
+<td>${o?`<span class="tag ok">con ${esc(S.c[o.cuenta].producto)}</span>`:NOGASTO.includes(x.tipo)?'<span class="tag bad">sin contraparte</span>':""}</td></tr>`}).join("")}</table></div>
+<p class="mut">${ms.length>+CF("lim",300)?"Mostrando los "+CF("lim",300)+" más recientes de "+ms.length+". Usa los filtros de mes o de corte para ver el resto. ":""}Cargos en negativo, abonos en positivo. Cambiar el tipo de un movimiento actualiza el gasto neto.</p>`}
+function banner(){if(!S.m.length)return"";const d=S.bk?Math.floor((Date.now()-Date.parse(S.bk))/864e5):null;const lim=+CF("bk",7);if(!lim||(d!==null&&d<lim))return"";
+return`<div class="box warnb"><span>${d===null?"Aún no has exportado un respaldo.":"Hace "+d+" días que no exportas tu respaldo."} Exporta el JSON completo y guárdalo junto con tus PDF.</span><button class="btn" id="bkgo">Ir a exportar</button><button class="btn g" id="bkok">Ya lo hice</button></div>`}
+function vGra(){
+const cr=x=>(S.c[x.cuenta]||{}).tipo=="credito",eg=a=>-a.filter(x=>!SINGASTO.includes(x.tipo)).reduce((t,x)=>t+x.monto,0),ig=a=>a.filter(x=>x.tipo=="nomina"||x.tipo=="ingreso").reduce((t,x)=>t+x.monto,0),pg=a=>a.filter(x=>x.tipo=="pago_tdc"&&cr(x)).reduce((t,x)=>t+x.monto,0);
+const all=S.m.filter(x=>!G.c||x.cuenta==G.c),yrs=[...new Set(all.map(x=>fm(x).slice(0,4)))].sort();
+if(G.y===null||(G.y&&!yrs.includes(G.y)))G.y=yrs[yrs.length-1]||"";
+let bars=[];
+if(G.g=="anio")bars=yrs.map(y=>({k:y,l:y,a:all.filter(x=>fm(x).startsWith(y))}));
+else if(G.g=="mes"){const keys=G.y?MES.map((_,i)=>G.y+"-"+String(i+1).padStart(2,"0")):[...new Set(all.map(x=>fm(x).slice(0,7)))].sort();bars=keys.map(k=>({k,l:G.y?MES[+k.slice(5)-1]:k.slice(2),a:all.filter(x=>fm(x).startsWith(k))}))}
+else{const es=S.e.filter(e=>(!G.c||e.cuenta==G.c)&&(!G.y||e.fin.startsWith(G.y))).sort((a,b)=>a.fin<b.fin?-1:a.fin>b.fin?1:0);
+if(G.c)bars=es.map(e=>({k:e.id,l:e.fin.slice(5).replace("-","/"),a:S.m.filter(x=>inE(x,e))}));
+else{const gp={};es.forEach(e=>{const k=e.fin.slice(0,7);(gp[k]=gp[k]||[]).push(...S.m.filter(x=>inE(x,e)))});bars=Object.keys(gp).sort().map(k=>({k,l:MES[+k.slice(5)-1],a:gp[k]}))}}
+bars.forEach(b=>{b.e=eg(b.a);b.i=ig(b.a);b.p=pg(b.a)});
+const ser=G.t=="egr"?[["e","var(--neg)"]]:G.t=="ing"?[["i","var(--pos)"]]:G.t=="pag"?[["p","var(--warn)"]]:[["e","var(--neg)"],["i","var(--pos)"]];
+const W=720,H=240,T=26,B=28,n=Math.max(bars.length,1),bw=W/n,mx=Math.max(1,...bars.flatMap(b=>ser.map(s=>Math.max(b[s[0]],0)))),step=Math.ceil(n/18);
+const svg=`<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="Gráfica">${bars.map((b,i)=>{const x=i*bw,on=G.k==b.k;return`<g data-k="${b.k}" style="cursor:pointer"><rect x="${x}" y="0" width="${bw}" height="${H}" fill="transparent"/>${ser.map((s,j)=>{const v=Math.max(b[s[0]],0),h=v/mx*(H-T-B),w=bw*.7/ser.length,xx=x+bw*.15+j*w;return`<rect x="${xx}" y="${H-B-h}" width="${w}" height="${h}" rx="2" fill="${s[1]}" opacity="${G.k&&!on?.35:1}"/>${v>0&&n<=18?`<text x="${xx+w/2}" y="${H-B-h-5}" text-anchor="middle" font-size="11" fill="var(--ink)">${v>=1000?(v/1000).toFixed(1)+"k":Math.round(v)}</text>`:""}`}).join("")}${i%step==0?`<text x="${x+bw/2}" y="${H-8}" text-anchor="middle" font-size="11" fill="var(--mut)">${b.l}</text>`:""}</g>`}).join("")}</svg>`;
+const sc=G.k?(bars.find(b=>b.k==G.k)||{a:[]}).a:bars.flatMap(b=>b.a),cm={};
+if(G.t=="ing")sc.filter(x=>x.tipo=="nomina"||x.tipo=="ingreso").forEach(x=>{const c=x.tipo=="nomina"?"Nómina":"Otros ingresos";cm[c]=(cm[c]||0)+x.monto});
+else if(G.t=="pag")sc.filter(x=>x.tipo=="pago_tdc"&&cr(x)).forEach(x=>{const c=(S.c[x.cuenta]||{}).producto;cm[c]=(cm[c]||0)+x.monto});
+else sc.filter(x=>!SINGASTO.includes(x.tipo)).forEach(x=>{const c=x.categoria||"Sin categoría";cm[c]=(cm[c]||0)-x.monto});
+const cats=Object.entries(cm).filter(e=>e[1]>.005).sort(cmp("cat",{n:x=>x[0],v:x=>x[1]},"v",-1)),cx=cats.length?Math.max(...cats.map(c=>c[1])):1,E_=eg(sc),I_=ig(sc),sl=SORT.cat||{c:"v",d:-1},ar=k=>sl.c==k?(sl.d>0?" ▲":" ▼"):"";
+const op=(a,v)=>a.map(o=>`<option value="${o[0]}"${v==o[0]?" selected":""}>${o[1]}</option>`).join("");
+return`<div class="bar"><select id="gg">${op([["anio","Agrupar por año"],["mes","Agrupar por mes"],["corte","Agrupar por fecha de corte"]],G.g)}</select><select id="gt">${op([["egr","Mostrar egresos"],["ing","Mostrar ingresos"],["amb","Egresos e ingresos"],["pag","Pagos a tarjetas"]],G.t)}</select><select id="gy"><option value="">Todos los años</option>${yrs.map(y=>`<option${G.y==y?" selected":""}>${y}</option>`).join("")}</select><select id="gc"><option value="">Todas las cuentas</option>${Object.entries(S.c).map(([k,c])=>`<option value="${k}"${G.c==k?" selected":""}>${esc(c.banco+" "+c.producto)}</option>`).join("")}</select>${G.k?'<button class="btn g" id="gq">Quitar selección</button>':""}</div>
+<div class="sum"><div><span>Egresos${G.k?" ("+G.k+")":""}</span><b>${$$(E_)}</b></div><div><span>Ingresos</span><b>${$$(I_)}</b></div><div><span>Ingresos − egresos</span><b class="${I_-E_<0?"neg":"pos"}">${$$(I_-E_)}</b></div></div>
+<div class="box"><b>${G.g=="anio"?"Por año":G.g=="mes"?"Por mes"+(G.y?" · "+G.y:""):"Por fecha de corte"+(G.c?" · "+(S.c[G.c]||{}).producto:" · todas las cuentas, agrupadas por mes de corte")}</b><span class="mut"> Toca una barra para ${G.g=="anio"?"ver sus meses":"ver ese periodo"}.</span>${G.t=="amb"?'<div class="mut"><i class="dot" style="background:var(--neg)"></i>Egresos<i class="dot" style="background:var(--pos)"></i>Ingresos</div>':""}${svg}</div>
+<div class="box"><b>${G.t=="ing"?"Ingresos por tipo":G.t=="pag"?"Pagos por tarjeta":"Egresos por categoría"}</b><div class="hb hh"><span class="srt" data-st="cat|n">Nombre${ar("n")}</span><span></span><span class="srt n" data-st="cat|v">Monto${ar("v")}</span></div>${cats.map(([c,v])=>`<div class="hb"><span>${esc(c)}</span><div class="trk"><i style="width:${v/cx*100}%"></i></div><span class="n">${$$(v)}</span></div>`).join("")||'<p class="mut">No hay datos en este periodo.</p>'}</div>
+<p class="mut">Egresos: compras, comisiones, retiros y envíos (según Configuración), netos de reembolsos. Ingresos: nómina y depósitos de terceros. Los pagos de tarjeta y las transferencias entre tus cuentas no cuentan. Una tarjeta de crédito no tiene ingresos; sus abonos son los pagos que ves en “Pagos a tarjetas”.</p>`}
+function vEstDet(e){const c=S.c[e.cuenta]||{},a=S.m.filter(x=>inE(x,e)),car=-a.filter(x=>x.monto<0).reduce((t,x)=>t+x.monto,0),abo=a.filter(x=>x.monto>0).reduce((t,x)=>t+x.monto,0),v=(S.v||{})[e.id]||{},pf=(S.pdfs||{})[e.id];
+const L=[["a","Saldo inicial",$$(e.si)],["b","Total de cargos",$$(car)],["c","Total de abonos",$$(abo)],["d","Saldo final",$$(e.sf)],["e","Revisé los movimientos uno por uno",a.length+" movimientos"]];
+return`<div class="box"><b>${esc(c.banco+" "+c.producto)} · corte ${e.fin}</b> <span class="mut">periodo ${e.ini} a ${e.fin}</span>
+<p class="why">Compara estas cifras con tu PDF y marca cada una cuando coincida. Con las cinco marcadas, el estado queda <b>conciliado</b>.</p>
+<div class="chk">${L.map(l=>`<label><input type="checkbox" data-v="${l[0]}"${v[l[0]]?" checked":""}> ${l[1]}: <b>${l[2]}</b></label>`).join("")}</div>
+<textarea data-n placeholder="Nota (opcional): diferencias, aclaraciones...">${esc(v.n||"")}</textarea>
+<p class="why"><b>Respaldo en PDF.</b> ${pf?`Guardado como <b>${esc(pf.name)}</b> (${Math.round(pf.size/1024)} KB, subido ${pf.t.slice(0,10)}${pf.h?", huella "+pf.h:""}).`:"Aún no hay PDF de este periodo."} Al subirlo se renombra con el estándar: <b>${esc(stdName(e,"pdf"))}</b></p>
+<div class="bar"><input type="file" id="pdfu" accept=".pdf,application/pdf">${pf?'<button class="btn g" id="pdfv">Ver PDF</button><button class="btn g" id="pdfd">Descargar con nombre estándar</button><button class="btn g" id="pdfx">Quitar</button>':""}</div>
+<div class="bar"><button class="btn" id="csvg">Exportar movimientos de este estado (CSV)</button>${E.csv?'<button class="btn g" id="csvc">Copiar</button><button class="btn g" id="csvd">Descargar '+esc(stdName(e,"csv"))+'</button>':""}</div>
+${E.csv?`<textarea readonly>${esc(E.csv)}</textarea>`:""}${E.msg?`<div class="msg">${esc(E.msg)}</div>`:""}</div>`}
+function vEst(){
+const rows=estRows().filter(r=>(!E.c||r.e.cuenta==E.c)&&(!E.y||r.e.fin.slice(0,4)==E.y)).map(r=>({...r,c:S.c[r.e.cuenta]||{},pdf:(S.pdfs||{})[r.e.id],v:(S.v||{})[r.e.id]||{}}));
+rows.sort(cmp("est",{cuenta:x=>x.c.banco+x.c.producto,fin:x=>x.e.fin+x.e.cuenta,ini:x=>x.e.ini,si:x=>x.e.si,sf:x=>x.e.sf,n:x=>x.n,ok:x=>Math.abs(x.d)<.005?1:0,pdf:x=>x.pdf?1:0,ver:x=>vcount(x.v)},"fin",1));
+const T=(c,l,cls)=>TH("est",c,l,cls,"fin",1),yrs=[...new Set(S.e.map(e=>e.fin.slice(0,4)))].sort().reverse(),sel=S.e.find(e=>e.id==E.sel);
+return`<div class="bar"><select id="ey"><option value="">Todos los años</option>${yrs.map(y=>`<option${E.y==y?" selected":""}>${y}</option>`).join("")}</select><select id="ec"><option value="">Todas las cuentas</option>${Object.entries(S.c).map(([k,c])=>`<option value="${k}"${E.c==k?" selected":""}>${esc(c.banco+" "+c.producto)}</option>`).join("")}</select></div>
+<div class="sum"><div><span>Estados</span><b>${rows.length}</b></div><div><span>Con PDF de respaldo</span><b>${rows.filter(r=>r.pdf).length}</b></div><div><span>Conciliados a mano</span><b>${rows.filter(r=>vcount(r.v)==5).length}</b></div></div>
+${sel?vEstDet(sel):""}
+<div class="box tw"><table><tr>${T("fin","Corte")}${T("cuenta","Cuenta")}${T("ini","Periodo")}${T("si","Saldo inicial","n")}${T("sf","Saldo final","n")}${T("n","Mov.","n")}${T("ok","Conciliación app")}${T("pdf","PDF")}${T("ver","Verificado")}</tr>
+${rows.map(r=>`<tr data-e="${r.e.id}" class="${r.e.id==E.sel?"sel":""}"><td>${r.e.fin}</td><td>${esc(r.c.banco+" "+r.c.producto)}</td><td>${r.e.ini} a ${r.e.fin}</td><td class="n">${$$(r.e.si)}</td><td class="n">${$$(r.e.sf)}</td><td class="n">${r.n}</td><td>${Math.abs(r.d)<.005?'<span class="tag ok">cuadra</span>':`<span class="tag bad">dif ${$$(r.d)}</span>`}</td><td>${r.pdf?'<span class="tag ok">sí</span>':'<span class="tag">no</span>'}</td><td>${vcount(r.v)==5?'<span class="tag ok">conciliado</span>':vcount(r.v)?`<span class="tag">${vcount(r.v)}/5</span>`:"—"}</td></tr>`).join("")}</table></div>
+<p class="mut">Ordenados por fecha de corte, del más antiguo al más reciente. Toca el título de una columna para ordenar de otra forma, o una fila para abrir su detalle, respaldo en PDF y exportación.</p>`}
+const COLS="cuenta,estado,fecha_operacion,fecha_cargo,descripcion,comercio,monto,tipo,tarjeta,referencia,categoria,moneda,monto_orig,tc,plan_msi,msi_num";
+function toCSV(){const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';return COLS+"\n"+S.m.map(x=>[x.cuenta,x.estado,x.fop,x.fcar,x.desc,x.comercio,x.monto.toFixed(2),x.tipo,x.tarjeta,x.ref,x.categoria,x.moneda,x.monto_orig,x.tc,x.plan_msi,x.msi_num].map(q).join(",")).join("\n")}
+function vIO(){return`<div class="box"><b>Importar</b><p class="mut">Pega un CSV (obligatorias: cuenta, fecha_operacion, descripcion, monto) con <code>${COLS}</code>, o un JSON con <code>cuentas</code>, <code>estados</code> y <code>movimientos</code>. Fechas como AAAA-MM-DD. Los movimientos repetidos se omiten solos.</p>
+<textarea id="imp" placeholder="Pega aquí el CSV o JSON"></textarea><div class="bar" style="margin-top:8px"><input type="file" id="file" accept=".csv,.json,.txt"><button class="btn" id="go">Importar</button></div><div class="msg" id="msg">${esc(msg)}</div></div>
+<div class="box"><b>Exportar</b> <span class="mut">${S.bk?"Último respaldo: "+S.bk.slice(0,10):"Sin respaldo todavía"}</span><div class="bar" style="margin-top:8px"><button class="btn g" id="ecsv">Mostrar CSV</button><button class="btn g" id="ejson">Mostrar JSON completo</button><button class="btn g" id="cp">Copiar</button></div><textarea id="out" readonly></textarea></div>
+<div class="box"><button class="btn g" id="rs">Borrar datos locales</button> <span class="mut">Borra lo que está en este dispositivo (no toca la nube).</span></div>`}
+function draw(){$("#nav").innerHTML=["Movimientos","Resumen","Gráficas","Estados","Configuración","Importar y exportar"].map(t=>`<button class="${t==tab?"on":""}">${t}</button>`).join("");
+$("#v").innerHTML=banner()+(tab=="Movimientos"?vMov():tab=="Resumen"?vRes():tab=="Gráficas"?vGra():tab=="Estados"?vEst():tab=="Configuración"?vCfg():vIO());
+document.querySelectorAll("[data-st]").forEach(h=>h.onclick=()=>{const[t,c]=h.dataset.st.split("|"),o=SORT[t];SORT[t]=o&&o.c==c?{c,d:-o.d}:{c,d:1};draw()});
+const bg=$("#bkgo");if(bg)bg.onclick=()=>{tab="Importar y exportar";draw()};const bo=$("#bkok");if(bo)bo.onclick=()=>{S.bk=new Date().toISOString();save();draw()};
+document.querySelectorAll("nav button").forEach(b=>b.onclick=()=>{tab=b.textContent;msg="";draw()});
+if(tab=="Movimientos"){$("#q").oninput=e=>{F.q=e.target.value;const p=e.target.selectionStart;draw();const i=$("#q");i.focus();i.setSelectionRange(p,p)};$("#fc").onchange=e=>{F.c=e.target.value;F.est="";draw()};$("#fm").onchange=e=>{F.mes=e.target.value;draw()};$("#fe").onchange=e=>{F.est=e.target.value;draw()};$("#ft").onchange=e=>{F.t=e.target.value;draw()};
+document.querySelectorAll("td select[data-k]").forEach(s=>s.onchange=()=>{S.m.find(x=>x.key==s.dataset.k).tipo=s.value;autoCat();save();draw()});
+document.querySelectorAll("td select[data-c]").forEach(s=>s.onchange=()=>{const x=S.m.find(y=>y.key==s.dataset.c),k=ckey(x);if(s.value)S.k[k]=s.value;else delete S.k[k];S.m.forEach(y=>{if(!SINGASTO.includes(y.tipo)&&ckey(y)==k)y.categoria=s.value});save();draw()})}
+if(tab=="Estados"){$("#ey").onchange=e=>{E.y=e.target.value;draw()};$("#ec").onchange=e=>{E.c=e.target.value;draw()};
+document.querySelectorAll("tr[data-e]").forEach(tr=>tr.onclick=()=>{E.sel=E.sel==tr.dataset.e?null:tr.dataset.e;E.csv="";E.msg="";draw()});
+const sel=S.e.find(z=>z.id==E.sel);if(sel){const id=sel.id;S.v=S.v||{};S.pdfs=S.pdfs||{};
+document.querySelectorAll("input[data-v]").forEach(i=>i.onchange=()=>{(S.v[id]=S.v[id]||{})[i.dataset.v]=i.checked;save();draw()});
+const nt=document.querySelector("textarea[data-n]");if(nt)nt.onchange=()=>{(S.v[id]=S.v[id]||{}).n=nt.value;save()};
+const pu=$("#pdfu");if(pu)pu.onchange=async ev=>{const f=ev.target.files[0];if(!f)return;if(!/\.pdf$/i.test(f.name)&&f.type!="application/pdf"){E.msg="Ese archivo no es un PDF.";draw();return}
+try{await DB.put(id,f);let h="";try{const d=await crypto.subtle.digest("SHA-256",await f.arrayBuffer());h=[...new Uint8Array(d)].slice(0,6).map(b=>b.toString(16).padStart(2,"0")).join("")}catch(x){}
+S.pdfs[id]={name:stdName(sel,"pdf"),orig:f.name,size:f.size,t:new Date().toISOString(),h};save();E.msg="PDF guardado como "+S.pdfs[id].name+"."}catch(x){E.msg="No se pudo guardar el PDF en este navegador."}draw()};
+const pv=$("#pdfv");if(pv)pv.onclick=async()=>{try{const b=await DB.get(id),w=b&&window.open(URL.createObjectURL(b),"_blank");if(!w){E.msg=b?"El navegador bloqueó la ventana; usa Descargar.":"No se encontró el PDF en este navegador.";draw()}}catch(x){E.msg="No se pudo abrir el PDF.";draw()}};
+const pd=$("#pdfd");if(pd)pd.onclick=async()=>{let r="error";try{const b=await DB.get(id);if(b)r=await saveFile(S.pdfs[id].name,b)}catch(x){}E.msg=r=="ok"?"Descarga lista.":r=="declined"?"Descarga cancelada.":"No se pudo descargar.";draw()};
+const px=$("#pdfx");if(px)px.onclick=async()=>{try{await DB.del(id)}catch(x){}delete S.pdfs[id];save();draw()};
+const cg=$("#csvg");if(cg)cg.onclick=()=>{E.csv=csvEst(sel);E.msg="";draw()};
+const cc=$("#csvc");if(cc)cc.onclick=()=>{const t=document.querySelector("textarea[readonly]");t.select();let ok=false;try{ok=document.execCommand("copy")}catch(x){}E.msg=ok?"Copiado.":"No se pudo copiar; usa Descargar.";draw()};
+const cd=$("#csvd");if(cd)cd.onclick=async()=>{const r=await saveFile(stdName(sel,"csv"),"\\ufeff"+E.csv);E.msg=r=="ok"?"Descarga lista.":r=="declined"?"Descarga cancelada.":"No se pudo descargar.";draw()}}}
+if(tab=="Resumen"){$("#rm").onchange=e=>{R.m=e.target.value;R.y=null;draw()};$("#ry").onchange=e=>{R.y=e.target.value;draw()};$("#rc").onchange=e=>{R.c=e.target.value;draw()};
+document.querySelectorAll("tr[data-r]").forEach(tr=>tr.onclick=()=>{const[t,v]=tr.dataset.r.split("|");F.mes=t=="mes"?v:"";F.est=t=="est"?v:"";F.c="";F.t="";F.q="";tab="Movimientos";draw()})}
+if(tab=="Configuración"){document.querySelectorAll("button[data-t]").forEach(b=>b.onclick=()=>{S.cfg.tema=b.dataset.t;applyCfg();save();draw()});
+document.querySelectorAll("select[data-s]").forEach(x=>x.onchange=()=>{S.cfg[x.dataset.s]=x.value;applyCfg();save();draw()});
+$("#cfgrec").onclick=()=>{SETS.forEach(x=>S.cfg[x.k]=x.r);S.cfg.tema="auto";applyCfg();save();draw()};$("#cfgdef").onclick=()=>{S.cfg={};applyCfg();save();draw()}}
+if(tab=="Gráficas"){$("#gg").onchange=e=>{G.g=e.target.value;G.k="";draw()};$("#gt").onchange=e=>{G.t=e.target.value;draw()};$("#gy").onchange=e=>{G.y=e.target.value;G.k="";draw()};$("#gc").onchange=e=>{G.c=e.target.value;G.k="";draw()};const gq=$("#gq");if(gq)gq.onclick=()=>{G.k="";draw()};
+document.querySelectorAll("svg g[data-k]").forEach(g=>g.onclick=()=>{const k=g.dataset.k;if(G.g=="anio"){G.y=k;G.g="mes";G.k=""}else G.k=G.k==k?"":k;draw()})}
+if(tab=="Importar y exportar"){$("#go").onclick=()=>{msg=doImport($("#imp").value);draw()};
+$("#file").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$("#imp").value=r.result};r.readAsText(f)};
+$("#ecsv").onclick=()=>{$("#out").value=toCSV()};$("#ejson").onclick=()=>{$("#out").value=JSON.stringify({cuentas:S.c,estados:S.e,movimientos:S.m,verificacion:S.v||{},respaldos_pdf:S.pdfs||{}},null,1)};
+$("#cp").onclick=()=>{const o=$("#out");o.select();try{document.execCommand("copy")}catch(e){}if(o.value[0]=="{"){S.bk=new Date().toISOString();save()}};
+$("#rs").onclick=()=>{reset();msg="Datos locales borrados.";draw()}}}
+S.k=S.k||{};S.cfg=S.cfg||{};S.v=S.v||{};S.pdfs=S.pdfs||{};tab=CF("ini","Movimientos");applyCfg();autoCat();save();draw();
+if(typeof window!=="undefined"&&typeof fetch!=="undefined"){tick();setInterval(tick,1000);renderMk();fetchMk();setInterval(fetchMk,36e5);const r=document.getElementById("mkr");if(r)r.onclick=fetchMk}
+
+/* ===== Nube: Supabase personal (mismo patrón que las demás apps) ===== */
+const SUPA={url:"https://gosfucaweteaqrvftgfq.supabase.co",key:"sb_publishable_ooOdrO4PNPyeOUdxqEB4pQ_xuYIo59d",app:"estados-de-cuenta",table:"registros"};
+let sb=null,cu=null,cmsg="",cbusy=false;
+function sbInit(){if(sb)return sb;try{if(window.supabase&&window.supabase.createClient)sb=window.supabase.createClient(SUPA.url,SUPA.key,{auth:{persistSession:true,autoRefreshToken:true,storageKey:"estados-auth"}})}catch(e){sb=null}return sb}
+function nubeDocs(){const d=[{id:"_base",data:{cuentas:S.c,verificacion:S.v||{},k:S.k||{},cfg:S.cfg||{}}}],byC={},g={};
+S.e.forEach(e=>(byC[e.cuenta]=byC[e.cuenta]||[]).push(e));Object.keys(byC).forEach(c=>d.push({id:"est-"+c,data:{estados:byC[c]}}));
+S.m.forEach(x=>{const k="mov-"+x.cuenta+"-"+(x.fcar||x.fop).slice(0,7);(g[k]=g[k]||[]).push(x)});Object.keys(g).forEach(k=>d.push({id:k,data:{movimientos:g[k]}}));return d}
+async function nubeSubir(){const docs=nubeDocs();let n=0;for(let i=0;i<docs.length;i+=25){const lote=docs.slice(i,i+25).map(r=>({app:SUPA.app,id:r.id,data:r.data,owner:cu.id}));
+const{error}=await sb.from(SUPA.table).upsert(lote);if(error)throw error;n+=lote.length}return"Subido a la nube: "+S.e.length+" estados y "+S.m.length+" movimientos ("+n+" registros)."}
+async function nubeBajar(){const out=[];let from=0;for(;;){const{data,error}=await sb.from(SUPA.table).select("id,data").eq("app",SUPA.app).range(from,from+999);if(error)throw error;out.push(...data);if(data.length<1000)break;from+=1000}
+if(!out.length)return"La nube todavía no tiene datos de esta app.";const J={cuentas:{},estados:[],movimientos:[],verificacion:{}};let rk={},rc={};
+out.forEach(r=>{const d=r.data||{};if(r.id=="_base"){Object.assign(J.cuentas,d.cuentas||{});Object.assign(J.verificacion,d.verificacion||{});rk=d.k||{};rc=d.cfg||{}}if(d.estados)J.estados.push(...d.estados);if(d.movimientos)J.movimientos.push(...d.movimientos)});
+S.k=Object.assign({},rk,S.k||{});if(!Object.keys(S.cfg||{}).length)S.cfg=rc;applyCfg();return"Traído de la nube. "+doImport(JSON.stringify(J))}
+function cloudBox(){const st=cu?`Sesión: <b>${esc(cu.email||"")}</b>`:"Sin sesión";
+return`<div class="box"><b>Nube (tu Supabase personal)</b> <span class="mut">${st}. Se guardan cuentas, estados, movimientos y ajustes; los PDF de respaldo se quedan en este dispositivo.</span>
+${cu?`<div class="bar" style="margin-top:8px"><button class="btn" id="cl-up"${cbusy?" disabled":""}>Subir a la nube</button><button class="btn g" id="cl-dn"${cbusy?" disabled":""}>Traer de la nube</button><button class="btn g" id="cl-out">Salir</button></div>`
+:`<div class="bar" style="margin-top:8px"><input id="cl-e" type="email" placeholder="Correo" autocomplete="username"><input id="cl-p" type="password" placeholder="Contraseña" autocomplete="current-password"><button class="btn" id="cl-in">Entrar</button></div>`}
+<div class="msg" id="cl-m">${esc(cmsg)}</div></div>`}
+function bindCloud(){if(tab!="Importar y exportar")return;const run=async f=>{cbusy=true;cmsg="Trabajando…";draw();try{cmsg=await f()}catch(e){cmsg="Error: "+(e&&e.message||e)}cbusy=false;draw()};
+const i=$("#cl-in");if(i)i.onclick=async()=>{if(!sbInit()){cmsg="No se pudo cargar la conexión con Supabase (¿sin internet?).";draw();return}
+const em=$("#cl-e").value.trim().toLowerCase(),pw=$("#cl-p").value;cmsg="Entrando…";$("#cl-m").textContent=cmsg;
+const{data,error}=await sb.auth.signInWithPassword({email:em,password:pw});if(error){cmsg=/invalid/i.test(error.message)?"Correo o contraseña incorrectos.":error.message}else{cu=data.session.user;cmsg="Sesión iniciada."}draw()};
+const u=$("#cl-up");if(u)u.onclick=()=>run(nubeSubir);const d=$("#cl-dn");if(d)d.onclick=()=>run(nubeBajar);
+const o=$("#cl-out");if(o)o.onclick=async()=>{await sb.auth.signOut();cu=null;cmsg="Sesión cerrada.";draw()}}
+{const _v=vIO;vIO=()=>_v()+cloudBox();const _d=draw;draw=function(){_d();bindCloud()}}
+if(sbInit())sb.auth.getSession().then(({data})=>{cu=data.session&&data.session.user||null;if(cu&&tab=="Importar y exportar")draw()}).catch(()=>{});
+draw();
+</script></body></html>
