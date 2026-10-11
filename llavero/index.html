@@ -1,0 +1,1773 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="oscuro">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Llavero</title>
+<style>
+  :root{
+    color-scheme:dark;
+    --bg:#0f1115; --panel:#171a21; --border:#2a2e38; --text:#e8eaed;
+    --muted:#9aa0ab; --accent:#4f8cff; --accent2:#ff5566; --ok:#3ecf8e; --warn:#ffb020;
+    --input:#0f1115; --th:#1c2028; --banner:#26210f; --on-accent:#ffffff;
+  }
+  [data-theme="claro"]{color-scheme:light; --bg:#f4f5f7; --panel:#ffffff; --border:#d5d9e0; --text:#1c2230; --muted:#5b6475; --accent:#2f6fed; --accent2:#d1243a; --ok:#14804a; --warn:#9a6700; --input:#ffffff; --th:#eceff4; --banner:#fff6dd;}
+  [data-theme="medianoche"]{--bg:#0a1020; --panel:#111a30; --border:#243256; --text:#e6ecff; --muted:#93a1c7; --accent:#6aa3ff; --accent2:#ff6b7f; --ok:#45d6a0; --warn:#ffc04d; --input:#0a1020; --th:#16213d; --banner:#2a2410;}
+  [data-theme="bosque"]{--bg:#0e1512; --panel:#15201b; --border:#27382f; --text:#e5efe9; --muted:#8fa89b; --accent:#3fb6a0; --accent2:#ff6b6b; --ok:#6fdc8c; --warn:#ffc04d; --input:#0e1512; --th:#1b2b24; --banner:#262410;}
+  [data-theme="ambar"]{--bg:#16110b; --panel:#201912; --border:#3a2f22; --text:#f1e8dc; --muted:#b3a38f; --accent:#f0a030; --accent2:#ff6b6b; --ok:#7bd88f; --warn:#ffd36b; --input:#16110b; --th:#2a2117; --banner:#2f2410; --on-accent:#1a1205;}
+  [data-theme="violeta"]{--bg:#120f1c; --panel:#1b1629; --border:#33294d; --text:#ece8f7; --muted:#a79cc4; --accent:#9b7bff; --accent2:#ff6b8a; --ok:#58d6a0; --warn:#ffc04d; --input:#120f1c; --th:#231c36; --banner:#2a2210;}
+  [data-theme="contraste"]{--bg:#000000; --panel:#0a0a0a; --border:#8a8a8a; --text:#ffffff; --muted:#d0d0d0; --accent:#ffd400; --accent2:#ff4d4d; --ok:#2dff7a; --warn:#ffd400; --input:#000000; --th:#1a1a1a; --banner:#1f1a00; --on-accent:#000000;}
+
+  *{box-sizing:border-box;}
+  body{margin:0; font-family:-apple-system,Segoe UI,Roboto,sans-serif; background:var(--bg); color:var(--text); padding:24px;}
+  h1{font-size:20px; margin:0 0 4px;}
+  h2{font-size:15px; margin:0 0 10px;}
+  p.sub, div.sub{color:var(--muted); margin-top:0; font-size:13px;}
+  .panel{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:18px; margin-bottom:20px;}
+  .grid{display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:12px;}
+  .field{position:relative;}
+  label{font-size:12px; color:var(--muted); display:flex; justify-content:space-between; gap:6px; margin-bottom:4px;}
+  input, select, textarea{
+    width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border);
+    background:var(--input); color:var(--text); font-size:13px; font-family:inherit;
+  }
+  input:disabled, select:disabled, textarea:disabled{opacity:.4; cursor:not-allowed;}
+  textarea{resize:vertical; min-height:38px;}
+  input:focus, select:focus, textarea:focus{outline:1px solid var(--accent); border-color:var(--accent);}
+  button{cursor:pointer; border:none; border-radius:6px; padding:9px 16px; font-size:13px; font-weight:600;}
+  button:disabled{opacity:.4; cursor:not-allowed;}
+  .btn-primary{background:var(--accent); color:var(--on-accent);}
+  .btn-secondary{background:transparent; border:1px solid var(--border); color:var(--text);}
+  .btn-danger{background:transparent; border:1px solid var(--accent2); color:var(--accent2);}
+  .rowbtn{padding:5px 10px; font-size:12px;}
+  .cpbtn{padding:1px 6px; font-size:11px; margin-left:6px; border:1px solid var(--border); background:transparent; color:var(--text); border-radius:4px; font-weight:600;}
+  .cpbtn:hover{border-color:var(--accent); color:var(--accent);}
+  .actions{display:flex; gap:10px; margin-top:14px; flex-wrap:wrap; align-items:center;}
+  table{width:100%; border-collapse:collapse; font-size:12px; margin-top:4px;}
+  th, td{border:1px solid var(--border); padding:6px 8px; text-align:left; white-space:nowrap;}
+  th{background:var(--th); position:sticky; top:0;}
+  tbody tr:hover{background:var(--th);}
+  .tablewrap{overflow-x:auto; max-height:420px; overflow-y:auto;}
+  .count{color:var(--muted); font-size:12px; margin-left:8px;}
+  .toolbar{display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;}
+  .search{max-width:260px;}
+  .banner{background:var(--banner); border:1px solid var(--warn); color:var(--warn); padding:8px 12px; border-radius:6px; font-size:13px; margin-bottom:12px;}
+  .dbrow{display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end; margin-bottom:10px;}
+  .dbrow input{width:200px;}
+  .tag{display:inline-flex; align-items:center; gap:6px; background:var(--input); border:1px solid var(--border); border-radius:14px; padding:3px 10px; font-size:12px; margin:2px;}
+  .tag button{background:none; border:none; color:var(--accent2); cursor:pointer; padding:0; font-size:12px;}
+  .chipbar{display:flex; gap:6px; margin-top:6px;}
+  .checkline{display:flex; align-items:center; justify-content:flex-start; gap:6px; margin-top:6px; font-size:12px; color:var(--muted);}
+  .checkline input{width:auto;}
+  .subgrid{display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:6px;}
+  .dbpanels{display:grid; grid-template-columns:1fr 1fr 1fr; gap:22px 16px;}
+  @media(max-width:900px){.dbpanels{grid-template-columns:1fr;}}
+  .hint{font-size:11px; color:var(--muted); margin-top:4px;}
+
+  .modal{position:fixed; inset:0; background:rgba(0,0,0,.65); display:none; align-items:center; justify-content:center; z-index:50; padding:16px;}
+  .modal.open{display:flex;}
+  .modalbox{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:20px; width:100%; max-width:430px;}
+  .modalbox input{margin-top:8px;}
+  .modalbox .err{color:var(--accent2); font-size:12px; min-height:16px; margin-top:6px;}
+  .toast{position:fixed; left:50%; bottom:24px; transform:translateX(-50%); background:var(--panel); color:var(--text); border:1px solid var(--accent); padding:10px 16px; border-radius:8px; font-size:13px; z-index:60; opacity:0; pointer-events:none; transition:opacity .2s; max-width:90vw;}
+  .toast.show{opacity:1;}
+
+  /* columna Acciones fija a la izquierda */
+  #table th:first-child, #table td:first-child{position:sticky; left:0; z-index:1; background:var(--panel); box-shadow:2px 0 0 var(--border);}
+  #table th:first-child{background:var(--th); z-index:2;}
+  #table tbody tr:hover td:first-child{background:var(--th);}
+
+  .tabs{display:flex; gap:8px; margin-bottom:18px; border-bottom:1px solid var(--border);}
+  .tabbtn{background:none; border:none; color:var(--muted); font-size:14px; font-weight:600; padding:10px 4px; border-bottom:2px solid transparent; border-radius:0;}
+  .tabbtn.active{color:var(--text); border-bottom-color:var(--accent);}
+  .tabpage{display:none;}
+  .tabpage.active{display:block;}
+
+  /* panel de mejoras: siempre arriba */
+  .notes{position:sticky; top:0; z-index:30; background:var(--bg); margin:-24px -24px 16px; padding:10px 24px; border-bottom:1px solid var(--border);}
+  .notesbar{display:flex; gap:8px; align-items:center;}
+  .notesbar input{flex:1;}
+  .notesbar button{white-space:nowrap;}
+  .noteslist{display:none; position:absolute; left:24px; right:24px; top:100%; background:var(--panel); border:1px solid var(--border); border-radius:0 0 10px 10px; max-height:55vh; overflow:auto; padding:12px 14px; box-shadow:0 12px 24px rgba(0,0,0,.35);}
+  .notes.open .noteslist{display:block;}
+  .noteitem{display:flex; align-items:flex-start; gap:8px; padding:6px 0; border-bottom:1px solid var(--border); font-size:13px;}
+  .noteitem input{width:auto; margin-top:3px;}
+  .noteitem .nt{flex:1; word-break:break-word;}
+  .noteitem.done .nt{text-decoration:line-through; color:var(--muted);}
+  .noteitem .nd{color:var(--muted); font-size:11px; white-space:nowrap;}
+  .noteitem button{background:none; border:none; color:var(--accent2); padding:0 4px; font-size:13px;}
+  .notesfoot{display:flex; gap:8px; flex-wrap:wrap; margin-top:10px;}
+
+  /* configuración */
+  .themes{display:grid; grid-template-columns:repeat(auto-fill,minmax(150px,1fr)); gap:10px;}
+  .themecard{background:transparent; border:2px solid var(--border); border-radius:10px; padding:10px; text-align:left; color:var(--text);}
+  .themecard.active{border-color:var(--accent);}
+  .swatch{display:flex; height:30px; border-radius:6px; overflow:hidden; border:1px solid rgba(128,128,128,.4); margin-bottom:8px;}
+  .swatch i{flex:1;}
+  .cfgrow{display:flex; gap:12px; align-items:center; flex-wrap:wrap; margin:8px 0;}
+  .cfgrow select{width:auto;}
+
+  /* ---- v15 ---- */
+  .rv{font-size:11px;}
+  .rvmiss{color:var(--muted);}
+  .rvdone{color:var(--ok); font-weight:600;}
+  .rvbtn{background:none; border:1px solid var(--accent2); color:var(--accent2); border-radius:4px; padding:1px 6px; font-size:11px; font-weight:600; white-space:nowrap;}
+  .rvbtn:hover{background:var(--accent2); color:#fff;}
+  /* rojo / verde SOLO en la casilla del campo */
+  .field.pending .mk, .field.pending .mk2:not(:disabled){border-color:var(--accent2);}
+  .field.done .mk, .field.done .mk2:not(:disabled){border-color:var(--ok);}
+  .field.pending .mk:focus, .field.pending .mk2:focus{outline-color:var(--accent2);}
+  .field.done .mk:focus, .field.done .mk2:focus{outline-color:var(--ok);}
+  .chipbox{min-height:36px; padding:4px; border:1px solid var(--border); border-radius:6px; background:var(--input); align-items:center; flex-wrap:wrap; margin-top:6px;}
+  .field > .chipbox:first-child{margin-top:0;}
+  .lt{display:inline-flex; align-items:center; gap:2px;}
+  .sect{border:1px solid var(--border); border-radius:10px; padding:14px 14px 16px; margin-bottom:14px; background:var(--panel);}
+  .sect h3{font-size:12px; margin:0 0 12px; display:flex; align-items:center; gap:8px; text-transform:uppercase; letter-spacing:.05em; color:var(--muted);}
+  .sect h3 .sp{margin-left:auto; font-size:11px; text-transform:none; letter-spacing:0;}
+  .sect .grid{grid-template-columns:repeat(auto-fill,minmax(250px,1fr)); align-items:start;}
+  .field.wide{grid-column:span 2;}
+  @media(max-width:640px){.field.wide{grid-column:auto;}}
+  .info{display:inline-flex; align-items:center; justify-content:center; width:15px; height:15px; border-radius:50%; border:1px solid var(--muted); color:var(--muted); font-size:10px; font-weight:700; cursor:help; margin-left:5px; user-select:none; flex:none; font-style:normal; text-transform:none; letter-spacing:0;}
+  .info:hover, .info:focus{color:var(--accent); border-color:var(--accent); outline:none;}
+  #tip{position:fixed; z-index:80; max-width:290px; background:var(--panel); color:var(--text); border:1px solid var(--accent); border-radius:8px; padding:8px 10px; font-size:12px; line-height:1.4; box-shadow:0 8px 24px rgba(0,0,0,.35); display:none; pointer-events:none; font-weight:400; text-transform:none; letter-spacing:0;}
+  .tabs{display:flex; align-items:flex-end; justify-content:space-between; gap:8px; flex-wrap:wrap;}
+  .tabs-main{display:flex; gap:2px; flex-wrap:wrap;}
+  .tabbtn{padding:10px 12px;}
+  .tabs-main .tabbtn{cursor:grab;}
+  .tabbtn.dragging{opacity:.4;}
+  .tabbtn.dragover{box-shadow:inset 3px 0 0 var(--accent);}
+  .cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(310px,1fr)); gap:12px;}
+  .card{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:12px 14px; display:flex; flex-direction:column; gap:6px;}
+  .card h3{margin:0; font-size:15px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
+  .pill{display:inline-block; font-size:11px; border:1px solid var(--border); border-radius:10px; padding:1px 8px; color:var(--muted); font-weight:400;}
+  .pill.warn{border-color:var(--warn); color:var(--warn);}
+  .pill.bad{border-color:var(--accent2); color:var(--accent2);}
+  .pill.ok{border-color:var(--ok); color:var(--ok);}
+  .kv{font-size:12px; color:var(--muted); display:flex; gap:6px; align-items:center; flex-wrap:wrap;}
+  .kv b{color:var(--text); font-weight:600; word-break:break-all;}
+  .filters{display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px; align-items:center;}
+  .filters select{width:auto;}
+  .filters input[type=search]{flex:1; min-width:240px; width:auto;}
+  .kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(170px,1fr)); gap:12px; margin-bottom:16px;}
+  .kpi{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:12px 14px;}
+  .kpi .n{font-size:26px; font-weight:700;}
+  .kpi .l{font-size:12px; color:var(--muted);}
+  .charts{display:grid; grid-template-columns:repeat(auto-fit,minmax(340px,1fr)); gap:16px; margin-bottom:16px;}
+  .chart{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:14px;}
+  .bar{display:grid; grid-template-columns:minmax(80px,38%) 1fr 30px; gap:8px; align-items:center; font-size:12px; margin:5px 0;}
+  .bar .bt{background:var(--input); border-radius:4px; height:14px; overflow:hidden;}
+  .bar .bf{background:var(--accent); height:100%;}
+  .bar .lb{overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .bar b{text-align:right;}
+  .legend{display:flex; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--muted); margin-top:6px; flex-direction:column;}
+  .legend i{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:6px;}
+  .donutwrap{display:flex; gap:16px; align-items:center; flex-wrap:wrap;}
+  .alertrow{display:flex; justify-content:space-between; gap:10px; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); font-size:13px;}
+  .alertrow:last-child{border-bottom:none;}
+  .dbitem{display:flex; align-items:center; gap:8px; padding:5px 8px; border:1px solid var(--border); border-radius:6px; margin:4px 0; font-size:13px; background:var(--input);}
+  .dbitem .dbv{flex:1; word-break:break-all;}
+  .dbitem .dbn{color:var(--muted); font-size:11px; white-space:nowrap;}
+  .secttitle{display:flex; align-items:center; margin:0 0 10px;}
+  .orderrow{display:flex; align-items:center; gap:8px; padding:6px 10px; border:1px solid var(--border); border-radius:6px; margin:4px 0; max-width:420px; background:var(--input);}
+  .orderrow span{flex:1;}
+</style>
+</head>
+<body>
+
+<div class="notes" id="notesPanel">
+  <div class="notesbar">
+    <span title="Notas generales de mejoras para la app">💡</span>
+    <input id="noteInput" type="text" placeholder="Anota una mejora para la app mientras la usas… (Enter para guardar)" autocomplete="off">
+    <button class="btn-primary rowbtn" id="noteAdd">Agregar</button>
+    <button class="btn-secondary rowbtn" id="notesToggle" title="Ver, marcar como hechas, copiar o exportar tus notas"></button>
+  </div>
+  <div class="noteslist" id="notesList"></div>
+</div>
+
+<h1>🗝️ <span id="appName">Llavero</span></h1>
+<p class="sub">Control y auditoría de tus cuentas. Todo se guarda solo en este navegador (localStorage); nada se envía a internet.</p>
+<div id="storageWarn"></div>
+
+<div class="toast" id="toast"></div>
+<div id="tip"></div>
+
+<div class="modal" id="pwModal">
+  <div class="modalbox">
+    <h2 id="pwTitle"></h2>
+    <p class="sub" id="pwMsg" style="margin:0 0 4px;"></p>
+    <input type="password" id="pwInput" placeholder="Clave maestra" autocomplete="new-password">
+    <input type="password" id="pwConfirm" placeholder="Repite la clave maestra" autocomplete="new-password" style="display:none;">
+    <div class="err" id="pwErr"></div>
+    <div class="actions" style="margin-top:8px;">
+      <button class="btn-primary" id="pwOk">Aceptar</button>
+      <button class="btn-secondary" id="pwCancel">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="tabs" id="tabbar">
+  <div class="tabs-main" id="tabsMain"></div>
+  <div><button class="tabbtn" id="tabCfg" data-tab="config" title="Nombre, tema, orden de pestañas y preferencias">⚙ Configuración</button></div>
+</div>
+
+<div class="tabpage active" id="tab-buscar">
+  <div class="filters">
+    <input id="q" type="search" placeholder="Buscar por app, correo, usuario, categoría, notas…" autocomplete="off">
+    <select id="qCat"></select>
+    <select id="qEst"></select>
+    <select id="q2fa"><option value="">2FA: todas</option><option value="con">Con 2FA</option><option value="sin">Sin 2FA</option><option value="na">2FA no aplica</option></select>
+    <label class="checkline" style="margin:0;"><input type="checkbox" id="qFlag"> Solo con alertas <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Cuentas con contraseña repetida o corta, sin 2FA, hackeadas antes o con revisión vencida.">i</i></label>
+  </div>
+  <div class="sub" id="qCount" style="margin:0 0 10px;"></div>
+  <div class="cards" id="results"></div>
+</div>
+
+<div class="tabpage" id="tab-agregar">
+  <div id="trackBanner"></div>
+  <div id="formGrid"></div>
+  <div class="actions">
+    <button class="btn-primary" id="btnAdd">+ Agregar cuenta nueva</button>
+    <button class="btn-secondary" id="btnClearForm">Limpiar formulario</button>
+  </div>
+</div>
+
+<div class="tabpage" id="tab-datos">
+  <div class="panel">
+    <div class="toolbar">
+      <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
+        <input class="search" id="search" placeholder="Filtrar la tabla...">
+        <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Pulsa «Revisar» en una fila para auditarla en la pestaña Agregar cuenta: cada campo sale en rojo hasta que lo modifiques o lo confirmes. Usa 📋 para copiar correo o contraseña sin mostrarlos.">i</i>
+        <span class="count" id="count"></span>
+      </div>
+    </div>
+    <div id="tableHint" class="sub" style="margin:8px 0;"></div>
+    <div class="tablewrap">
+      <table id="table">
+        <thead><tr id="theadRow"></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<div class="tabpage" id="tab-bases">
+  <div class="panel" id="dbCheck"></div>
+  <div class="panel"><div class="dbpanels" id="dbPanels"></div></div>
+</div>
+
+<div class="tabpage" id="tab-stats">
+  <div id="statsRoot"></div>
+</div>
+
+<div class="tabpage" id="tab-io">
+  <div id="backupInfo" class="sub" style="margin:0 0 14px;"></div>
+  <div class="panel">
+    <h2 class="secttitle">⬇ Exportar <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="El backup cifrado protege todo con tu clave maestra. El JSON sin cifrar y el CSV guardan las contraseñas en texto simple: guárdalos solo en un lugar cifrado.">i</i></h2>
+    <div class="actions" style="margin-top:0;">
+      <button class="btn-primary" id="btnExportEnc" title="Archivo protegido con tu clave maestra (AES-256). Recomendado.">🔒 Backup cifrado</button>
+      <button class="btn-secondary" id="btnExportCSV">⬇ Exportar CSV (Excel)</button>
+      <button class="btn-secondary" id="btnExportJSON" title="Contiene las contraseñas en texto simple.">⬇ Backup JSON (sin cifrar)</button>
+      <button class="btn-secondary" id="btnTemplate">⬇ Plantilla CSV</button>
+    </div>
+  </div>
+  <div class="panel">
+    <h2 class="secttitle">📥 Importar <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="El importador de backup detecta solo si el archivo está cifrado. El CSV detecta el separador (coma, punto y coma o tabulación) y se agrega al final de tus cuentas.">i</i></h2>
+    <div class="actions" style="margin-top:0;">
+      <button class="btn-secondary" id="btnImportJSONTrigger" title="Restaura un backup, cifrado o sin cifrar (detecta cuál es)">📤 Importar backup</button>
+      <input type="file" id="importJSONInput" accept=".json" style="display:none;">
+      <button class="btn-secondary" id="btnImportCSVTrigger">📥 Importar CSV</button>
+      <input type="file" id="importCSVInput" accept=".csv,.txt,.tsv" style="display:none;">
+    </div>
+  </div>
+  <div class="panel">
+    <h2 class="secttitle">Zona de riesgo</h2>
+    <button class="btn-danger" id="btnClearAll">Borrar todas las cuentas</button>
+  </div>
+</div>
+
+<div class="tabpage" id="tab-config">
+  <div class="panel">
+    <h2 class="secttitle">🏷️ Nombre de la aplicación <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="El navegador no puede renombrar el archivo en tu disco. Este nombre cambia el título de la app y los nombres de los archivos que exportas. Para tener el archivo .html con ese nombre, descarga la copia. Ojo: en Firefox los datos se guardan por archivo; si renombras o mueves el original, haz primero un backup cifrado.">i</i></h2>
+    <div class="cfgrow">
+      <input id="cfgAppName" type="text" maxlength="40" style="max-width:280px;" autocomplete="off">
+      <button class="btn-primary rowbtn" id="cfgAppSave">Guardar nombre</button>
+      <button class="btn-secondary rowbtn" id="cfgAppReset">Restablecer</button>
+    </div>
+    <div class="sub" style="margin:4px 0 10px;">Archivo sugerido: <b id="cfgFileName"></b></div>
+    <button class="btn-secondary rowbtn" id="cfgSaveCopy" title="Descarga una copia de la app con el nombre elegido">⬇ Descargar copia de la app con este nombre</button>
+  </div>
+  <div class="panel">
+    <h2 class="secttitle">🎨 Tema de colores</h2>
+    <div class="themes" id="themeCards"></div>
+  </div>
+  <div class="panel">
+    <h2 class="secttitle">↕ Orden de las pestañas <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Arrastra las pestañas de la barra superior o usa las flechas. Configuración siempre queda a la derecha. La app siempre abre en Buscador.">i</i></h2>
+    <div id="orderList"></div>
+    <button class="btn-secondary rowbtn" id="orderReset" style="margin-top:6px;">Restablecer orden</button>
+  </div>
+  <div class="panel">
+    <h2 class="secttitle">🔐 Privacidad y seguridad</h2>
+    <div class="cfgrow">
+      <label style="margin:0;" for="cfgClip">Borrar el portapapeles después de copiar <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Si copiaste otra cosa en ese tiempo, también se vacía. No funciona si la pestaña está en segundo plano.">i</i></label>
+      <select id="cfgClip">
+        <option value="0">No borrar</option>
+        <option value="15">15 segundos</option>
+        <option value="30">30 segundos</option>
+        <option value="60">60 segundos</option>
+      </select>
+    </div>
+    <div class="cfgrow">
+      <label style="margin:0;" for="cfgStale">Marcar «revisión vencida» después de <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Cuentas activas cuya última modificación es más antigua que este plazo aparecen en las alertas.">i</i></label>
+      <select id="cfgStale">
+        <option value="90">90 días</option>
+        <option value="180">180 días</option>
+        <option value="365">365 días</option>
+      </select>
+    </div>
+    <label class="checkline" style="margin-top:12px;"><input type="checkbox" id="cfgMask"> Ocultar en la tabla los datos sensibles <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Oculta contraseñas, PIN, códigos y respuestas de seguridad en la pestaña Datos. Siempre puedes copiarlos con 📋.">i</i></label>
+  </div>
+  <div class="panel">
+    <h2 class="secttitle">ℹ️ Acerca de</h2>
+    <p class="sub" style="margin:0;"><span id="appVersionName"></span> · versión <span id="appVersion"></span>. Uso local en tu navegador. Haz un 🔒 Backup cifrado después de cada sesión de revisión.</p>
+  </div>
+</div>
+
+<script>
+const APP_VERSION = "15";
+const $ = id => document.getElementById(id);
+function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+const esc = escapeHtml;
+function todayLocal(){ const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); }
+
+const CATEGORIAS = [
+  "1_arquitectura","2_bancos y finanzas","3_compras","4_comunicación","5_criptomonedas",
+  "6_cuentas","7_cuentas a borrar","8_educación","9_entretenimiento","10_gobierno",
+  "11_ia","12_internet y telecomunicaciones","13_movilidad","14_privacidad y seguridad",
+  "15_software y tecnología","16_videojuegos","17_wallpapers"
+];
+
+/* ---------- campos ----------
+   statuses: SI / NO ("no la tiene, pero podría generarla") / NA ("no aplica": no se puede usar)
+   defaultOff: viene desactivado ("No aplica") y solo hay que confirmarlo */
+const ST3 = ["SI","NO","NA"];
+const STHELP = "«No» = no lo tiene, pero podrías activarlo. «No aplica» = esta cuenta no permite usarlo.";
+const GROUPS = [
+  {id:"id", title:"Identificación"},
+  {id:"acc", title:"Acceso"},
+  {id:"2fa", title:"Verificación en dos pasos"},
+  {id:"rec", title:"Recuperación"},
+  {id:"pin", title:"PIN y códigos"},
+  {id:"pay", title:"Pagos y notas"},
+];
+const FIELDS = [
+  {g:"id", key:"categoria", label:"CATEGORÍA", type:"select", options:CATEGORIAS},
+  {g:"id", key:"app", label:"APP/WEB/DOMINIO", type:"text"},
+  {g:"id", key:"estado", label:"ESTADO", type:"select", options:["ACTIVA","INACTIVA","PENDIENTE","ELIMINADA"]},
+  {g:"id", key:"prioridad", label:"PRIORIDAD TRAS HACKEO", type:"select", options:["ALTA","MEDIA","BAJA","N/A"]},
+  {g:"id", key:"hackeada", label:"HACKEADA ALGUNA VEZ", type:"select", options:["SI","NO"]},
+
+  {g:"acc", key:"usuarios", label:"USUARIO", type:"chipmulti", db:"usuarios", splitRe:/[;,|]/, help:"Puedes guardar varios usuarios por cuenta. Elige de la lista o agrega uno nuevo."},
+  {g:"acc", key:"correo", label:"CORREO", type:"dbselect", db:"correos", extra:["No aplica"], help:"Elige un correo de tu base de datos o «+ Agregar nuevo…». «No aplica» si la cuenta no usa correo."},
+  {g:"acc", key:"password", label:"PASSWORD", type:"password", help:"Usa 📋 para copiarla sin mostrarla. Marca «No aplica» si la cuenta no tiene contraseña."},
+  {g:"acc", key:"pwlen", label:"LONGITUD DE CONTRASEÑA", type:"pwlen", defaultOff:true, statuses:["SI","NA"], siLabel:"El sitio indica límites", naLabel:"No indicado", help:"Regístralo solo cuando la página indique expresamente una longitud mínima o máxima. Viene como «No indicado»: confírmalo si no aplica."},
+
+  {g:"2fa", key:"app2fa", label:"2FA APP", type:"dbselect", db:"apps2fa", extra:["No","No aplica"], help:"App de autenticación en dos pasos. «No» = no la tiene, pero podrías activarla. «No aplica» = el sitio no lo permite."},
+  {g:"2fa", key:"telefonos", label:"TELÉFONO", type:"statuschips", db:"telefonos", statuses:ST3, splitRe:/[;,|]/, help:"Teléfono usado para 2FA o recuperación. " + STHELP},
+  {g:"2fa", key:"passkey", label:"PASSKEY", type:"statuschips", db:"passkeys", statuses:ST3, help:"Puedes elegir varios gestores de passkeys. " + STHELP},
+  {g:"2fa", key:"faceid", label:"FACE ID", type:"statusonly", defaultOff:true, statuses:ST3, help:"Reconocimiento facial como medida de seguridad. Viene desactivado: actívalo solo si la cuenta lo ofrece, o confirma «no aplica». " + STHELP},
+
+  {g:"rec", key:"correorecuperacion", label:"CORREO DE RECUPERACIÓN", type:"dbselect", db:"correos", extra:["No","No aplica"], help:"«No» = no lo tiene, pero podrías configurarlo. «No aplica» = no se puede."},
+  {g:"rec", key:"recoverykey", label:"RECOVERY KEY / CÓDIGOS DE RESPALDO 2FA", type:"statusvalue", statuses:ST3, valueType:"textarea", secret:true, exportTxt:true, placeholder:"Un código por línea", wide:true, help:"Guarda aquí los códigos de respaldo, uno por línea. Puedes exportarlos a .txt. " + STHELP},
+  {g:"rec", key:"preguntaseg", label:"PREGUNTA DE SEGURIDAD", type:"statuspair", statuses:ST3, secret:true, wide:true, help:STHELP},
+
+  {g:"pin", key:"pin", label:"PIN / CÓDIGO ANTI-PHISHING", type:"statusvalue", statuses:ST3, secret:true, help:"Código anti-phishing o PIN que el sitio muestra en sus correos. " + STHELP},
+  {g:"pin", key:"pintrans", label:"PIN DE TRANSACCIONES", type:"statusvalue", statuses:ST3, defaultOff:true, secret:true, help:"PIN para autorizar transacciones (Bitso, Nu…). Viene desactivado hasta que aplique. " + STHELP},
+  {g:"pin", key:"codigoaut", label:"NÚMERO / CÓDIGO DE AUTORIZACIÓN DE TRANSFERENCIAS", type:"statusvalue", statuses:ST3, defaultOff:true, secret:true, help:"Número o código para autorizar transferencias. Viene desactivado hasta que aplique. " + STHELP},
+
+  {g:"pay", key:"tarjeta", label:"TARJETA/MÉTODO DE PAGO VINCULADO", type:"statuschips", db:"tarjetas", statuses:ST3, splitRe:/[;|]/, help:"Puedes registrar varias tarjetas. Guarda solo un alias o los últimos 4 dígitos; nunca el número completo ni el CVV. " + STHELP},
+  {g:"pay", key:"notas", label:"NOTAS", type:"notas", wide:true},
+];
+const FMAP = {}; FIELDS.forEach(f => FMAP[f.key] = f);
+
+/* ---------- almacenamiento a prueba de fallos ---------- */
+let storageOk = true, storageAlerted = false;
+function lsGet(k){ try{ return localStorage.getItem(k); }catch(e){ storageOk = false; return null; } }
+function lsSet(k,v){
+  try{ localStorage.setItem(k,v); }
+  catch(e){
+    storageOk = false; showStorageWarn();
+    if(!storageAlerted){ storageAlerted = true; alert("Este navegador no permite guardar datos: lo que captures se perderá al cerrar. Abre el archivo directo en tu navegador, o usa 🔒 Backup cifrado antes de salir."); }
+  }
+}
+function showStorageWarn(){
+  $("storageWarn").innerHTML = storageOk ? "" :
+    '<div class="banner" style="border-color:var(--accent2); color:var(--accent2);">⚠️ Este navegador/visor NO permite guardar datos. Abre el archivo descargado directo en tu navegador (Chrome, Edge, Firefox) para que se conserve lo que captures.</div>';
+}
+
+const DATA_KEY = "llavero_data_v4", V3_KEY = "credenciales_data_v3", V2_KEY = "credenciales_data_v2";
+const NOTES_KEY = "llavero_mejoras_v1", CONFIG_KEY = "llavero_config_v1", BACKUP_KEY = "credenciales_last_backup_v1";
+const CAT_KEY = "llavero_catalogos_v2", HIST_KEY = "llavero_historial_v1", SNAP_KEY = "llavero_snapshots_v1";
+const DB_META = [
+  {k:"correos",   key:"credenciales_emails_v1",    icon:"📧", title:"Correos",   ph:"correo@ejemplo.com", type:"email", help:"Alimenta los desplegables CORREO y CORREO DE RECUPERACIÓN."},
+  {k:"usuarios",  key:"credenciales_usuarios_v1",  icon:"🧑", title:"Usuarios",  ph:"nombre.usuario", help:"Alimenta el campo USUARIO (puedes elegir varios por cuenta)."},
+  {k:"telefonos", key:"credenciales_telefonos_v1", icon:"📱", title:"Teléfonos", ph:"449...", help:"Alimenta el campo TELÉFONO."},
+  {k:"passkeys",  key:"llavero_passkeys_v1",       icon:"🔑", title:"Passkeys",  ph:"Ej. 1Password", defaults:["Windows Hello","Google Password Manager"], help:"Alimenta el campo PASSKEY (puedes elegir varios por cuenta)."},
+  {k:"apps2fa",   key:"llavero_apps2fa_v1",        icon:"🛡️", title:"Apps 2FA",  ph:"Ej. Authy", defaults:["Google Authenticator","Microsoft Authenticator"], help:"Alimenta el desplegable 2FA APP."},
+  {k:"tarjetas",  key:"llavero_tarjetas_v1",       icon:"💳", title:"Tarjetas",  ph:"Ej. Visa ···4417", help:"Alimenta TARJETA/MÉTODO DE PAGO. Guarda solo un alias o los últimos 4 dígitos. Nunca el número completo ni el CVV."},
+];
+const DB_KEYS = {}; DB_META.forEach(m => DB_KEYS[m.k] = m.key);
+
+let rows = [], DB = {}, notes = [], hist = [], snaps = [], cfg = {theme:"oscuro", clip:30, mask:true, appName:"", tabOrder:null, staleDays:180};
+DB_META.forEach(m => DB[m.k] = []);
+let reviewIndex = null;      // null = cuenta nueva
+let reviewed = {};           // key -> true cuando el campo se modificó o se confirmó
+const chips = {};            // key -> valores seleccionados (campos con chips)
+
+/* ---------- utilidades ---------- */
+function ensureOption(sel, v){
+  if(v && ![...sel.options].some(o => o.value === v)){
+    const o = document.createElement("option"); o.value = v; o.textContent = v;
+    sel.insertBefore(o, sel.options[1] || null);
+  }
+}
+function stLabel(f, s){ return s === "NA" ? (f.naLabel || "No aplica") : (s === "SI" ? (f.siLabel || "Sí") : "No"); }
+function statusSelHtml(f, id){
+  return `<select class="mk" id="${id}"><option value="">-- Selecciona --</option>${f.statuses.map(s => `<option value="${s}">${esc(stLabel(f,s))}</option>`).join("")}</select>`;
+}
+function parseStatusCell(f, raw){
+  raw = (raw||"").trim();
+  const sts = f.statuses || ST3;
+  if(!raw) return {status: f.defaultOff ? "NA" : "", rest:""};
+  const low = raw.toLowerCase();
+  if(["no aplica","n/a","na","no indicado","no indicada"].includes(low)) return {status:"NA", rest:""};
+  if(low === "no") return {status: sts.includes("NO") ? "NO" : "NA", rest:""};
+  const m = raw.match(/^s[ií](?=$|\s|[–—:\-])\s*(?:[–—:\-]\s*([\s\S]*))?$/i);
+  if(m) return {status:"SI", rest:(m[1]||"").trim()};
+  return {status:"SI", rest:raw};
+}
+function isNaToken(raw){ return ["no aplica","n/a","na"].includes((raw||"").trim().toLowerCase()); }
+function addDB(k, v){ v = (v||"").trim(); if(v && !DB[k].includes(v)) DB[k].push(v); }
+function saveDBAll(){ const o = {version:2}; DB_META.forEach(m => o[m.k] = DB[m.k]); lsSet(CAT_KEY, JSON.stringify(o)); }
+function saveDB(k){ saveDBAll(); }
+function uid(){ return Date.now().toString(36) + Math.random().toString(36).slice(2,8); }
+const fold = s => (s||"").toString().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+
+/* ---------- tipos de campo ---------- */
+const T = {};
+
+T.text = {
+  build:f => `<input class="mk" id="f_${f.key}" type="text" autocomplete="off">`,
+  get:f => $("f_"+f.key).value.trim(),
+  set:(f,v) => { $("f_"+f.key).value = v || ""; },
+  empty:() => "",
+  filled:(f,v) => v !== "",
+  display:(f,v) => v || "",
+  csvH:f => [f.label],
+  toCsv:(f,v) => [v || ""],
+  fromCsv:(f,get) => (get(f.label)||"").trim(),
+};
+
+T.select = {
+  build:f => `<select class="mk" id="f_${f.key}"><option value="">-- Selecciona --</option>${f.options.map(o => `<option value="${esc(o)}">${esc(o)}</option>`).join("")}</select>`,
+  get:f => $("f_"+f.key).value,
+  set:(f,v) => { const s = $("f_"+f.key); v = v || ""; ensureOption(s, v); s.value = v; },
+  empty:() => "",
+  filled:(f,v) => v !== "",
+  display:(f,v) => v || "",
+  csvH:f => [f.label],
+  toCsv:(f,v) => [v || ""],
+  fromCsv:(f,get) => {
+    const raw = (get(f.label)||"").trim(); if(!raw) return "";
+    const hit = f.options.find(o => o.toLowerCase() === raw.toLowerCase());
+    return hit || raw;
+  },
+};
+
+/* select alimentado por una base de datos (+ "No", "No aplica", "+ Agregar nuevo...") */
+function rebuildDbSelect(f){
+  const sel = $("f_"+f.key); if(!sel) return;
+  const cur = sel.value;
+  sel.innerHTML = `<option value="">-- Elegir --</option>` +
+    f.extra.map(x => `<option value="${esc(x)}">${esc(x)}</option>`).join("") +
+    DB[f.db].map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join("") +
+    `<option value="__new__">+ Agregar nuevo...</option>`;
+  if(cur && cur !== "__new__"){ ensureOption(sel, cur); sel.value = cur; }
+}
+T.dbselect = {
+  build:f => `<select class="mk" id="f_${f.key}"></select>`,
+  wire:f => {
+    const sel = $("f_"+f.key);
+    sel.addEventListener("change", () => {
+      if(sel.value === "__new__"){
+        const val = prompt("Agregar nuevo a «" + f.label + "»:");
+        if(val && val.trim()){
+          const v = val.trim(); addDB(f.db, v); saveDB(f.db); renderDBPanel(f.db); refreshDbUsers(f.db);
+          sel.value = v; sel.dataset.prev = v;
+        } else { sel.value = sel.dataset.prev || ""; sel.dataset.skip = "1"; }
+      } else { sel.dataset.prev = sel.value; }
+    });
+  },
+  get:f => { const v = $("f_"+f.key).value; return v === "__new__" ? "" : v; },
+  set:(f,v) => { const s = $("f_"+f.key); v = v || ""; ensureOption(s, v); s.value = v; s.dataset.prev = v; },
+  empty:() => "",
+  filled:(f,v) => v !== "",
+  display:(f,v) => v || "",
+  csvH:f => [f.label],
+  toCsv:(f,v) => [v || ""],
+  fromCsv:(f,get) => {
+    const raw = (get(f.label)||"").trim(); if(!raw) return "";
+    const low = raw.toLowerCase();
+    if(isNaToken(raw)) return "No aplica";
+    if(low === "no" && f.extra.includes("No")) return "No";
+    return raw;
+  },
+};
+
+/* chips (usuarios, teléfonos, passkeys, tarjetas) */
+function renderChips(f){
+  $("chips_"+f.key).innerHTML = chips[f.key].length
+    ? chips[f.key].map((v,i) => `<span class="tag">${esc(v)} <button type="button" data-chip="${f.key}" data-i="${i}" title="Quitar">✕</button></span>`).join("")
+    : '<span class="sub" style="font-size:11px;">Sin valores.</span>';
+}
+function rebuildChipSelect(f){
+  const sel = $("sel_"+f.key); if(!sel) return;
+  const avail = DB[f.db].filter(v => !chips[f.key].includes(v));
+  sel.innerHTML = `<option value="">-- Elegir --</option>` + avail.map(v => `<option value="${esc(v)}">${esc(v)}</option>`).join("") + `<option value="__new__">+ Agregar nuevo...</option>`;
+}
+function setChipsEnabled(f, on){ $("sel_"+f.key).disabled = !on; $("addbtn_"+f.key).disabled = !on; }
+function chipsHtml(f, main){
+  return `<div id="chips_${f.key}" class="chipbar chipbox${main ? " mk" : ""}"></div>
+    <div class="chipbar"><select id="sel_${f.key}" style="flex:1;"></select><button type="button" class="btn-secondary rowbtn" id="addbtn_${f.key}">+ Agregar</button></div>`;
+}
+function wireChipAdd(f){
+  $("addbtn_"+f.key).addEventListener("click", () => {
+    const sel = $("sel_"+f.key); let val = sel.value;
+    if(val === "__new__"){
+      val = prompt("Agregar nuevo a «" + f.label + "»:");
+      if(!val || !val.trim()){ sel.value = ""; return; }
+      val = val.trim(); addDB(f.db, val); saveDB(f.db); renderDBPanel(f.db);
+    }
+    if(!val) return;
+    if(!chips[f.key].includes(val)) chips[f.key].push(val);
+    renderChips(f); refreshDbUsers(f.db); touchField(f.key);
+  });
+}
+function splitList(f, raw){ return (raw||"").split(f.splitRe || /[;|]/).map(s => s.trim()).filter(Boolean); }
+
+T.chipmulti = {
+  build:f => chipsHtml(f, true) + `<label class="checkline"><input type="checkbox" id="na_${f.key}"> No aplica</label>`,
+  wire:f => {
+    wireChipAdd(f);
+    $("na_"+f.key).addEventListener("change", e => {
+      setChipsEnabled(f, !e.target.checked);
+      if(e.target.checked){ chips[f.key] = []; renderChips(f); rebuildChipSelect(f); }
+    });
+  },
+  get:f => ({na: $("na_"+f.key).checked, values: chips[f.key].slice()}),
+  set:(f,v) => {
+    v = v || {na:false, values:[]};
+    chips[f.key] = (v.values||[]).slice(); $("na_"+f.key).checked = !!v.na;
+    setChipsEnabled(f, !v.na); renderChips(f); rebuildChipSelect(f);
+  },
+  empty:() => ({na:false, values:[]}),
+  filled:(f,v) => v.na || v.values.length > 0,
+  display:(f,v) => v.na ? "No aplica" : (v.values||[]).join("; "),
+  csvH:f => [f.label],
+  toCsv:(f,v) => [v.na ? "No aplica" : (v.values||[]).join("; ")],
+  fromCsv:(f,get) => {
+    const raw = (get(f.label)||"").trim();
+    if(!raw) return {na:false, values:[]};
+    if(isNaToken(raw)) return {na:true, values:[]};
+    return {na:false, values:splitList(f, raw)};
+  },
+};
+
+T.statuschips = {
+  build:f => statusSelHtml(f, "status_"+f.key) + chipsHtml(f),
+  wire:f => {
+    wireChipAdd(f);
+    $("status_"+f.key).addEventListener("change", e => {
+      const on = e.target.value === "SI";
+      setChipsEnabled(f, on);
+      if(!on){ chips[f.key] = []; renderChips(f); rebuildChipSelect(f); }
+    });
+  },
+  get:f => ({status: $("status_"+f.key).value, values: chips[f.key].slice()}),
+  set:(f,v) => {
+    v = v || {status:"", values:[]};
+    const st = $("status_"+f.key); ensureOption(st, v.status); st.value = v.status || "";
+    chips[f.key] = (v.values||[]).slice();
+    setChipsEnabled(f, v.status === "SI"); renderChips(f); rebuildChipSelect(f);
+  },
+  empty:(f,off) => ({status: off ? "NA" : "", values:[]}),
+  filled:(f,v) => v.status !== "" && (v.status !== "SI" || v.values.length > 0),
+  display:(f,v) => v.status ? stLabel(f, v.status) + (v.status === "SI" && v.values.length ? " – " + v.values.join("; ") : "") : "",
+  csvH:f => [f.label],
+  toCsv:(f,v) => [v.status ? stLabel(f, v.status) + (v.status === "SI" && v.values.length ? " – " + v.values.join("; ") : "") : ""],
+  fromCsv:(f,get) => { const p = parseStatusCell(f, get(f.label)); return {status:p.status, values: p.status === "SI" ? splitList(f, p.rest) : []}; },
+};
+
+T.statusvalue = {
+  build:f => {
+    const ctl = f.valueType === "textarea"
+      ? `<textarea class="mk2" id="f_${f.key}" rows="3" placeholder="${esc(f.placeholder||"")}" disabled></textarea>`
+      : `<input class="mk2" id="f_${f.key}" type="text" placeholder="${esc(f.placeholder||"")}" autocomplete="off" disabled>`;
+    return statusSelHtml(f, "status_"+f.key) + `<div style="margin-top:6px;">${ctl}</div>` +
+      (f.exportTxt ? `<button type="button" class="btn-secondary rowbtn" id="exp_${f.key}" style="margin-top:6px;" title="Descarga los códigos en un archivo .txt">⬇ Exportar códigos (.txt)</button>` : "");
+  },
+  wire:f => {
+    $("status_"+f.key).addEventListener("change", e => {
+      const inp = $("f_"+f.key);
+      if(e.target.value === "SI"){ inp.disabled = false; } else { inp.disabled = true; inp.value = ""; }
+      syncExport(f);
+    });
+    $("f_"+f.key).addEventListener("input", () => syncExport(f));
+    if(f.exportTxt) $("exp_"+f.key).addEventListener("click", () => exportCodesTxt($("f_app").value, $("f_"+f.key).value));
+  },
+  get:f => ({status: $("status_"+f.key).value, value: $("f_"+f.key).value.trim()}),
+  set:(f,v) => {
+    v = v || {status:"", value:""};
+    const st = $("status_"+f.key); ensureOption(st, v.status); st.value = v.status || "";
+    const inp = $("f_"+f.key); inp.value = v.value || ""; inp.disabled = v.status !== "SI";
+    syncExport(f);
+  },
+  empty:(f,off) => ({status: off ? "NA" : "", value:""}),
+  filled:(f,v) => v.status !== "" && (v.status !== "SI" || v.value !== ""),
+  display:(f,v,mask) => v.status ? stLabel(f, v.status) + (v.status === "SI" && v.value ? " – " + ((mask && f.secret) ? "••••" : v.value) : "") : "",
+  csvH:f => [f.label],
+  toCsv:(f,v) => [v.status ? stLabel(f, v.status) + (v.status === "SI" && v.value ? " – " + v.value : "") : ""],
+  fromCsv:(f,get) => { const p = parseStatusCell(f, get(f.label)); return {status:p.status, value: p.status === "SI" ? p.rest : ""}; },
+};
+function syncExport(f){
+  if(!f.exportTxt) return;
+  const b = $("exp_"+f.key); if(!b) return;
+  b.disabled = !($("status_"+f.key).value === "SI" && $("f_"+f.key).value.trim() !== "");
+}
+
+T.statuspair = {
+  build:f => statusSelHtml(f, "status_"+f.key) + `<div class="subgrid"><input class="mk2" id="f_${f.key}_pregunta" type="text" placeholder="Pregunta" disabled><input class="mk2" id="f_${f.key}_respuesta" type="text" placeholder="Respuesta" disabled></div>`,
+  wire:f => {
+    $("status_"+f.key).addEventListener("change", e => {
+      const p = $("f_"+f.key+"_pregunta"), r = $("f_"+f.key+"_respuesta");
+      if(e.target.value === "SI"){ p.disabled = false; r.disabled = false; } else { p.disabled = r.disabled = true; p.value = ""; r.value = ""; }
+    });
+  },
+  get:f => ({status: $("status_"+f.key).value, pregunta: $("f_"+f.key+"_pregunta").value.trim(), respuesta: $("f_"+f.key+"_respuesta").value.trim()}),
+  set:(f,v) => {
+    v = v || {status:"", pregunta:"", respuesta:""};
+    const st = $("status_"+f.key); ensureOption(st, v.status); st.value = v.status || "";
+    const p = $("f_"+f.key+"_pregunta"), r = $("f_"+f.key+"_respuesta");
+    p.value = v.pregunta || ""; r.value = v.respuesta || ""; p.disabled = r.disabled = v.status !== "SI";
+  },
+  empty:(f,off) => ({status: off ? "NA" : "", pregunta:"", respuesta:""}),
+  filled:(f,v) => v.status !== "" && (v.status !== "SI" || (v.pregunta !== "" && v.respuesta !== "")),
+  display:(f,v,mask) => v.status ? stLabel(f, v.status) + (v.status === "SI" ? ` | P: ${v.pregunta} | R: ${(mask && f.secret) ? "••••" : v.respuesta}` : "") : "",
+  csvH:f => [f.label, "RESPUESTA DE SEGURIDAD"],
+  toCsv:(f,v) => v.status === "SI" ? [v.pregunta || "", v.respuesta || ""] : [v.status ? stLabel(f, v.status) : "", ""],
+  fromCsv:(f,get) => {
+    const p = (get(f.label)||"").trim(), r = (get("RESPUESTA DE SEGURIDAD")||"").trim();
+    if(!p && !r) return {status: f.defaultOff ? "NA" : "", pregunta:"", respuesta:""};
+    const low = p.toLowerCase();
+    if(isNaToken(p)) return {status:"NA", pregunta:"", respuesta:""};
+    if(low === "no") return {status:"NO", pregunta:"", respuesta:""};
+    return {status:"SI", pregunta:p, respuesta:r};
+  },
+};
+
+T.statusonly = {
+  build:f => statusSelHtml(f, "status_"+f.key),
+  get:f => ({status: $("status_"+f.key).value}),
+  set:(f,v) => { v = v || {status:""}; const st = $("status_"+f.key); ensureOption(st, v.status); st.value = v.status || ""; },
+  empty:(f,off) => ({status: off ? "NA" : ""}),
+  filled:(f,v) => v.status !== "",
+  display:(f,v) => v.status ? stLabel(f, v.status) : "",
+  csvH:f => [f.label],
+  toCsv:(f,v) => [v.status ? stLabel(f, v.status) : ""],
+  fromCsv:(f,get) => ({status: parseStatusCell(f, get(f.label)).status}),
+};
+
+function pwlenValid(v){
+  if(v.status !== "SI") return v.status !== "";
+  const n = x => x === "" ? null : Number(x);
+  const mn = n(v.min), mx = n(v.max);
+  const okn = x => x === null || (Number.isInteger(x) && x >= 1);
+  if(!okn(mn) || !okn(mx)) return false;
+  if(mn === null && mx === null) return false;
+  if(mn !== null && mx !== null && mn > mx) return false;
+  return true;
+}
+T.pwlen = {
+  build:f => statusSelHtml(f, "status_"+f.key) +
+    `<div class="subgrid"><input class="mk2" id="f_${f.key}_min" type="number" min="1" max="999" step="1" placeholder="Mín." disabled><input class="mk2" id="f_${f.key}_max" type="number" min="1" max="999" step="1" placeholder="Máx." disabled></div>`,
+  wire:f => {
+    $("status_"+f.key).addEventListener("change", e => {
+      const a = $("f_"+f.key+"_min"), b = $("f_"+f.key+"_max");
+      if(e.target.value === "SI"){ a.disabled = b.disabled = false; } else { a.disabled = b.disabled = true; a.value = ""; b.value = ""; }
+    });
+  },
+  get:f => ({status: $("status_"+f.key).value, min: $("f_"+f.key+"_min").value.trim(), max: $("f_"+f.key+"_max").value.trim()}),
+  set:(f,v) => {
+    v = v || {status:"", min:"", max:""};
+    const st = $("status_"+f.key); ensureOption(st, v.status); st.value = v.status || "";
+    const a = $("f_"+f.key+"_min"), b = $("f_"+f.key+"_max");
+    a.value = v.min || ""; b.value = v.max || ""; a.disabled = b.disabled = v.status !== "SI";
+  },
+  empty:(f,off) => ({status: off ? "NA" : "", min:"", max:""}),
+  filled:(f,v) => pwlenValid(v),
+  hint:(f,v) => v.status === "SI" ? "Escribe mín. y/o máx. (mín. ≤ máx.)" : "Falta llenar",
+  display:(f,v) => v.status === "SI" ? [v.min ? "mín " + v.min : "", v.max ? "máx " + v.max : ""].filter(Boolean).join("; ") : (v.status ? stLabel(f, v.status) : ""),
+  csvH:f => [f.label],
+  toCsv:(f,v) => [T.pwlen.display(f,v)],
+  fromCsv:(f,get) => {
+    const raw = (get(f.label)||"").trim();
+    if(!raw || isNaToken(raw) || /^no indicad/i.test(raw) || raw.toLowerCase() === "no") return {status:"NA", min:"", max:""};
+    const mn = raw.match(/m[ií]n\D*(\d+)/i), mx = raw.match(/m[aá]x\D*(\d+)/i);
+    if(mn || mx) return {status:"SI", min: mn ? mn[1] : "", max: mx ? mx[1] : ""};
+    const rg = raw.match(/(\d+)\s*(?:[-–—]|a)\s*(\d+)/i);
+    if(rg) return {status:"SI", min:rg[1], max:rg[2]};
+    const one = raw.match(/\d+/);
+    return one ? {status:"SI", min:one[0], max:""} : {status:"NA", min:"", max:""};
+  },
+};
+
+T.password = {
+  build:f => `<div style="display:flex; gap:6px;"><input class="mk" id="f_${f.key}" type="password" autocomplete="new-password" style="flex:1;"><button type="button" class="btn-secondary rowbtn" id="eye_${f.key}" title="Mostrar / ocultar">👁</button><button type="button" class="btn-secondary rowbtn" id="copy_${f.key}" title="Copiar sin mostrar">📋</button></div>
+    <label class="checkline"><input type="checkbox" id="na_${f.key}"> No aplica (cuenta sin contraseña)</label>`,
+  wire:f => {
+    $("eye_"+f.key).addEventListener("click", () => { const i = $("f_"+f.key); i.type = i.type === "password" ? "text" : "password"; });
+    $("copy_"+f.key).addEventListener("click", () => {
+      const v = $("f_"+f.key).value; if(!v){ showToast("No hay contraseña que copiar."); return; }
+      copyText(v, "Contraseña");
+    });
+    $("na_"+f.key).addEventListener("change", e => {
+      const i = $("f_"+f.key), on = e.target.checked;
+      i.disabled = on; $("eye_"+f.key).disabled = on; $("copy_"+f.key).disabled = on;
+      if(on){ i.value = ""; i.type = "password"; }
+    });
+  },
+  get:f => ({na: $("na_"+f.key).checked, value: $("f_"+f.key).value.trim()}),
+  set:(f,v) => {
+    v = v || {na:false, value:""};
+    const i = $("f_"+f.key); i.value = v.value || ""; i.type = "password"; i.disabled = !!v.na;
+    $("na_"+f.key).checked = !!v.na; $("eye_"+f.key).disabled = !!v.na; $("copy_"+f.key).disabled = !!v.na;
+  },
+  empty:() => ({na:false, value:""}),
+  filled:(f,v) => v.na || v.value !== "",
+  display:(f,v,mask) => v.na ? "No aplica" : (mask ? "••••••" : v.value),
+  csvH:f => [f.label],
+  toCsv:(f,v) => [v.na ? "No aplica" : (v.value || "")],
+  fromCsv:(f,get) => { const raw = (get(f.label)||"").trim(); return isNaToken(raw) ? {na:true, value:""} : {na:false, value:raw}; },
+};
+
+T.notas = {
+  build:f => `<label class="checkline"><input type="checkbox" id="na_${f.key}"> No aplica</label><textarea class="mk" id="f_${f.key}" rows="2" style="margin-top:6px;"></textarea>`,
+  wire:f => { $("na_"+f.key).addEventListener("change", e => { $("f_"+f.key).disabled = e.target.checked; }); },
+  get:f => ({na: $("na_"+f.key).checked, value: $("f_"+f.key).value.trim()}),
+  set:(f,v) => {
+    v = v || {na:false, value:""};
+    $("na_"+f.key).checked = !!v.na; const t = $("f_"+f.key); t.value = v.value || ""; t.disabled = !!v.na;
+  },
+  empty:() => ({na:false, value:""}),
+  filled:(f,v) => v.na || v.value !== "",
+  display:(f,v) => v.na ? "No aplica" : (v.value || ""),
+  csvH:f => [f.label],
+  toCsv:(f,v) => [v.na ? "No aplica" : (v.value || "")],
+  fromCsv:(f,get) => { const raw = (get(f.label)||"").trim(); return isNaToken(raw) ? {na:true, value:""} : {na:false, value:raw}; },
+};
+
+T.statuschips.hint = (f,v) => v.status === "" ? "Falta llenar" : "Agrega al menos uno";
+T.statusvalue.hint = (f,v) => v.status === "" ? "Falta llenar" : "Escribe el valor";
+T.statuspair.hint = (f,v) => v.status === "" ? "Falta llenar" : "Falta pregunta o respuesta";
+const getFieldValue = f => T[f.type].get(f);
+const setFieldValue = (f,v) => T[f.type].set(f,v);
+const isFilled = (f,v) => T[f.type].filled(f,v);
+const defaultValue = f => T[f.type].empty(f, !!f.defaultOff);
+const fieldDisplay = (f,v,mask) => (v === undefined || v === null) ? "" : T[f.type].display(f,v,mask);
+
+/* ---------- migración (v2 / v3 / v4 → v4) ---------- */
+function migrateRow(r){
+  if(!r) return r;
+  if(r.__v4){ if(!r.id) r.id = uid(); return r; }
+  const o = {categoria:r.categoria||"", app:r.app||""};
+  // usuarios
+  if(r.usuarios && typeof r.usuarios === "object") o.usuarios = {na:!!r.usuarios.na, values:(r.usuarios.values||[]).slice()};
+  else o.usuarios = {na: !r.usuario, values: r.usuario ? [r.usuario] : []};
+  o.correo = r.correo || "";
+  // password
+  o.password = (r.password && typeof r.password === "object") ? {na:!!r.password.na, value:r.password.value||""} : {na:false, value:r.password||""};
+  o.pwlen = r.pwlen || {status:"NA", min:"", max:""};
+  o.faceid = r.faceid || {status:"NA"};
+  // passkey: antes {status,value}; ahora {status,values[]}
+  const pk = r.passkey;
+  if(pk && typeof pk === "object") o.passkey = {status: pk.status||"", values: pk.values ? pk.values.slice() : (pk.value ? [pk.value] : [])};
+  else o.passkey = {status: pk ? "SI" : "", values: pk ? [pk] : []};
+  o.app2fa = r.app2fa || "";
+  // teléfonos: antes {na,values}; ahora {status,values[]}
+  if(r.telefonos && typeof r.telefonos === "object"){
+    const t = r.telefonos, vals = (t.values||[]).slice();
+    o.telefonos = t.status !== undefined ? {status:t.status, values:vals} : {status: t.na ? "NA" : (vals.length ? "SI" : ""), values:vals};
+  } else o.telefonos = {status: r.telefono2fa ? "SI" : "NA", values: r.telefono2fa ? [r.telefono2fa] : []};
+  o.correorecuperacion = r.correorecuperacion || "";
+  const sv = (x) => (x && typeof x === "object") ? {status:x.status||"", value:x.value||""} : {status: x ? "SI" : "", value: x || ""};
+  o.recoverykey = sv(r.recoverykey);
+  o.pin = sv(r.pin);
+  o.pintrans = r.pintrans || {status:"NA", value:""};
+  o.codigoaut = r.codigoaut || {status:"NA", value:""};
+  if(r.preguntaseg && typeof r.preguntaseg === "object") o.preguntaseg = {status:r.preguntaseg.status||"", pregunta:r.preguntaseg.pregunta||"", respuesta:r.preguntaseg.respuesta||""};
+  else o.preguntaseg = {status:(r.preguntaseg||r.respuestaseg) ? "SI" : "", pregunta:r.preguntaseg||"", respuesta:r.respuestaseg||""};
+  // tarjeta: antes {status,value}; ahora {status,values[]}
+  const tj = r.tarjeta;
+  if(tj && typeof tj === "object") o.tarjeta = {status: tj.status||"", values: tj.values ? tj.values.slice() : (tj.value ? [tj.value] : [])};
+  else o.tarjeta = {status: tj ? "SI" : "", values: tj ? [tj] : []};
+  o.estado = r.estado || ""; o.prioridad = r.prioridad || ""; o.hackeada = r.hackeada || "";
+  o.notas = (r.notas && typeof r.notas === "object") ? {na:!!r.notas.na, value:r.notas.value||""} : {na:false, value:r.notas||""};
+  o.fecha = r.fecha || ""; o.__v4 = true; o.id = r.id || uid();
+  return o;
+}
+
+function loadDB(){
+  let obj = null;
+  const raw = lsGet(CAT_KEY);
+  if(raw){ try{ obj = JSON.parse(raw); }catch(e){} }
+  DB_META.forEach(m => {
+    if(obj && Array.isArray(obj[m.k])) DB[m.k] = obj[m.k].filter(x => typeof x === "string");
+    else {
+      const lr = lsGet(m.key);
+      if(lr !== null){ try{ DB[m.k] = JSON.parse(lr); }catch(e){ DB[m.k] = []; } if(!Array.isArray(DB[m.k])) DB[m.k] = []; }
+      else DB[m.k] = (m.defaults||[]).slice();
+    }
+  });
+  if(!obj && storageOk) saveDBAll();   // migra las listas viejas a un solo catálogo
+}
+function backfillDB(list){
+  list.forEach(r => {
+    (r.usuarios && r.usuarios.values || []).forEach(v => addDB("usuarios", v));
+    (r.telefonos && r.telefonos.values || []).forEach(v => addDB("telefonos", v));
+    (r.passkey && r.passkey.values || []).forEach(v => addDB("passkeys", v));
+    (r.tarjeta && r.tarjeta.values || []).forEach(v => addDB("tarjetas", v));
+    [r.correo, r.correorecuperacion].forEach(v => { if(v && !["No","No aplica"].includes(v)) addDB("correos", v); });
+    if(r.app2fa && !["No","No aplica"].includes(r.app2fa)) addDB("apps2fa", r.app2fa);
+  });
+  saveDBAll();
+}
+function loadRows(){
+  const raw = lsGet(DATA_KEY);
+  if(raw){
+    try{
+      let ch = false;
+      rows = JSON.parse(raw).map(x => { if(x && !x.id) ch = true; return migrateRow(x); });
+      if(ch) saveRows();
+    }catch(e){ rows = []; }
+    return;
+  }
+  // primera vez con esta versión: se migran las cuentas de v3 (o v2) sin tocar los datos originales
+  let src = [];
+  for(const k of [V3_KEY, V2_KEY]){
+    const t = lsGet(k); if(!t) continue;
+    try{ const a = JSON.parse(t); if(Array.isArray(a) && a.length){ src = a; break; } }catch(e){}
+  }
+  rows = src.map(migrateRow);
+  if(rows.length){ saveRows(); backfillDB(rows); }
+}
+function saveRows(){ lsSet(DATA_KEY, JSON.stringify(rows)); try{ takeSnapshot(); }catch(e){} }
+function loadHist(){
+  try{ hist = JSON.parse(lsGet(HIST_KEY) || "[]"); if(!Array.isArray(hist)) hist = []; }catch(e){ hist = []; }
+  try{ snaps = JSON.parse(lsGet(SNAP_KEY) || "[]"); if(!Array.isArray(snaps)) snaps = []; }catch(e){ snaps = []; }
+}
+function saveHist(){ if(hist.length > 5000) hist = hist.slice(-5000); lsSet(HIST_KEY, JSON.stringify(hist)); }
+function saveSnaps(){ if(snaps.length > 1500) snaps = snaps.slice(-1500); lsSet(SNAP_KEY, JSON.stringify(snaps)); }
+function logEvent(r, tipo, fecha){ hist.push({id:r.id, app:r.app||"", fecha:fecha||todayLocal(), tipo}); }
+
+/* ---------- configuración y temas ---------- */
+const THEMES = [
+  {id:"oscuro", name:"Oscuro", c:["#0f1115","#171a21","#4f8cff"]},
+  {id:"claro", name:"Claro", c:["#f4f5f7","#ffffff","#2f6fed"]},
+  {id:"medianoche", name:"Medianoche", c:["#0a1020","#111a30","#6aa3ff"]},
+  {id:"bosque", name:"Bosque", c:["#0e1512","#15201b","#3fb6a0"]},
+  {id:"ambar", name:"Ámbar", c:["#16110b","#201912","#f0a030"]},
+  {id:"violeta", name:"Violeta", c:["#120f1c","#1b1629","#9b7bff"]},
+  {id:"contraste", name:"Alto contraste", c:["#000000","#0a0a0a","#ffd400"]},
+];
+function loadConfig(){
+  try{ const c = JSON.parse(lsGet(CONFIG_KEY) || "null"); if(c) cfg = Object.assign(cfg, c); }catch(e){}
+  if(!THEMES.some(t => t.id === cfg.theme)) cfg.theme = "oscuro";
+  if(!cfg.appName) cfg.appName = document.documentElement.dataset.appname || "";
+  if(!Array.isArray(cfg.tabOrder)) cfg.tabOrder = null;
+  if(![90,180,365].includes(Number(cfg.staleDays))) cfg.staleDays = 180;
+  cfg.staleDays = Number(cfg.staleDays);
+}
+function saveConfig(){ lsSet(CONFIG_KEY, JSON.stringify(cfg)); }
+function applyTheme(){ document.documentElement.dataset.theme = cfg.theme; }
+function appName(){ return (cfg.appName||"").trim() || "Llavero"; }
+function slug(x){ return (x||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-zA-Z0-9]+/g,"_").replace(/^_+|_+$/g,"").toLowerCase() || "llavero"; }
+function applyAppName(){
+  $("appName").textContent = appName(); document.title = appName();
+  $("appVersionName").textContent = appName();
+}
+function downloadAppCopy(){
+  const clone = document.documentElement.cloneNode(true);
+  ["tabsMain","formGrid","results","statsRoot","dbPanels","dbCheck","tbody","theadRow","themeCards","orderList","notesList","toast","tip","storageWarn","trackBanner","backupInfo","tableHint","qCount","count"].forEach(id => { const e = clone.querySelector("#"+id); if(e){ e.innerHTML = ""; e.removeAttribute("style"); } });
+  clone.querySelectorAll(".open,.show").forEach(e => e.classList.remove("open","show"));
+  const pc = clone.querySelector("#pwConfirm"); if(pc) pc.setAttribute("style","display:none;");
+  clone.setAttribute("data-appname", appName());
+  const t = clone.querySelector("title"); if(t) t.textContent = appName();
+  downloadBlob("<!DOCTYPE html>\n" + clone.outerHTML, slug(appName()) + ".html", "text/html;charset=utf-8");
+  showToast("Copia descargada: " + slug(appName()) + ".html");
+}
+function updateFileHint(){ $("cfgFileName").textContent = slug($("cfgAppName").value.trim() || "Llavero") + ".html"; }
+function buildConfig(){
+  $("appVersion").textContent = APP_VERSION;
+  $("cfgAppName").value = appName(); updateFileHint();
+  $("cfgAppName").addEventListener("input", updateFileHint);
+  $("cfgAppSave").addEventListener("click", () => {
+    cfg.appName = $("cfgAppName").value.trim().slice(0,40); saveConfig(); applyAppName(); $("cfgAppName").value = appName(); updateFileHint();
+    showToast("Nombre guardado: " + appName());
+  });
+  $("cfgAppReset").addEventListener("click", () => { cfg.appName = ""; saveConfig(); applyAppName(); $("cfgAppName").value = appName(); updateFileHint(); });
+  $("cfgSaveCopy").addEventListener("click", downloadAppCopy);
+  $("themeCards").innerHTML = THEMES.map(t => `<button type="button" class="themecard" data-theme-id="${t.id}"><div class="swatch">${t.c.map(c => `<i style="background:${c}"></i>`).join("")}</div>${esc(t.name)}</button>`).join("");
+  $("themeCards").addEventListener("click", e => {
+    const b = e.target.closest("[data-theme-id]"); if(!b) return;
+    cfg.theme = b.dataset.themeId; saveConfig(); applyTheme(); markTheme();
+  });
+  $("cfgClip").value = String(cfg.clip);
+  $("cfgClip").addEventListener("change", e => { cfg.clip = Number(e.target.value); saveConfig(); });
+  $("cfgStale").value = String(cfg.staleDays);
+  $("cfgStale").addEventListener("change", e => { cfg.staleDays = Number(e.target.value); saveConfig(); });
+  $("cfgMask").checked = !!cfg.mask;
+  $("cfgMask").addEventListener("change", e => { cfg.mask = e.target.checked; saveConfig(); renderTable(); });
+  $("orderReset").addEventListener("click", () => { cfg.tabOrder = null; saveConfig(); buildTabs(); buildOrderList(); });
+  $("orderList").addEventListener("click", e => {
+    const b = e.target.closest("[data-mv]"); if(!b) return;
+    moveBy(b.dataset.id, Number(b.dataset.mv));
+  });
+  markTheme(); buildOrderList();
+}
+function markTheme(){ document.querySelectorAll(".themecard").forEach(b => b.classList.toggle("active", b.dataset.themeId === cfg.theme)); }
+function buildOrderList(){
+  const o = tabOrder();
+  $("orderList").innerHTML = o.map((id,i) => { const t = TABS.find(x => x.id === id); return `<div class="orderrow"><span>${esc(t.label)}</span><button class="cpbtn" data-mv="-1" data-id="${id}" ${i===0?"disabled":""} title="Subir">▲</button><button class="cpbtn" data-mv="1" data-id="${id}" ${i===o.length-1?"disabled":""} title="Bajar">▼</button></div>`; }).join("") +
+    `<div class="orderrow" style="opacity:.6;"><span>Configuración</span><span style="flex:none;font-size:11px;">fija a la derecha</span></div>`;
+}
+
+/* ---------- avisos y portapapeles ---------- */
+let toastTimer = null, clipTimer = null;
+function showToast(msg){
+  const t = $("toast"); t.textContent = msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("show"), 3200);
+}
+async function copyText(text, label){
+  let ok = false;
+  try{ await navigator.clipboard.writeText(text); ok = true; }
+  catch(e){
+    try{ const ta = document.createElement("textarea"); ta.value = text; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select(); ok = document.execCommand("copy"); document.body.removeChild(ta); }catch(e2){}
+  }
+  if(!ok){ showToast("No se pudo copiar: el navegador bloqueó el portapapeles."); return; }
+  clearTimeout(clipTimer);
+  if(cfg.clip > 0){
+    clipTimer = setTimeout(() => { try{ navigator.clipboard.writeText("").catch(() => {}); }catch(e){} }, cfg.clip * 1000);
+    showToast(label + " copiado · se borrará del portapapeles en " + cfg.clip + " s");
+  } else showToast(label + " copiado");
+}
+function exportCodesTxt(app, text){
+  const codes = (text||"").split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+  if(!codes.length){ alert("No hay códigos para exportar."); return; }
+  if(!confirm("Este .txt guarda los códigos en TEXTO SIMPLE. Guárdalo en una carpeta cifrada y bórralo cuando ya no lo necesites.\n\n¿Continuar?")) return;
+  const name = (app||"").trim() || "cuenta";
+  const slug = name.normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-zA-Z0-9]+/g,"_").replace(/^_+|_+$/g,"").toLowerCase() || "cuenta";
+  const body = "Códigos de recuperación — " + name + "\r\nExportado: " + todayLocal() + "\r\n\r\n" + codes.join("\r\n") + "\r\n";
+  downloadBlob(body, "codigos_" + slug + "_" + todayLocal() + ".txt", "text/plain;charset=utf-8");
+}
+
+/* ---------- ayuda contextual (iconos ⓘ) ---------- */
+function info(t){ return `<i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="${esc(t)}">i</i>`; }
+const tipEl = $("tip"); let tipPinned = null;
+function showTip(el){
+  tipEl.textContent = el.dataset.tip; tipEl.style.display = "block";
+  const r = el.getBoundingClientRect(), w = tipEl.offsetWidth, h = tipEl.offsetHeight;
+  let x = Math.min(Math.max(8, r.left + r.width/2 - w/2), window.innerWidth - w - 8);
+  let y = r.bottom + 8; if(y + h > window.innerHeight - 8) y = Math.max(8, r.top - h - 8);
+  tipEl.style.left = x + "px"; tipEl.style.top = y + "px";
+}
+function hideTip(){ tipEl.style.display = "none"; tipPinned = null; }
+document.addEventListener("mouseover", e => { const i = e.target.closest && e.target.closest(".info"); if(i && !tipPinned) showTip(i); });
+document.addEventListener("mouseout", e => { const i = e.target.closest && e.target.closest(".info"); if(i && !tipPinned) tipEl.style.display = "none"; });
+document.addEventListener("focusin", e => { const i = e.target.closest && e.target.closest(".info"); if(i && !tipPinned) showTip(i); });
+document.addEventListener("focusout", e => { const i = e.target.closest && e.target.closest(".info"); if(i && !tipPinned) tipEl.style.display = "none"; });
+document.addEventListener("click", e => {
+  const i = e.target.closest && e.target.closest(".info");
+  if(i){ e.preventDefault(); e.stopPropagation(); if(tipPinned === i) hideTip(); else { tipPinned = i; showTip(i); } }
+  else if(tipPinned) hideTip();
+}, true);
+document.addEventListener("keydown", e => { if(e.key === "Escape") hideTip(); });
+
+/* ---------- pestañas ---------- */
+const TABS = [
+  {id:"buscar", label:"Buscador", tip:"Encuentra una cuenta y copia su correo o contraseña sin mostrarla"},
+  {id:"agregar", label:"Agregar cuenta", tip:"Formulario para registrar una cuenta nueva o revisar una existente"},
+  {id:"datos", label:"Datos", tip:"Listado completo de cuentas (la tabla)"},
+  {id:"bases", label:"Base de datos", tip:"Valores de los desplegables: correos, usuarios, teléfonos, passkeys, apps 2FA y tarjetas"},
+  {id:"stats", label:"Estadísticas", tip:"2FA, correos más usados, categorías, contraseñas repetidas, alertas y evolución en el tiempo"},
+  {id:"io", label:"Importar / Exportar", tip:"Backups, CSV y plantilla"},
+];
+let curTab = "buscar", returnTab = null, dragId = null;
+function tabOrder(){
+  const ids = TABS.map(t => t.id);
+  const o = (cfg.tabOrder || []).filter(i => ids.includes(i));
+  ids.forEach(i => { if(!o.includes(i)) o.push(i); });
+  return o;
+}
+function buildTabs(){
+  $("tabsMain").innerHTML = tabOrder().map(id => { const t = TABS.find(x => x.id === id); return `<button class="tabbtn" draggable="true" data-tab="${id}" title="${esc(t.tip)}"></button>`; }).join("");
+  markTab();
+}
+function markTab(){
+  document.querySelectorAll(".tabbtn").forEach(b => {
+    const id = b.dataset.tab; b.classList.toggle("active", id === curTab);
+    if(id === "config") return;
+    const t = TABS.find(x => x.id === id);
+    b.textContent = t.label + (id === "agregar" && reviewIndex !== null ? " ●" : "");
+  });
+}
+function goTab(id){
+  curTab = id;
+  document.querySelectorAll(".tabpage").forEach(p => p.classList.toggle("active", p.id === "tab-" + id));
+  markTab(); hideTip();
+  if(id === "buscar") renderSearch();
+  if(id === "datos") renderTable();
+  if(id === "bases") renderDBManager();
+  if(id === "stats") renderStats();
+}
+$("tabbar").addEventListener("click", e => { const b = e.target.closest(".tabbtn"); if(b) goTab(b.dataset.tab); });
+function saveOrder(o){ cfg.tabOrder = o; saveConfig(); buildTabs(); buildOrderList(); }
+function moveBy(id, d){
+  const o = tabOrder(), i = o.indexOf(id), j = i + d;
+  if(i < 0 || j < 0 || j >= o.length) return;
+  o.splice(i,1); o.splice(j,0,id); saveOrder(o);
+}
+function endDrag(){ dragId = null; $("tabsMain").querySelectorAll(".dragging,.dragover").forEach(x => x.classList.remove("dragging","dragover")); }
+(function(){
+  const tm = $("tabsMain");
+  tm.addEventListener("dragstart", e => {
+    const b = e.target.closest(".tabbtn"); if(!b) return;
+    dragId = b.dataset.tab; b.classList.add("dragging"); e.dataTransfer.effectAllowed = "move";
+    try{ e.dataTransfer.setData("text/plain", dragId); }catch(_){}
+  });
+  tm.addEventListener("dragover", e => {
+    if(!dragId) return; e.preventDefault();
+    const b = e.target.closest(".tabbtn");
+    tm.querySelectorAll(".dragover").forEach(x => x.classList.remove("dragover"));
+    if(b && b.dataset.tab !== dragId) b.classList.add("dragover");
+  });
+  tm.addEventListener("drop", e => {
+    e.preventDefault(); const b = e.target.closest(".tabbtn");
+    if(b && dragId && b.dataset.tab !== dragId){
+      const o = tabOrder(), from = o.indexOf(dragId), to = o.indexOf(b.dataset.tab);
+      o.splice(from,1); o.splice(to,0,dragId); saveOrder(o);
+    }
+    endDrag();
+  });
+  tm.addEventListener("dragend", endDrag);
+})();
+
+/* ---------- base de datos (catálogos) ---------- */
+const RESERVED = ["No","No aplica"];
+function norm(x){ return fold(x).replace(/\s+/g," ").trim(); }
+function refsOf(r, k){
+  switch(k){
+    case "correos": return [r.correo, r.correorecuperacion].filter(v => v && !RESERVED.includes(v));
+    case "usuarios": return (r.usuarios && r.usuarios.values) || [];
+    case "telefonos": return (r.telefonos && r.telefonos.values) || [];
+    case "passkeys": return (r.passkey && r.passkey.values) || [];
+    case "apps2fa": return (r.app2fa && !RESERVED.includes(r.app2fa)) ? [r.app2fa] : [];
+    case "tarjetas": return (r.tarjeta && r.tarjeta.values) || [];
+  }
+  return [];
+}
+function replaceRef(r, k, from, to){
+  let ch = false;
+  const arr = a => { const out = []; (a||[]).forEach(v => { const nv = v === from ? to : v; if(v === from) ch = true; if(!out.includes(nv)) out.push(nv); }); return out; };
+  switch(k){
+    case "correos": if(r.correo === from){ r.correo = to; ch = true; } if(r.correorecuperacion === from){ r.correorecuperacion = to; ch = true; } break;
+    case "usuarios": if(r.usuarios) r.usuarios.values = arr(r.usuarios.values); break;
+    case "telefonos": if(r.telefonos) r.telefonos.values = arr(r.telefonos.values); break;
+    case "passkeys": if(r.passkey) r.passkey.values = arr(r.passkey.values); break;
+    case "apps2fa": if(r.app2fa === from){ r.app2fa = to; ch = true; } break;
+    case "tarjetas": if(r.tarjeta) r.tarjeta.values = arr(r.tarjeta.values); break;
+  }
+  return ch;
+}
+function usageMap(k){ const m = new Map(); rows.forEach(r => new Set(refsOf(r,k)).forEach(v => m.set(v, (m.get(v)||0) + 1))); return m; }
+function dbBusy(){ return reviewIndex !== null || hasProgress(); }
+function renderDBPanel(k){ renderDBManager(); }
+function renderDBManager(){
+  const used = {}, orphans = {}, unused = {}, dups = {};
+  let nO = 0, nU = 0, nD = 0;
+  DB_META.forEach(m => {
+    used[m.k] = usageMap(m.k);
+    orphans[m.k] = [...used[m.k].keys()].filter(v => !DB[m.k].includes(v));
+    unused[m.k] = DB[m.k].filter(v => !used[m.k].has(v));
+    const seen = {}; dups[m.k] = [];
+    DB[m.k].forEach(v => { const n = norm(v); if(seen[n]) { dups[m.k].push(v); dups[m.k].push(seen[n]); } else seen[n] = v; });
+    nO += orphans[m.k].length; nU += unused[m.k].length; nD += dups[m.k].length;
+  });
+  const lines = [];
+  if(nO) lines.push(`<div class="alertrow"><span>⚠ <b>${nO}</b> valor(es) usados en tus cuentas que no están en la base de datos.</span><button class="rowbtn btn-secondary" data-dbfix="orphans">Agregar a la base</button></div>`);
+  if(nD) lines.push(`<div class="alertrow"><span>⚠ Posibles duplicados (mismo texto con otras mayúsculas o espacios): resaltados abajo. Usa ✎ para fusionarlos.</span></div>`);
+  if(nU) lines.push(`<div class="alertrow"><span>ℹ <b>${nU}</b> valor(es) sin uso en ninguna cuenta.</span><button class="rowbtn btn-secondary" data-dbfix="unused">Quitar sin uso</button></div>`);
+  $("dbCheck").innerHTML = `<h2 class="secttitle">Consistencia ${info("Renombrar un valor (✎) lo actualiza en todas las cuentas que lo usan; si el nuevo nombre ya existe, se fusionan. El contador muestra en cuántas cuentas se usa cada valor.")}</h2>` +
+    (lines.length ? lines.join("") : '<p class="sub" style="margin:0;">✔ Los valores de tus cuentas y de la base de datos coinciden.</p>');
+  $("dbPanels").innerHTML = DB_META.map(m => {
+    const items = DB[m.k].map((v,i) => ({v,i})).sort((a,b) => a.v.localeCompare(b.v, "es"));
+    return `<div><h2 class="secttitle">${m.icon} ${esc(m.title)} <span class="count">${DB[m.k].length}</span>${info(m.help)}</h2>
+      <div class="dbrow"><input id="new_${m.k}" type="${m.type||"text"}" placeholder="${esc(m.ph)}"><button class="btn-secondary" data-dbadd="${m.k}">+ Agregar</button></div>
+      <div>${items.length ? items.map(({v,i}) => { const n = used[m.k].get(v) || 0; return `<div class="dbitem"><span class="dbv">${esc(v)}${dups[m.k].includes(v) ? ' <span class="pill warn">dup.</span>' : ""}</span><span class="dbn">${n ? n + " cuenta" + (n === 1 ? "" : "s") : "sin uso"}</span><button class="cpbtn" data-dbren="${m.k}" data-i="${i}" title="Renombrar o fusionar">✎</button><button class="cpbtn" data-dbdel="${m.k}" data-i="${i}" title="Borrar de la lista">✕</button></div>`; }).join("") : '<p class="sub" style="margin:4px 0;">Aún no hay registros.</p>'}</div></div>`;
+  }).join("");
+}
+function renameDbItem(k, i){
+  if(dbBusy()){ alert("Termina o cancela la cuenta que estás llenando antes de renombrar valores."); return; }
+  const old = DB[k][i];
+  let nv = prompt("Nuevo nombre para «" + old + "».\nSe actualizará en todas las cuentas que lo usan. Si ya existe, se fusionan:", old);
+  if(nv === null) return; nv = nv.trim();
+  if(!nv || nv === old) return;
+  const exists = DB[k].some((x,j) => j !== i && x === nv);
+  if(exists && !confirm("«" + nv + "» ya existe: se fusionarán los dos valores. ¿Continuar?")) return;
+  let n = 0; rows.forEach(r => { if(replaceRef(r, k, old, nv)) n++; });
+  if(exists) DB[k].splice(i,1); else DB[k][i] = nv;
+  saveDBAll(); if(n) saveRows();
+  renderDBManager(); refreshDbUsers(k); renderTable();
+  showToast(n ? "Actualizado en " + n + " cuenta(s)." : "Valor renombrado.");
+}
+$("dbPanels").addEventListener("click", e => {
+  const add = e.target.closest("[data-dbadd]");
+  if(add){ const k = add.dataset.dbadd, inp = $("new_"+k), v = inp.value.trim(); if(!v) return; addDB(k, v); saveDBAll(); renderDBManager(); refreshDbUsers(k); return; }
+  const ren = e.target.closest("[data-dbren]");
+  if(ren){ renameDbItem(ren.dataset.dbren, Number(ren.dataset.i)); return; }
+  const del = e.target.closest("[data-dbdel]");
+  if(del){
+    const k = del.dataset.dbdel, i = Number(del.dataset.i), n = usageMap(k).get(DB[k][i]) || 0;
+    if(confirm(n ? "«" + DB[k][i] + "» se usa en " + n + " cuenta(s). Las cuentas conservan el texto, pero ya no saldrá en la lista. ¿Borrar?" : "¿Borrar «" + DB[k][i] + "» de la lista?")){
+      DB[k].splice(i,1); saveDBAll(); renderDBManager(); refreshDbUsers(k);
+    }
+  }
+});
+$("dbPanels").addEventListener("keydown", e => {
+  if(e.key === "Enter" && e.target.id && e.target.id.startsWith("new_")){ e.preventDefault(); e.target.parentElement.querySelector("[data-dbadd]").click(); }
+});
+$("dbCheck").addEventListener("click", e => {
+  const b = e.target.closest("[data-dbfix]"); if(!b) return;
+  if(b.dataset.dbfix === "orphans"){ backfillDB(rows); }
+  if(b.dataset.dbfix === "unused"){
+    if(!confirm("Se quitarán de la base de datos los valores que ninguna cuenta usa (incluidos los de ejemplo, como Windows Hello si no lo usas). ¿Continuar?")) return;
+    DB_META.forEach(m => { const u = usageMap(m.k); DB[m.k] = DB[m.k].filter(v => u.has(v)); });
+    saveDBAll();
+  }
+  renderDBManager(); DB_META.forEach(m => refreshDbUsers(m.k));
+});
+function refreshDbUsers(k){
+  FIELDS.forEach(f => {
+    if(f.db !== k) return;
+    if(f.type === "dbselect") rebuildDbSelect(f);
+    if(f.type === "chipmulti" || f.type === "statuschips") rebuildChipSelect(f);
+  });
+}
+
+/* ---------- formulario ---------- */
+function buildForm(){
+  $("formGrid").innerHTML = GROUPS.map(g => {
+    const fs = FIELDS.filter(f => f.g === g.id);
+    return `<section class="sect"><h3>${esc(g.title)}<span class="sp" id="gp_${g.id}"></span></h3><div class="grid">` +
+      fs.map(f => `<div class="field${f.wide ? " wide" : ""}" data-key="${f.key}"><label><span class="lt">${esc(f.label)}${f.help ? info(f.help) : ""}</span><span class="rv"></span></label>${T[f.type].build(f)}</div>`).join("") +
+      `</div></section>`;
+  }).join("");
+  FIELDS.forEach(f => { if(T[f.type].wire) T[f.type].wire(f); });
+  const g = $("formGrid");
+  ["input","change"].forEach(evt => g.addEventListener(evt, ev => { const fl = ev.target.closest(".field"); if(fl) touchField(fl.dataset.key, ev); }));
+  g.addEventListener("click", ev => {
+    const chip = ev.target.closest("[data-chip]");
+    if(chip){ const f = FMAP[chip.dataset.chip]; chips[f.key].splice(Number(chip.dataset.i), 1); renderChips(f); rebuildChipSelect(f); touchField(f.key); return; }
+    const cf = ev.target.closest("[data-confirm]");
+    if(cf) confirmField(cf.dataset.confirm);
+  });
+}
+function buildHeader(){
+  $("theadRow").innerHTML = `<th>Acciones</th>` + FIELDS.map(f => `<th>${esc(f.label)}</th>`).join("") + `<th>FECHA</th>`;
+}
+function fieldEl(key){ return $("formGrid").querySelector('.field[data-key="'+key+'"]'); }
+function isDone(key){ const f = FMAP[key]; return !!reviewed[key] && isFilled(f, getFieldValue(f)); }
+
+function refreshTrack(key, skipProgress){
+  const f = FMAP[key], el = fieldEl(key), rv = el.querySelector(".rv");
+  const v = getFieldValue(f), filled = isFilled(f, v), done = !!reviewed[key] && filled;
+  el.classList.toggle("done", done); el.classList.toggle("pending", !done);
+  if(done) rv.innerHTML = '<span class="rvdone">✔ Listo</span>';
+  else if(filled){
+    const txt = (f.defaultOff && v.status === "NA") ? "✓ Confirmar: " + (f.naLabel || "No aplica").toLowerCase() : "✓ Correcto";
+    rv.innerHTML = `<button type="button" class="rvbtn" data-confirm="${key}">${esc(txt)}</button>`;
+  } else rv.innerHTML = `<span class="rvmiss">${esc(T[f.type].hint ? T[f.type].hint(f, v) : "Falta llenar")}</span>`;
+  if(!skipProgress) updateProgress();
+}
+function refreshAllTracking(){ FIELDS.forEach(f => refreshTrack(f.key, true)); updateProgress(); }
+function confirmField(key){ const f = FMAP[key]; if(!isFilled(f, getFieldValue(f))) return; reviewed[key] = true; refreshTrack(key); }
+function touchField(key, ev){
+  if(ev && ev.target){
+    const t = ev.target;
+    if(t.dataset && t.dataset.skip){ delete t.dataset.skip; return; }
+    if(t.value === "__new__") return;
+    if(t.id && t.id.startsWith("sel_")) return;   // elegir en la lista no cambia nada hasta pulsar "+ Agregar"
+  }
+  const f = FMAP[key];
+  reviewed[key] = isFilled(f, getFieldValue(f));
+  refreshTrack(key);
+}
+function updateProgress(){
+  const n = FIELDS.filter(f => isDone(f.key)).length, all = n === FIELDS.length;
+  const c = $("trackCount"); if(c) c.textContent = n;
+  GROUPS.forEach(g => {
+    const fs = FIELDS.filter(f => f.g === g.id), d = fs.filter(f => isDone(f.key)).length, el = $("gp_"+g.id);
+    if(el) el.textContent = (d === fs.length ? "✔ " : "") + d + " / " + fs.length;
+  });
+  $("btnAdd").disabled = !all;
+  $("btnAdd").title = all ? "" : "Faltan campos por llenar o confirmar.";
+}
+function renderBanner(){
+  const N = FIELDS.length;
+  const help = info("Cada casilla se marca en rojo hasta que la llenes o la confirmes, y pasa a verde cuando está lista. En los campos que vienen desactivados (Face ID, PIN de transacciones…) solo confirma «no aplica». Para guardar, todas deben estar en verde.");
+  $("trackBanner").innerHTML = reviewIndex === null
+    ? `<div class="banner">➕ <b>Cuenta nueva</b> — <b><span id="trackCount">0</span> de ${N}</b> campos listos ${help}</div>`
+    : `<div class="banner">🔍 <b>Modo revisión:</b> ${esc((rows[reviewIndex] && rows[reviewIndex].app) || "(sin nombre)")} — <b><span id="trackCount">0</span> de ${N}</b> campos revisados ${help}</div>`;
+}
+function clearForm(){
+  reviewed = {};
+  FIELDS.forEach(f => setFieldValue(f, defaultValue(f)));
+  renderBanner(); refreshAllTracking();
+}
+function startReview(i){
+  reviewIndex = i; reviewed = {};
+  const r = rows[i];
+  FIELDS.forEach(f => setFieldValue(f, r[f.key] !== undefined ? r[f.key] : defaultValue(f)));
+  $("btnAdd").textContent = "💾 Guardar revisión (sobreescribir)";
+  $("btnClearForm").textContent = "Cancelar revisión";
+  renderBanner(); refreshAllTracking(); markTab();
+}
+function exitReview(){
+  reviewIndex = null;
+  $("btnAdd").textContent = "+ Agregar cuenta nueva";
+  $("btnClearForm").textContent = "Limpiar formulario";
+  clearForm();
+  if(returnTab){ const t = returnTab; returnTab = null; goTab(t); } else markTab();
+}
+const hasProgress = () => Object.values(reviewed).some(Boolean);
+function requestReview(i){
+  if(reviewIndex !== null && !confirm("Ya tienes una revisión en curso. Si abres otra se pierde su progreso. ¿Continuar?")) return;
+  if(reviewIndex === null && hasProgress() && !confirm("Tienes una cuenta nueva a medio llenar. Si abres una revisión se descarta. ¿Continuar?")) return;
+  if(curTab !== "agregar") returnTab = curTab;
+  startReview(i); goTab("agregar"); window.scrollTo({top:0, behavior:"smooth"});
+}
+
+$("btnAdd").addEventListener("click", () => {
+  if(FIELDS.some(f => !isDone(f.key))){ alert("Aún hay campos en rojo: llénalos o confírmalos para guardar."); return; }
+  const vals = {}; FIELDS.forEach(f => vals[f.key] = getFieldValue(f));
+  if(reviewIndex === null){
+    const dup = rows.some(r => (r.app||"").trim().toLowerCase() === vals.app.trim().toLowerCase() && r.correo === vals.correo);
+    if(dup && !confirm("Ya existe una cuenta «" + vals.app + "» con ese mismo correo.\n\n¿Guardar otra de todos modos? (Para actualizar la existente usa «Revisar» en la tabla.)")) return;
+  }
+  vals.fecha = todayLocal(); vals.__v4 = true;
+  const wasReview = reviewIndex !== null;
+  vals.id = wasReview ? rows[reviewIndex].id : uid();
+  if(wasReview){ rows[reviewIndex] = vals; saveRows(); logEvent(vals, "revisión"); saveHist(); exitReview(); } else { rows.push(vals); saveRows(); logEvent(vals, "alta"); saveHist(); clearForm(); }
+  renderTable(); showToast(wasReview ? "Revisión guardada." : "Cuenta agregada.");
+});
+$("btnClearForm").addEventListener("click", () => {
+  if(reviewIndex !== null){
+    if(hasProgress() && !confirm("¿Cancelar la revisión? Se pierde el progreso y no se guarda nada.")) return;
+    exitReview();
+  } else { if(hasProgress() && !confirm("¿Limpiar el formulario?")) return; clearForm(); }
+});
+$("btnClearAll").addEventListener("click", () => {
+  if(confirm("Esto borrará TODAS las cuentas guardadas en este navegador. ¿Continuar?")){
+    rows = []; saveRows(); if(reviewIndex !== null) exitReview(); renderTable();
+  }
+});
+
+/* ---------- tabla ---------- */
+function cellHtml(f, r, i){
+  const v = r[f.key], txt = esc(fieldDisplay(f, v, cfg.mask));
+  if(f.key === "correo" && v && v !== "No aplica") return txt + `<button class="cpbtn" data-copy="correo" data-i="${i}" title="Copiar correo">📋</button>`;
+  if(f.key === "password" && v && !v.na && v.value) return txt + `<button class="cpbtn" data-copy="password" data-i="${i}" title="Copiar contraseña sin mostrarla">📋</button>`;
+  if(f.key === "recoverykey" && v && v.status === "SI" && v.value) return txt + `<button class="cpbtn" data-copy="recoverykey" data-i="${i}" title="Copiar códigos">📋</button><button class="cpbtn" data-txt="${i}" title="Exportar códigos a .txt">⬇</button>`;
+  return txt;
+}
+function renderTable(){
+  const filter = ($("search").value || "").toLowerCase();
+  const list = rows.map((r,i) => ({r,i})).filter(({r}) => !filter || FIELDS.some(f => fieldDisplay(f, r[f.key], true).toLowerCase().includes(filter)) || (r.fecha||"").includes(filter));
+  $("tbody").innerHTML = list.map(({r,i}) => `<tr>
+      <td><button class="rowbtn btn-secondary" data-review="${i}">Revisar</button> <button class="rowbtn btn-danger" data-del="${i}">Borrar</button></td>
+      ${FIELDS.map(f => `<td>${cellHtml(f, r, i)}</td>`).join("")}
+      <td>${esc(r.fecha||"")}</td></tr>`).join("");
+  $("count").textContent = rows.length + " cuenta(s)";
+  const hint = $("tableHint");
+  if(rows.length === 0){
+    hint.className = "banner";
+    hint.innerHTML = "Aún no hay cuentas guardadas en este archivo. Restaura tu backup en <b>Importar / Exportar</b>, importa tu tabla en CSV, o agrega una cuenta en <b>Agregar cuenta</b>.";
+  } else { hint.className = "sub"; hint.innerHTML = ""; }
+}
+$("tbody").addEventListener("click", e => {
+  const rv = e.target.closest("[data-review]");
+  if(rv){ requestReview(Number(rv.dataset.review)); return; }
+  const del = e.target.closest("[data-del]");
+  if(del){
+    if(confirm("¿Borrar esta cuenta permanentemente?")){ rows.splice(Number(del.dataset.del), 1); saveRows(); if(reviewIndex !== null) exitReview(); renderTable(); }
+    return;
+  }
+  const cp = e.target.closest("[data-copy]");
+  if(cp){
+    const r = rows[Number(cp.dataset.i)], k = cp.dataset.copy;
+    if(k === "correo") copyText(r.correo, "Correo");
+    if(k === "password") copyText(r.password.value, "Contraseña");
+    if(k === "recoverykey") copyText(r.recoverykey.value, "Códigos");
+    return;
+  }
+  const tx = e.target.closest("[data-txt]");
+  if(tx){ const r = rows[Number(tx.dataset.txt)]; exportCodesTxt(r.app, r.recoverykey.value); }
+});
+$("search").addEventListener("input", renderTable);
+
+/* ---------- exportar ---------- */
+function csvEscape(v){ v = String(v); if(/[",\n\r]/.test(v)) v = '"' + v.replace(/"/g,'""') + '"'; return v; }
+function csvHeaders(){ const h = []; FIELDS.forEach(f => T[f.type].csvH(f).forEach(x => h.push(x))); h.push("FECHA"); return h; }
+function toCSV(){
+  const lines = [csvHeaders().map(csvEscape).join(",")];
+  rows.forEach(r => {
+    const cells = []; FIELDS.forEach(f => T[f.type].toCsv(f, r[f.key] !== undefined ? r[f.key] : defaultValue(f)).forEach(x => cells.push(x)));
+    cells.push(r.fecha || ""); lines.push(cells.map(csvEscape).join(","));
+  });
+  return lines.join("\r\n");
+}
+function downloadBlob(content, filename, type){
+  const blob = new Blob([content], {type}); const url = URL.createObjectURL(blob);
+  const a = document.createElement("a"); a.href = url; a.download = filename;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+}
+$("btnExportCSV").addEventListener("click", () => downloadBlob("\uFEFF" + toCSV(), slug(appName()) + "_cuentas_" + todayLocal() + ".csv", "text/csv;charset=utf-8;"));
+function backupPayload(){ return {rows, DB, mejoras:notes, historial:hist}; }
+$("btnExportJSON").addEventListener("click", () => {
+  if(!confirm("Este archivo guarda tus contraseñas en TEXTO SIMPLE (sin cifrar).\n\n¿Continuar? Si no lo necesitas, usa 🔒 Backup cifrado.")) return;
+  downloadBlob(JSON.stringify(backupPayload(), null, 2), slug(appName()) + "_backup_sin_cifrar_" + todayLocal() + ".json", "application/json");
+  markBackup("sin cifrar");
+});
+
+/* ---------- backup cifrado (clave maestra → PBKDF2-SHA256 → AES-256-GCM) ---------- */
+const ENC_FORMAT = "gestor-credenciales-cifrado", PBKDF2_ITER = 600000, MIN_PASS = 10;
+const _enc = new TextEncoder(), _dec = new TextDecoder();
+function b64(buf){ const u = new Uint8Array(buf); let s = ""; for(let i=0;i<u.length;i+=0x8000) s += String.fromCharCode.apply(null, u.subarray(i,i+0x8000)); return btoa(s); }
+function unb64(str){ const bin = atob(str); const u = new Uint8Array(bin.length); for(let i=0;i<bin.length;i++) u[i] = bin.charCodeAt(i); return u; }
+function cryptoOk(){
+  if(window.crypto && crypto.subtle) return true;
+  alert("Este navegador no permite cifrar aquí. Abre el archivo directo en Chrome, Edge o Firefox (no desde un visor).");
+  return false;
+}
+async function deriveKey(pass, salt, iter){
+  const base = await crypto.subtle.importKey("raw", _enc.encode(pass.normalize("NFKC")), "PBKDF2", false, ["deriveKey"]);
+  return crypto.subtle.deriveKey({name:"PBKDF2", salt, iterations:iter, hash:"SHA-256"}, base, {name:"AES-GCM", length:256}, false, ["encrypt","decrypt"]);
+}
+async function encryptBackup(pass, obj){
+  const salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+  const key = await deriveKey(pass, salt, PBKDF2_ITER);
+  const ct = await crypto.subtle.encrypt({name:"AES-GCM", iv}, key, _enc.encode(JSON.stringify(obj)));
+  return {format:ENC_FORMAT, version:1, kdf:"PBKDF2-SHA256", iterations:PBKDF2_ITER, cipher:"AES-256-GCM", salt:b64(salt), iv:b64(iv), data:b64(ct)};
+}
+async function decryptBackup(pass, file){
+  const key = await deriveKey(pass, unb64(file.salt), file.iterations || PBKDF2_ITER);
+  const pt = await crypto.subtle.decrypt({name:"AES-GCM", iv:unb64(file.iv)}, key, unb64(file.data));
+  return JSON.parse(_dec.decode(pt));
+}
+function askPassword({title, msg, confirmField}){
+  return new Promise(resolve => {
+    const m = $("pwModal"), a = $("pwInput"), c = $("pwConfirm"), err = $("pwErr"), ok = $("pwOk"), cancel = $("pwCancel");
+    $("pwTitle").textContent = title; $("pwMsg").textContent = msg;
+    a.value = ""; c.value = ""; err.textContent = ""; c.style.display = confirmField ? "block" : "none";
+    m.classList.add("open"); a.focus();
+    const done = v => { m.classList.remove("open"); a.value = ""; c.value = ""; ok.onclick = cancel.onclick = null; m.onkeydown = null; resolve(v); };
+    ok.onclick = () => {
+      const v = a.value;
+      if(!v){ err.textContent = "Escribe la clave."; return; }
+      if(confirmField){
+        if(v.length < MIN_PASS){ err.textContent = "Usa al menos " + MIN_PASS + " caracteres (mejor una frase larga)."; return; }
+        if(v !== c.value){ err.textContent = "Las dos claves no coinciden."; return; }
+      }
+      done(v);
+    };
+    cancel.onclick = () => done(null);
+    m.onkeydown = e => { if(e.key === "Enter") ok.onclick(); if(e.key === "Escape") cancel.onclick(); };
+  });
+}
+$("btnExportEnc").addEventListener("click", async () => {
+  if(!cryptoOk()) return;
+  if(rows.length === 0 && !confirm("No hay cuentas guardadas. ¿Crear el backup cifrado de todos modos?")) return;
+  const pass = await askPassword({title:"🔒 Clave maestra del backup", msg:"Con esta clave se cifra el archivo. Si la olvidas NO hay forma de recuperarlo: guárdala en un lugar seguro, aparte del backup.", confirmField:true});
+  if(pass === null) return;
+  try{
+    const file = await encryptBackup(pass, backupPayload());
+    downloadBlob(JSON.stringify(file, null, 2), slug(appName()) + "_backup_cifrado_" + todayLocal() + ".json", "application/json");
+    markBackup("cifrado");
+  }catch(err){ alert("No se pudo cifrar: " + err.message); }
+});
+function markBackup(kind){ lsSet(BACKUP_KEY, JSON.stringify({d:todayLocal(), kind})); showBackupInfo(); }
+function showBackupInfo(){
+  let info = null; try{ info = JSON.parse(lsGet(BACKUP_KEY) || "null"); }catch(e){}
+  $("backupInfo").innerHTML = info
+    ? "Último backup en este navegador: <b>" + esc(info.d) + "</b> (" + esc(info.kind) + ")."
+    : "<span style='color:var(--warn)'>Aún no has hecho ningún backup desde este navegador.</span> Usa 🔒 Backup cifrado.";
+}
+
+/* ---------- importar backup (cifrado o no) ---------- */
+$("btnImportJSONTrigger").addEventListener("click", () => $("importJSONInput").click());
+function applyBackupData(data){
+  let imported = [];
+  if(Array.isArray(data)) imported = data.map(migrateRow);
+  else if(data && data.rows) imported = data.rows.map(migrateRow);
+  else throw new Error("El archivo no tiene el formato de un backup de esta app.");
+  if(rows.length > 0 && !confirm("Ya tienes " + rows.length + " cuenta(s) en esta app.\nLas " + imported.length + " del backup se AGREGARÁN al final (puede haber duplicados).\n\n¿Continuar?")) return;
+  if(data.DB) DB_META.forEach(m => (data.DB[m.k]||[]).forEach(v => addDB(m.k, v)));
+  if(Array.isArray(data.mejoras)) data.mejoras.forEach(n => { if(n && n.id && !notes.some(x => x.id === n.id)) notes.push(n); });
+  imported.forEach(r => { if(rows.some(x => x.id === r.id)) r.id = uid(); });
+  if(Array.isArray(data.historial)) data.historial.forEach(ev => { if(ev && ev.id && !hist.some(h => h.id === ev.id && h.fecha === ev.fecha && h.tipo === ev.tipo)) hist.push(ev); });
+  rows = rows.concat(imported); saveRows(); saveNotes(); saveHist();
+  backfillDB(imported);
+  DB_META.forEach(m => { renderDBPanel(m.k); refreshDbUsers(m.k); });
+  renderTable(); renderNotes();
+  alert("Se importaron " + imported.length + " cuenta(s) del backup.");
+}
+$("importJSONInput").addEventListener("change", e => {
+  const file = e.target.files[0]; if(!file) return;
+  const input = e.target, reader = new FileReader();
+  reader.onload = async evt => {
+    try{
+      let data = JSON.parse(evt.target.result);
+      if(data && data.format === ENC_FORMAT){
+        if(!cryptoOk()) return;
+        const pass = await askPassword({title:"🔓 Backup cifrado", msg:"Escribe la clave maestra con la que se creó este backup.", confirmField:false});
+        if(pass === null) return;
+        try{ data = await decryptBackup(pass, data); }
+        catch(err){ alert("Clave incorrecta o el archivo está dañado. No se importó nada."); return; }
+      }
+      applyBackupData(data);
+    }catch(err){ alert("No se pudo leer el archivo: " + err.message); }
+    finally{ input.value = ""; }
+  };
+  reader.readAsText(file);
+});
+
+/* ---------- plantilla e importación CSV ---------- */
+const EXAMPLE = {
+  categoria:CATEGORIAS[0], app:"ejemplo.com", usuarios:{na:false, values:["usuario1","usuario2"]}, correo:"correo@ejemplo.com",
+  password:{na:false, value:"ClaveDeEjemplo123"}, pwlen:{status:"SI", min:"8", max:"64"}, faceid:{status:"NA"},
+  passkey:{status:"SI", values:["Windows Hello","Google Password Manager"]}, app2fa:"Google Authenticator",
+  telefonos:{status:"NO", values:[]}, correorecuperacion:"No aplica", recoverykey:{status:"SI", value:"ABCD-1234\nEFGH-5678"},
+  pin:{status:"NO", value:""}, pintrans:{status:"NA", value:""}, codigoaut:{status:"NA", value:""},
+  preguntaseg:{status:"NA", pregunta:"", respuesta:""}, tarjeta:{status:"SI", values:["Visa ···4417"]},
+  estado:"ACTIVA", prioridad:"N/A", hackeada:"NO", notas:{na:true, value:""},
+};
+$("btnTemplate").addEventListener("click", () => {
+  const cells = []; FIELDS.forEach(f => T[f.type].toCsv(f, EXAMPLE[f.key]).forEach(x => cells.push(x))); cells.push(todayLocal());
+  downloadBlob("﻿" + [csvHeaders().map(csvEscape).join(","), cells.map(csvEscape).join(",")].join("\r\n"), slug(appName()) + "_plantilla.csv", "text/csv;charset=utf-8;");
+});
+function detectDelimiter(text){
+  const first = (text.split(/\r?\n/)[0] || "");
+  const counts = {",": (first.match(/,/g)||[]).length, ";": (first.match(/;/g)||[]).length, "\t": (first.match(/\t/g)||[]).length};
+  let best = ",", n = counts[","];
+  [";","\t"].forEach(d => { if(counts[d] > n){ best = d; n = counts[d]; } });
+  return best;
+}
+function normalizeHeader(s){ return (s||"").toString().trim().toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-z0-9 ]/g," ").replace(/\s+/g," ").trim(); }
+function parseCSVText(text, delimiter){
+  delimiter = delimiter || ",";
+  const table = []; let cur = [], field = "", inQ = false;
+  for(let i=0;i<text.length;i++){
+    const c = text[i];
+    if(inQ){ if(c === '"'){ if(text[i+1] === '"'){ field += '"'; i++; } else inQ = false; } else field += c; }
+    else {
+      if(c === '"') inQ = true;
+      else if(c === delimiter){ cur.push(field); field = ""; }
+      else if(c === '\r'){ }
+      else if(c === '\n'){ cur.push(field); table.push(cur); cur = []; field = ""; }
+      else field += c;
+    }
+  }
+  if(field.length || cur.length){ cur.push(field); table.push(cur); }
+  return table.filter(r => r.some(c => (c||"").trim() !== ""));
+}
+$("btnImportCSVTrigger").addEventListener("click", () => $("importCSVInput").click());
+$("importCSVInput").addEventListener("change", e => {
+  const file = e.target.files[0]; if(!file) return;
+  const input = e.target, reader = new FileReader();
+  reader.onload = evt => {
+    try{
+      const text = evt.target.result.replace(/^﻿/, "");
+      const delimiter = detectDelimiter(text), table = parseCSVText(text, delimiter);
+      if(table.length < 1){ alert("El archivo está vacío."); return; }
+      const idx = {}; table[0].map(normalizeHeader).forEach((h,i) => { if(!(h in idx)) idx[h] = i; });
+      if(FIELDS.filter(f => idx[normalizeHeader(f.label)] !== undefined).length === 0){
+        alert("No reconocí ninguno de los encabezados del archivo.\n\nEncabezados encontrados:\n" + table[0].join(" | ") + "\n\nUsa la Plantilla CSV como base y no cambies los nombres de columna.");
+        return;
+      }
+      const imported = [];
+      table.slice(1).forEach(cols => {
+        const get = h => { const i = idx[normalizeHeader(h)]; return i === undefined ? undefined : cols[i]; };
+        const vals = {}; FIELDS.forEach(f => vals[f.key] = T[f.type].fromCsv(f, get));
+        const fe = get("FECHA"); vals.fecha = (fe && fe.trim()) ? fe.trim() : todayLocal(); vals.__v4 = true; vals.id = uid();
+        imported.push(vals);
+      });
+      rows = rows.concat(imported); saveRows(); backfillDB(imported); imported.forEach(r => logEvent(r, "importación", r.fecha)); saveHist();
+      DB_META.forEach(m => { renderDBPanel(m.k); refreshDbUsers(m.k); });
+      renderTable();
+      const dn = delimiter === "\t" ? "tabulación" : (delimiter === ";" ? "punto y coma" : "coma");
+      alert("Se importaron " + imported.length + " cuenta(s) del CSV (separador detectado: " + dn + ").");
+    }catch(err){ alert("No se pudo leer el CSV: " + err.message); }
+    finally{ input.value = ""; }
+  };
+  reader.readAsText(file);
+});
+
+/* ---------- panel de mejoras (siempre arriba) ---------- */
+function loadNotes(){ try{ notes = JSON.parse(lsGet(NOTES_KEY) || "[]"); if(!Array.isArray(notes)) notes = []; }catch(e){ notes = []; } }
+function saveNotes(){ lsSet(NOTES_KEY, JSON.stringify(notes)); }
+function renderNotes(){
+  const pend = notes.filter(n => !n.done).length;
+  $("notesToggle").textContent = "📝 " + pend + " pendiente" + (pend === 1 ? "" : "s") + " · " + notes.length + " en total " + ($("notesPanel").classList.contains("open") ? "▴" : "▾");
+  $("notesList").innerHTML = (notes.length
+    ? notes.slice().reverse().map(n => `<div class="noteitem ${n.done ? "done" : ""}"><input type="checkbox" data-ndone="${esc(n.id)}" ${n.done ? "checked" : ""} title="Marcar como hecha"><span class="nt">${esc(n.text)}</span><span class="nd">${esc(n.date)}</span><button data-ndel="${esc(n.id)}" title="Borrar">✕</button></div>`).join("")
+    : '<p class="sub" style="margin:4px 0;">Aún no hay notas. Escribe una arriba y pulsa Enter.</p>') +
+    `<div class="notesfoot"><button class="btn-secondary rowbtn" data-nact="copy">📋 Copiar pendientes</button><button class="btn-secondary rowbtn" data-nact="txt">⬇ Exportar .txt</button><button class="btn-secondary rowbtn" data-nact="clean">Borrar las hechas</button></div>`;
+}
+function addNote(){
+  const inp = $("noteInput"), text = inp.value.trim(); if(!text) return;
+  notes.push({id: Date.now().toString(36) + Math.random().toString(36).slice(2,6), text, date: todayLocal(), done:false});
+  inp.value = ""; saveNotes(); renderNotes(); showToast("Nota guardada.");
+}
+$("noteAdd").addEventListener("click", addNote);
+$("noteInput").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); addNote(); } });
+$("notesToggle").addEventListener("click", () => { $("notesPanel").classList.toggle("open"); renderNotes(); });
+$("notesList").addEventListener("click", e => {
+  const dn = e.target.closest("[data-ndone]");
+  if(dn){ const n = notes.find(x => x.id === dn.dataset.ndone); if(n){ n.done = dn.checked; saveNotes(); renderNotes(); } return; }
+  const dl = e.target.closest("[data-ndel]");
+  if(dl){ notes = notes.filter(x => x.id !== dl.dataset.ndel); saveNotes(); renderNotes(); return; }
+  const act = e.target.closest("[data-nact]"); if(!act) return;
+  if(act.dataset.nact === "copy"){
+    const t = notes.filter(n => !n.done).map(n => "- " + n.text).join("\n");
+    if(!t){ showToast("No hay notas pendientes."); return; }
+    navigator.clipboard.writeText(t).then(() => showToast("Notas pendientes copiadas."), () => showToast("No se pudo copiar."));
+  }
+  if(act.dataset.nact === "txt"){
+    if(!notes.length){ showToast("No hay notas para exportar."); return; }
+    downloadBlob("Mejoras para " + appName() + " (" + todayLocal() + ")\r\n\r\n" + notes.map(n => (n.done ? "[x] " : "[ ] ") + n.text + "  (" + n.date + ")").join("\r\n") + "\r\n", slug(appName()) + "_mejoras_" + todayLocal() + ".txt", "text/plain;charset=utf-8");
+  }
+  if(act.dataset.nact === "clean"){
+    if(notes.some(n => n.done) && confirm("¿Borrar las notas marcadas como hechas?")){ notes = notes.filter(n => !n.done); saveNotes(); renderNotes(); }
+  }
+});
+document.addEventListener("click", e => { const p = $("notesPanel"); if(p.classList.contains("open") && !p.contains(e.target)){ p.classList.remove("open"); renderNotes(); } });
+
+/* ---------- métricas ---------- */
+function twofaState(r){
+  const a = r.app2fa || "";
+  const appOk = a && !RESERVED.includes(a);
+  const ph = r.telefonos && r.telefonos.status === "SI";
+  if(appOk || ph) return "con";
+  const phNA = !r.telefonos || r.telefonos.status === "NA" || r.telefonos.status === "";
+  if(a === "No aplica" && phNA) return "na";
+  return "sin";
+}
+function daysSince(x){
+  const m = /^(\d{4})-(\d{2})-(\d{2})/.exec(x || ""); if(!m) return null;
+  const d = new Date(+m[1], +m[2]-1, +m[3]), t = new Date(), t0 = new Date(t.getFullYear(), t.getMonth(), t.getDate());
+  return Math.round((t0 - d) / 864e5);
+}
+function isActiveRow(r){ return r.estado !== "ELIMINADA" && r.estado !== "INACTIVA"; }
+function issuesFor(r, dupSet){
+  const out = [];
+  if(dupSet.has(r.id)) out.push({k:"dup", t:"Contraseña repetida", sev:2});
+  const pw = r.password && !r.password.na ? r.password.value : null;
+  if(isActiveRow(r)){
+    if(twofaState(r) === "sin") out.push({k:"2fa", t:"Sin 2FA", sev:1});
+    if(pw === "") out.push({k:"nopw", t:"Sin contraseña registrada", sev:1});
+    const d = daysSince(r.fecha);
+    if(d !== null && d > cfg.staleDays) out.push({k:"stale", t:"Revisión vencida (" + d + " días)", sev:1});
+  }
+  if(pw && pw.length < 10) out.push({k:"short", t:"Contraseña corta (" + pw.length + ")", sev:1});
+  if(r.hackeada === "SI") out.push({k:"hack", t:"Hackeada antes" + (r.prioridad && r.prioridad !== "N/A" ? " · prioridad " + r.prioridad : ""), sev: (r.prioridad === "ALTA" ? 2 : 1)});
+  return out;
+}
+function computeMetrics(){
+  const total = rows.length; let con = 0, sin = 0, na = 0, pk = 0;
+  const dupMap = {};
+  rows.forEach(r => { const v = r.password && !r.password.na ? r.password.value : ""; if(v) (dupMap[v] = dupMap[v] || []).push(r); });
+  const dupGroups = Object.keys(dupMap).filter(k => dupMap[k].length > 1).map(k => ({len:k.length, rows:dupMap[k]}));
+  const dupSet = new Set(); dupGroups.forEach(g => g.rows.forEach(r => dupSet.add(r.id)));
+  const correos = {}, cats = {}, ages = [0,0,0,0,0,0], flagged = [], issueMap = {};
+  rows.forEach(r => {
+    const s = twofaState(r); if(s === "con") con++; else if(s === "sin") sin++; else na++;
+    if(r.passkey && r.passkey.status === "SI" && r.passkey.values.length) pk++;
+    if(r.correo && !RESERVED.includes(r.correo)) correos[r.correo] = (correos[r.correo]||0) + 1;
+    const c = r.categoria || "(sin categoría)"; cats[c] = (cats[c]||0) + 1;
+    const d = daysSince(r.fecha); ages[d === null ? 5 : d < 30 ? 0 : d < 90 ? 1 : d < 180 ? 2 : d < 365 ? 3 : 4]++;
+    const is = issuesFor(r, dupSet); issueMap[r.id] = is;
+    if(is.length) flagged.push({r, issues:is, sev:Math.max(...is.map(x => x.sev))});
+  });
+  flagged.sort((a,b) => b.sev - a.sev || b.issues.length - a.issues.length);
+  return {total, con, sin, na, pk, dupGroups, dupAccounts:dupSet.size, correos, cats, ages, flagged, issueMap, attention:flagged.length};
+}
+function takeSnapshot(){
+  const m = computeMetrics(), d = todayLocal();
+  const sn = {fecha:d, total:m.total, con2fa:m.con, dups:m.dupAccounts, atencion:m.attention};
+  const i = snaps.findIndex(x => x.fecha === d); if(i >= 0) snaps[i] = sn; else snaps.push(sn);
+  saveSnaps();
+}
+
+/* ---------- buscador ---------- */
+function buildSearchControls(){
+  $("qCat").innerHTML = '<option value="">Categoría: todas</option>' + CATEGORIAS.map(c => `<option value="${esc(c)}">${esc(c.replace(/^\d+_/,""))}</option>`).join("");
+  $("qEst").innerHTML = '<option value="">Estado: todos</option>' + ["ACTIVA","INACTIVA","PENDIENTE","ELIMINADA"].map(c => `<option value="${c}">${c}</option>`).join("");
+  ["q","qCat","qEst","q2fa","qFlag"].forEach(id => { $(id).addEventListener("input", renderSearch); $(id).addEventListener("change", renderSearch); });
+}
+function twofaText(r){
+  const p = []; if(r.app2fa) p.push(r.app2fa);
+  if(r.telefonos && r.telefonos.status === "SI") p.push("teléfono");
+  return p.join(" + ") || "—";
+}
+function renderSearch(){
+  const q = fold($("q").value).trim(), cat = $("qCat").value, est = $("qEst").value, f2 = $("q2fa").value, fl = $("qFlag").checked;
+  const M = computeMetrics();
+  const list = rows.filter(r => {
+    if(cat && r.categoria !== cat) return false;
+    if(est && r.estado !== est) return false;
+    if(f2 && twofaState(r) !== f2) return false;
+    if(fl && !(M.issueMap[r.id] || []).length) return false;
+    if(!q) return true;
+    const hay = fold([r.app, r.categoria, r.estado, r.correo, r.correorecuperacion, (r.usuarios&&r.usuarios.values||[]).join(" "), (r.telefonos&&r.telefonos.values||[]).join(" "), (r.notas&&r.notas.value)||"", (r.tarjeta&&r.tarjeta.values||[]).join(" ")].join(" "));
+    return q.split(/\s+/).every(w => hay.includes(w));
+  });
+  const LIM = 60;
+  $("qCount").textContent = rows.length ? list.length + " de " + rows.length + " cuenta(s)" + (list.length > LIM ? " · mostrando las primeras " + LIM + ": afina la búsqueda" : "") : "";
+  if(!rows.length){ $("results").innerHTML = '<div class="banner" style="grid-column:1/-1;">Aún no hay cuentas. Agrégalas en <b>Agregar cuenta</b> o restaura un backup en <b>Importar / Exportar</b>.</div>'; return; }
+  if(!list.length){ $("results").innerHTML = '<p class="sub" style="grid-column:1/-1;">Sin resultados.</p>'; return; }
+  $("results").innerHTML = list.slice(0, LIM).map(r => {
+    const is = M.issueMap[r.id] || [], us = (r.usuarios && r.usuarios.values) || [];
+    const d = daysSince(r.fecha);
+    const pwOk = r.password && !r.password.na && r.password.value;
+    return `<div class="card">
+      <h3>${esc(r.app || "(sin nombre)")} <span class="pill">${esc((r.categoria||"").replace(/^\d+_/,"") || "sin categoría")}</span> ${r.estado ? `<span class="pill ${r.estado === "ACTIVA" ? "ok" : ""}">${esc(r.estado)}</span>` : ""} ${is.length ? `<span class="pill bad" title="${esc(is.map(x => x.t).join(" · "))}">⚠ ${is.length}</span>` : ""}</h3>
+      <div class="kv">Usuario: <b>${esc(us[0] || (r.usuarios && r.usuarios.na ? "No aplica" : "—"))}${us.length > 1 ? " +" + (us.length-1) : ""}</b>${us.length ? `<button class="cpbtn" data-qcopy="usuario" data-id="${r.id}" title="Copiar usuario">📋</button>` : ""}</div>
+      <div class="kv">Correo: <b>${esc(r.correo || "—")}</b>${r.correo && !RESERVED.includes(r.correo) ? `<button class="cpbtn" data-qcopy="correo" data-id="${r.id}" title="Copiar correo">📋</button>` : ""}</div>
+      <div class="kv">Contraseña: <b>${r.password && r.password.na ? "No aplica" : (pwOk ? "••••••" : "—")}</b>${pwOk ? `<button class="cpbtn" data-qcopy="password" data-id="${r.id}" title="Copiar contraseña sin mostrarla">📋</button>` : ""}</div>
+      <div class="kv">2FA: <b>${esc(twofaText(r))}</b> · Passkey: <b>${r.passkey && r.passkey.status === "SI" ? esc(r.passkey.values.join(", ") || "Sí") : "No"}</b></div>
+      <div class="kv">Modificada: <b>${esc(r.fecha || "—")}</b>${d !== null ? " (hace " + d + " día" + (d === 1 ? "" : "s") + ")" : ""}</div>
+      <div><button class="rowbtn btn-secondary" data-qreview="${r.id}">Revisar / actualizar</button></div>
+    </div>`;
+  }).join("");
+}
+$("results").addEventListener("click", e => {
+  const rv = e.target.closest("[data-qreview]");
+  if(rv){ const i = rows.findIndex(r => r.id === rv.dataset.qreview); if(i >= 0) requestReview(i); return; }
+  const cp = e.target.closest("[data-qcopy]"); if(!cp) return;
+  const r = rows.find(x => x.id === cp.dataset.id); if(!r) return;
+  const k = cp.dataset.qcopy;
+  if(k === "correo") copyText(r.correo, "Correo");
+  if(k === "password") copyText(r.password.value, "Contraseña");
+  if(k === "usuario") copyText(r.usuarios.values[0], "Usuario");
+});
+
+/* ---------- estadísticas ---------- */
+const pct = (a,b) => b ? Math.round(a/b*100) : 0;
+function barsHtml(pairs, limit){
+  if(!pairs.length) return '<p class="sub">Sin datos todavía.</p>';
+  const max = Math.max(...pairs.map(p => p[1]));
+  return pairs.slice(0, limit || 99).map(p => `<div class="bar"><span class="lb" title="${esc(p[0])}">${esc(p[0])}</span><div class="bt"><div class="bf" style="width:${Math.round(p[1]/max*100)}%"></div></div><b>${p[1]}</b></div>`).join("");
+}
+function donutSvg(parts, center){
+  const R = 42, C = 2*Math.PI*R, tot = parts.reduce((a,p) => a + p.v, 0); let off = 0;
+  const segs = tot ? parts.filter(p => p.v > 0).map(p => { const len = p.v/tot*C; const x = `<circle r="${R}" cx="60" cy="60" fill="none" stroke="${p.color}" stroke-width="16" stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 60 60)"/>`; off += len; return x; }).join("") : "";
+  return `<svg viewBox="0 0 120 120" width="130" height="130" role="img" aria-label="${esc(center)}"><circle r="${R}" cx="60" cy="60" fill="none" stroke="var(--border)" stroke-width="16"/>${segs}<text x="60" y="66" text-anchor="middle" font-size="20" font-weight="700" fill="var(--text)">${esc(center)}</text></svg>`;
+}
+function colChart(labels, values, label){
+  const W = 360, H = 150, pad = 14, n = labels.length, max = Math.max(1, ...values), bw = (W - pad*2) / n;
+  let x = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(label)}">`;
+  values.forEach((v,i) => {
+    const h = Math.round((H-44) * v / max), px = pad + i*bw + bw*0.15;
+    x += `<rect x="${px}" y="${H-24-h}" width="${bw*0.7}" height="${h}" rx="2" fill="var(--accent)"/>`;
+    if(v) x += `<text x="${px+bw*0.35}" y="${H-28-h}" text-anchor="middle" font-size="9" fill="var(--text)">${v}</text>`;
+    x += `<text x="${px+bw*0.35}" y="${H-8}" text-anchor="middle" font-size="8" fill="var(--muted)">${esc(labels[i])}</text>`;
+  });
+  return x + "</svg>";
+}
+function lineChart(pts, max, suffix, label){
+  if(pts.length < 2) return '<p class="sub">Se irá llenando conforme guardes cambios en distintos días.</p>';
+  const W = 360, H = 150, px = 34, n = pts.length, mx = Math.max(1, max);
+  const X = i => px + i*(W - px - 12)/(n-1), Y = v => H-24 - (H-44)*v/mx;
+  let x = `<svg viewBox="0 0 ${W} ${H}" width="100%" role="img" aria-label="${esc(label)}">`;
+  [0, mx/2, mx].forEach(g => { x += `<line x1="${px}" x2="${W-8}" y1="${Y(g)}" y2="${Y(g)}" stroke="var(--border)"/><text x="${px-4}" y="${Y(g)+3}" text-anchor="end" font-size="8" fill="var(--muted)">${Math.round(g)}${suffix}</text>`; });
+  x += `<polyline fill="none" stroke="var(--accent)" stroke-width="2" points="${pts.map((p,i) => X(i) + "," + Y(p.y)).join(" ")}"/>`;
+  pts.forEach((p,i) => { x += `<circle cx="${X(i)}" cy="${Y(p.y)}" r="3" fill="var(--accent)"><title>${esc(p.l)}: ${p.y}${suffix}</title></circle>`; });
+  x += `<text x="${px}" y="${H-8}" font-size="8" fill="var(--muted)">${esc(pts[0].l)}</text><text x="${W-8}" y="${H-8}" text-anchor="end" font-size="8" fill="var(--muted)">${esc(pts[n-1].l)}</text>`;
+  return x + "</svg>";
+}
+function monthlyEvents(){
+  const ev = hist.slice(), withEv = new Set(hist.map(h => h.id));
+  rows.forEach(r => { if(!withEv.has(r.id) && r.fecha) ev.push({id:r.id, app:r.app, fecha:r.fecha, tipo:"última modificación"}); });
+  return ev;
+}
+function renderStats(){
+  const M = computeMetrics(), N = M.total;
+  if(!N){ $("statsRoot").innerHTML = '<div class="banner">Aún no hay cuentas para analizar. Agrégalas o importa tu backup.</div>'; return; }
+  const kpi = (n, l, tip) => `<div class="kpi"><div class="n">${n}</div><div class="l">${l}${tip ? info(tip) : ""}</div></div>`;
+  const correos = Object.entries(M.correos).sort((a,b) => b[1] - a[1]);
+  const cats = Object.entries(M.cats).sort((a,b) => b[1] - a[1]).map(([c,n]) => [c.replace(/^\d+_/,""), n]);
+  const ageL = ["< 30 días","30–89","90–179","180–364","≥ 365","Sin fecha"];
+  const now = new Date(), months = [], keys = [];
+  for(let i = 11; i >= 0; i--){ const d = new Date(now.getFullYear(), now.getMonth()-i, 1); keys.push(d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0")); months.push(String(d.getMonth()+1).padStart(2,"0") + "/" + String(d.getFullYear()).slice(2)); }
+  const evs = monthlyEvents(), perMonth = keys.map(k => evs.filter(e => (e.fecha||"").startsWith(k)).length);
+  const sn = snaps.slice(-24);
+  const dupHtml = M.dupGroups.length ? M.dupGroups.map(g => `<div class="alertrow"><div><b>${g.rows.length} cuentas</b> comparten la misma contraseña <span class="pill">${g.len} caracteres</span><div class="sub" style="margin:2px 0 0;">${g.rows.map(r => esc(r.app || "(sin nombre)")).join(" · ")}</div></div><div>${g.rows.map(r => `<button class="rowbtn btn-secondary" data-sreview="${r.id}" title="Revisar ${esc(r.app||"")}">${esc((r.app||"?").slice(0,14))}</button>`).join(" ")}</div></div>`).join("") : '<p class="sub" style="margin:0;">✔ No hay contraseñas repetidas.</p>';
+  const attHtml = M.flagged.length ? M.flagged.slice(0, 40).map(f => `<div class="alertrow"><div><b>${esc(f.r.app || "(sin nombre)")}</b> <span class="pill">${esc((f.r.categoria||"").replace(/^\d+_/,""))}</span><div style="margin-top:4px;">${f.issues.map(x => `<span class="pill ${x.sev >= 2 ? "bad" : "warn"}">${esc(x.t)}</span>`).join(" ")}</div></div><button class="rowbtn btn-secondary" data-sreview="${f.r.id}">Revisar</button></div>`).join("") + (M.flagged.length > 40 ? `<p class="sub">…y ${M.flagged.length - 40} más.</p>` : "") : '<p class="sub" style="margin:0;">✔ Ninguna cuenta requiere atención.</p>';
+  const recent = hist.slice(-15).reverse();
+  const evHtml = recent.length ? recent.map(e => `<div class="alertrow"><span><b>${esc(e.app || "(sin nombre)")}</b> <span class="pill">${esc(e.tipo)}</span></span><span class="sub" style="margin:0;">${esc(e.fecha)}</span></div>`).join("") : '<p class="sub" style="margin:0;">Se registrará cada alta, revisión e importación a partir de ahora.</p>';
+  $("statsRoot").innerHTML = `
+    <div class="kpis">
+      ${kpi(N, "Cuentas")}
+      ${kpi(pct(M.con, N) + "%", "Con 2FA (" + M.con + " de " + N + ")", "Cuenta con 2FA = tiene app de autenticación o teléfono 2FA. «Sin 2FA» incluye las que tienen «No» (podrías activarlo).")}
+      ${kpi(pct(M.pk, N) + "%", "Con passkey (" + M.pk + ")")}
+      ${kpi(M.dupAccounts, "Con contraseña repetida")}
+      ${kpi(M.attention, "Requieren atención", "Contraseña repetida o corta, sin 2FA, hackeada antes, sin contraseña o revisión vencida (más de " + cfg.staleDays + " días, configurable).")}
+    </div>
+    <div class="charts">
+      <div class="chart"><h2 class="secttitle">Autenticación en dos pasos</h2><div class="donutwrap">${donutSvg([{v:M.con,color:"var(--ok)"},{v:M.sin,color:"var(--accent2)"},{v:M.na,color:"var(--muted)"}], pct(M.con,N) + "%")}<div class="legend"><span><i style="background:var(--ok)"></i>Con 2FA: <b>${M.con}</b></span><span><i style="background:var(--accent2)"></i>Sin 2FA: <b>${M.sin}</b></span><span><i style="background:var(--muted)"></i>No aplica: <b>${M.na}</b></span></div></div></div>
+      <div class="chart"><h2 class="secttitle">Correos más usados ${info("Número de cuentas que usan cada correo como CORREO principal.")}</h2>${barsHtml(correos, 8)}</div>
+      <div class="chart"><h2 class="secttitle">Distribución por categoría</h2>${barsHtml(cats, 17)}</div>
+      <div class="chart"><h2 class="secttitle">Antigüedad de la última modificación ${info("Hace cuánto modificaste o revisaste por última vez cada cuenta.")}</h2>${barsHtml(ageL.map((l,i) => [l, M.ages[i]]).filter(p => p[1] > 0), 6)}</div>
+      <div class="chart"><h2 class="secttitle">Modificaciones por mes ${info("Altas, revisiones e importaciones registradas. Las cuentas anteriores a esta función cuentan una vez, en la fecha de su última modificación.")}</h2>${colChart(months, perMonth, "Modificaciones por mes")}</div>
+      <div class="chart"><h2 class="secttitle">% con 2FA en el tiempo ${info("Se guarda una foto al día cada vez que cambias tus cuentas.")}</h2>${lineChart(sn.map(x => ({l:x.fecha, y:pct(x.con2fa, x.total)})), 100, "%", "Porcentaje con 2FA en el tiempo")}</div>
+      <div class="chart"><h2 class="secttitle">Cuentas con alertas en el tiempo</h2>${lineChart(sn.map(x => ({l:x.fecha, y:x.atencion})), Math.max(1, ...sn.map(x => x.atencion)), "", "Cuentas con alertas en el tiempo")}</div>
+    </div>
+    <div class="panel"><h2 class="secttitle">🔁 Contraseñas repetidas ${info("No se muestran las contraseñas: solo qué cuentas comparten la misma.")}</h2>${dupHtml}</div>
+    <div class="panel"><h2 class="secttitle">⚠ Cuentas que requieren atención (${M.attention})</h2>${attHtml}</div>
+    <div class="panel"><h2 class="secttitle">🕘 Actividad reciente</h2>${evHtml}</div>`;
+}
+$("statsRoot").addEventListener("click", e => {
+  const rv = e.target.closest("[data-sreview]"); if(!rv) return;
+  const i = rows.findIndex(r => r.id === rv.dataset.sreview); if(i >= 0) requestReview(i);
+});
+
+/* ---------- inicio ---------- */
+loadConfig(); applyTheme();
+loadDB(); loadRows(); loadHist(); loadNotes();
+if(!snaps.length && rows.length) takeSnapshot();
+applyAppName(); buildTabs(); buildSearchControls();
+buildForm(); buildHeader(); buildConfig();
+FIELDS.forEach(f => { if(f.type === "dbselect") rebuildDbSelect(f); });
+clearForm(); renderTable(); renderNotes(); showStorageWarn(); showBackupInfo();
+goTab("buscar");
+</script>
+</body>
+</html>
