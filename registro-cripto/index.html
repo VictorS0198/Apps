@@ -466,7 +466,9 @@ function coinIcon(sym,size){
 }
 
 function seed(){return[]}
-function load(){try{var raw=localStorage.getItem(KEY);if(raw!==null){var v=JSON.parse(raw);if(Array.isArray(v))return v.map(migrate)}}catch(e){}return seed()}
+/* limpia los movimientos de ejemplo que guardaban versiones anteriores */
+function isOldDemo(v){if(!Array.isArray(v)||v.length!=6||v.some(function(m,i){return !m||m.id!=i+1||m.qty>0}))return false;var t=v.map(function(m){return String(m.amountOrig)}).join('|'),h=0;for(var i=0;i<t.length;i++)h=(h*31+t.charCodeAt(i))|0;return h==-1805072922}
+function load(){try{var raw=localStorage.getItem(KEY);if(raw!==null){var v=JSON.parse(raw);if(isOldDemo(v)){localStorage.removeItem(KEY);return[]}if(Array.isArray(v))return v.map(migrate)}}catch(e){}return seed()}
 function migrate(m){m.time=normT(m.time);if(m.curr==null){m.curr='USD';m.amountOrig=m.usdt;m.fxRate=1}if(m.feePct==null)m.feePct=0;if(m.otype==null)m.otype=ACTION_OTYPE[m.action]||'taker';if(m.lote==null)m.lote='';return m}
 var M=load();
 function save(){try{localStorage.setItem(KEY,JSON.stringify(M))}catch(e){}}
