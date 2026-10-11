@@ -170,6 +170,26 @@
   .secttitle{display:flex; align-items:center; margin:0 0 10px;}
   .orderrow{display:flex; align-items:center; gap:8px; padding:6px 10px; border:1px solid var(--border); border-radius:6px; margin:4px 0; max-width:420px; background:var(--input);}
   .orderrow span{flex:1;}
+
+  /* ---- importar / exportar ---- */
+  .iogrid{display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px; align-items:stretch;}
+  @media(max-width:900px){.iogrid{grid-template-columns:1fr;}}
+  .iocard{background:var(--panel); border:1px solid var(--border); border-radius:12px; padding:20px; display:flex; flex-direction:column;}
+  .iocard h2{display:flex; align-items:center; gap:10px; font-size:17px; margin:0 0 14px;}
+  .numdot{width:26px; height:26px; border-radius:50%; background:var(--accent); color:var(--on-accent); display:inline-flex; align-items:center; justify-content:center; font-size:13px; font-weight:700; flex:none;}
+  .iocard p{margin:0 0 10px; font-size:13px; color:var(--muted); line-height:1.5;}
+  .iocard ul{margin:0 0 16px; padding-left:20px; font-size:13px; color:var(--muted); line-height:1.55;}
+  .iocard li{margin-bottom:5px;}
+  .iocard li b{color:var(--text);}
+  .tiles{display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin-top:auto;}
+  .tiles.t2{grid-template-columns:1fr 1fr;}
+  .tile{display:flex; flex-direction:column; gap:3px; align-items:flex-start; text-align:left; background:var(--input); border:1px solid var(--border); color:var(--text); padding:12px 14px; border-radius:10px; font-weight:400;}
+  .tile b{font-size:15px;}
+  .tile span{font-size:12px; color:var(--muted); line-height:1.35;}
+  .tile:hover{border-color:var(--accent);}
+  .tile.rec{border-color:var(--accent);}
+  .tile.rec b::after{content:" · recomendado"; font-size:11px; font-weight:400; color:var(--accent);}
+  .linkbtn{background:none; border:none; padding:0; color:var(--accent); font-size:13px; font-weight:600; text-decoration:underline; cursor:pointer;}
 </style>
 </head>
 <body>
@@ -275,21 +295,29 @@
 
 <div class="tabpage" id="tab-io">
   <div id="backupInfo" class="sub" style="margin:0 0 14px;"></div>
-  <div class="panel">
-    <h2 class="secttitle">⬇ Exportar <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="El backup cifrado protege todo con tu clave maestra. El JSON sin cifrar y el CSV guardan las contraseñas en texto simple: guárdalos solo en un lugar cifrado.">i</i></h2>
-    <div class="actions" style="margin-top:0;">
-      <button class="btn-primary" id="btnExportEnc" title="Archivo protegido con tu clave maestra (AES-256). Recomendado.">🔒 Backup cifrado</button>
-      <button class="btn-secondary" id="btnExportCSV">⬇ Exportar CSV (Excel)</button>
-      <button class="btn-secondary" id="btnExportJSON" title="Contiene las contraseñas en texto simple.">⬇ Backup JSON (sin cifrar)</button>
-      <button class="btn-secondary" id="btnTemplate">⬇ Plantilla CSV</button>
+  <div class="iogrid">
+    <div class="iocard">
+      <h2><span class="numdot">1</span> Exportar todo</h2>
+      <p>Descarga <b>todos los datos de la app</b>. Elige el formato según dónde lo vayas a usar:</p>
+      <ul id="ioExpList"></ul>
+      <div class="tiles t2">
+        <button class="tile rec" id="btnExportEnc" title="Archivo protegido con tu clave maestra (AES-256)."><b>Cifrado</b><span>Todo, protegido con tu clave maestra</span></button>
+        <button class="tile" id="btnExportJSON" title="Contiene las contraseñas en texto simple."><b>JSON</b><span>Todo, respaldo exacto y ligero (sin cifrar)</span></button>
+        <button class="tile" id="btnExportXLSX" title="Contiene las contraseñas en texto simple."><b>Excel</b><span>Hojas legibles + hoja «Respaldo» con todo</span></button>
+        <button class="tile" id="btnExportCSV" title="Solo las cuentas, para tu tabla de Excel."><b>CSV</b><span>Solo cuentas, una fila por cuenta</span></button>
+      </div>
     </div>
-  </div>
-  <div class="panel">
-    <h2 class="secttitle">📥 Importar <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="El importador de backup detecta solo si el archivo está cifrado. El CSV detecta el separador (coma, punto y coma o tabulación) y se agrega al final de tus cuentas.">i</i></h2>
-    <div class="actions" style="margin-top:0;">
-      <button class="btn-secondary" id="btnImportJSONTrigger" title="Restaura un backup, cifrado o sin cifrar (detecta cuál es)">📤 Importar backup</button>
+    <div class="iocard">
+      <h2><span class="numdot">2</span> Importar todo</h2>
+      <p>Carga un archivo exportado aquí, en <b>cualquiera de los formatos</b>, y recupera lo mismo que se exportó:</p>
+      <ul id="ioImpList"></ul>
+      <div class="tiles">
+        <button class="tile" id="btnImportJSONTrigger" title="Restaura un backup, cifrado o sin cifrar (detecta cuál es)"><b>JSON</b><span>Cifrado o sin cifrar</span></button>
+        <button class="tile" id="btnImportXLSXTrigger"><b>Excel</b><span>Archivo .xlsx</span></button>
+        <button class="tile" id="btnImportCSVTrigger"><b>CSV</b><span>Archivo .csv, .tsv o .txt</span></button>
+      </div>
       <input type="file" id="importJSONInput" accept=".json" style="display:none;">
-      <button class="btn-secondary" id="btnImportCSVTrigger">📥 Importar CSV</button>
+      <input type="file" id="importXLSXInput" accept=".xlsx" style="display:none;">
       <input type="file" id="importCSVInput" accept=".csv,.txt,.tsv" style="display:none;">
     </div>
   </div>
@@ -357,7 +385,7 @@
 </div>
 
 <script>
-const APP_VERSION = "16";
+const APP_VERSION = "17";
 const $ = id => document.getElementById(id);
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 const esc = escapeHtml;
@@ -930,7 +958,7 @@ function applyAppName(){
 }
 function downloadAppCopy(){
   const clone = document.documentElement.cloneNode(true);
-  ["tabsMain","formGrid","results","statsRoot","dbPanels","dbCheck","tbody","theadRow","themeCards","orderList","notesList","toast","tip","storageWarn","trackBanner","backupInfo","cloudInfo","tableHint","qCount","count"].forEach(id => { const e = clone.querySelector("#"+id); if(e){ e.innerHTML = ""; e.removeAttribute("style"); } });
+  ["tabsMain","formGrid","results","statsRoot","dbPanels","dbCheck","tbody","theadRow","themeCards","orderList","notesList","toast","tip","storageWarn","trackBanner","backupInfo","cloudInfo","ioExpList","ioImpList","tableHint","qCount","count"].forEach(id => { const e = clone.querySelector("#"+id); if(e){ e.innerHTML = ""; e.removeAttribute("style"); } });
   clone.querySelectorAll(".open,.show").forEach(e => e.classList.remove("open","show"));
   const pc = clone.querySelector("#pwConfirm"); if(pc) pc.setAttribute("style","display:none;");
   clone.setAttribute("data-appname", appName());
@@ -1061,6 +1089,7 @@ function goTab(id){
   if(id === "datos") renderTable();
   if(id === "bases") renderDBManager();
   if(id === "stats") renderStats();
+  if(id === "io") renderIO();
 }
 $("tabbar").addEventListener("click", e => { const b = e.target.closest(".tabbtn"); if(b) goTab(b.dataset.tab); });
 function saveOrder(o){ cfg.tabOrder = o; saveConfig(); buildTabs(); buildOrderList(); }
@@ -1310,7 +1339,7 @@ $("btnClearForm").addEventListener("click", () => {
 });
 $("btnClearAll").addEventListener("click", () => {
   if(confirm("Esto borrará TODAS las cuentas guardadas en este navegador. ¿Continuar?")){
-    rows = []; saveRows(); if(reviewIndex !== null) exitReview(); renderTable();
+    rows = []; saveRows(); if(reviewIndex !== null) exitReview(); renderTable(); renderIO();
   }
 });
 
@@ -1360,14 +1389,15 @@ $("search").addEventListener("input", renderTable);
 /* ---------- exportar ---------- */
 function csvEscape(v){ v = String(v); if(/[",\n\r]/.test(v)) v = '"' + v.replace(/"/g,'""') + '"'; return v; }
 function csvHeaders(){ const h = []; FIELDS.forEach(f => T[f.type].csvH(f).forEach(x => h.push(x))); h.push("FECHA"); return h; }
-function toCSV(){
-  const lines = [csvHeaders().map(csvEscape).join(",")];
+function accountsTable(){
+  const t = [csvHeaders()];
   rows.forEach(r => {
     const cells = []; FIELDS.forEach(f => T[f.type].toCsv(f, r[f.key] !== undefined ? r[f.key] : defaultValue(f)).forEach(x => cells.push(x)));
-    cells.push(r.fecha || ""); lines.push(cells.map(csvEscape).join(","));
+    cells.push(r.fecha || ""); t.push(cells);
   });
-  return lines.join("\r\n");
+  return t;
 }
+function toCSV(){ return accountsTable().map(r => r.map(csvEscape).join(",")).join("\r\n"); }
 function downloadBlob(content, filename, type){
   const blob = new Blob([content], {type}); const url = URL.createObjectURL(blob);
   const a = document.createElement("a"); a.href = url; a.download = filename;
@@ -1448,20 +1478,33 @@ function showBackupInfo(){
 /* ---------- importar backup (cifrado o no) ---------- */
 $("btnImportJSONTrigger").addEventListener("click", () => $("importJSONInput").click());
 function applyBackupData(data){
-  let imported = [];
-  if(Array.isArray(data)) imported = data.map(migrateRow);
-  else if(data && data.rows) imported = data.rows.map(migrateRow);
+  let incoming;
+  if(Array.isArray(data)) incoming = data.map(migrateRow);
+  else if(data && Array.isArray(data.rows)) incoming = data.rows.map(migrateRow);
   else throw new Error("El archivo no tiene el formato de un backup de esta app.");
-  if(rows.length > 0 && !confirm("Ya tienes " + rows.length + " cuenta(s) en esta app.\nLas " + imported.length + " del backup se AGREGARÁN al final (puede haber duplicados).\n\n¿Continuar?")) return;
-  if(data.DB) DB_META.forEach(m => (data.DB[m.k]||[]).forEach(v => addDB(m.k, v)));
-  if(Array.isArray(data.mejoras)) data.mejoras.forEach(n => { if(n && n.id && !notes.some(x => x.id === n.id)) notes.push(n); });
-  imported.forEach(r => { if(rows.some(x => x.id === r.id)) r.id = uid(); });
-  if(Array.isArray(data.historial)) data.historial.forEach(ev => { if(ev && ev.id && !hist.some(h => h.id === ev.id && h.fecha === ev.fecha && h.tipo === ev.tipo)) hist.push(ev); });
-  rows = rows.concat(imported); saveRows(); saveNotes(); saveHist();
-  backfillDB(imported);
+  const byId = new Map(rows.map((r,i) => [r.id, i]));
+  const nuevas = [], upd = []; let same = 0;
+  incoming.forEach(r => {
+    if(byId.has(r.id)){
+      const i = byId.get(r.id), cur = rows[i];
+      if(JSON.stringify(cur) !== JSON.stringify(r) && (r.fecha || "") >= (cur.fecha || "")) upd.push([i, r]); else same++;
+    } else nuevas.push(r);
+  });
+  let nCat = 0;
+  if(data && data.DB) DB_META.forEach(m => (data.DB[m.k] || []).forEach(v => { if(typeof v === "string" && !DB[m.k].includes(v)) nCat++; }));
+  const evs = (data && Array.isArray(data.historial)) ? data.historial.filter(ev => ev && ev.id && !hist.some(h => h.id === ev.id && h.fecha === ev.fecha && h.tipo === ev.tipo)) : [];
+  const nts = (data && Array.isArray(data.mejoras)) ? data.mejoras.filter(n => n && n.id && !notes.some(x => x.id === n.id)) : [];
+  const msg = "El archivo trae " + incoming.length + " cuenta(s): " + nuevas.length + " nueva(s), " + upd.length + " para actualizar y " + same + " sin cambios.\n" +
+    "Además: " + nCat + " valor(es) de catálogo nuevos, " + evs.length + " evento(s) de historial y " + nts.length + " nota(s) de mejoras.\n\n¿Aplicar? (No se borra nada de lo que ya tienes.)";
+  if(!confirm(msg)) return;
+  upd.forEach(([i, r]) => { rows[i] = r; });
+  rows = rows.concat(nuevas);
+  if(data && data.DB) DB_META.forEach(m => (data.DB[m.k] || []).forEach(v => addDB(m.k, v)));
+  evs.forEach(ev => hist.push(ev)); nts.forEach(n => notes.push(n));
+  saveRows(); saveNotes(); saveHist(); backfillDB(incoming);
   DB_META.forEach(m => { renderDBPanel(m.k); refreshDbUsers(m.k); });
-  renderTable(); renderNotes();
-  alert("Se importaron " + imported.length + " cuenta(s) del backup.");
+  renderTable(); renderNotes(); renderIO();
+  alert("Listo: " + nuevas.length + " cuenta(s) nueva(s) y " + upd.length + " actualizada(s).");
 }
 $("importJSONInput").addEventListener("change", e => {
   const file = e.target.files[0]; if(!file) return;
@@ -1493,10 +1536,10 @@ const EXAMPLE = {
   preguntaseg:{status:"NA", pregunta:"", respuesta:""}, tarjeta:{status:"SI", values:["Visa ···4417"]},
   estado:"ACTIVA", prioridad:"N/A", hackeada:"NO", notas:{na:true, value:""},
 };
-$("btnTemplate").addEventListener("click", () => {
+function downloadTemplate(){
   const cells = []; FIELDS.forEach(f => T[f.type].toCsv(f, EXAMPLE[f.key]).forEach(x => cells.push(x))); cells.push(todayLocal());
   downloadBlob("﻿" + [csvHeaders().map(csvEscape).join(","), cells.map(csvEscape).join(",")].join("\r\n"), slug(appName()) + "_plantilla.csv", "text/csv;charset=utf-8;");
-});
+}
 function detectDelimiter(text){
   const first = (text.split(/\r?\n/)[0] || "");
   const counts = {",": (first.match(/,/g)||[]).length, ";": (first.match(/;/g)||[]).length, "\t": (first.match(/\t/g)||[]).length};
@@ -1523,6 +1566,28 @@ function parseCSVText(text, delimiter){
   return table.filter(r => r.some(c => (c||"").trim() !== ""));
 }
 $("btnImportCSVTrigger").addEventListener("click", () => $("importCSVInput").click());
+function importCSVTable(table, label, extra){
+  if(table.length < 1){ alert("El archivo está vacío."); return; }
+  const idx = {}; table[0].map(normalizeHeader).forEach((h,i) => { if(!(h in idx)) idx[h] = i; });
+  if(FIELDS.filter(f => idx[normalizeHeader(f.label)] !== undefined).length === 0){
+    alert("No reconocí ninguno de los encabezados del archivo.\n\nEncabezados encontrados:\n" + table[0].join(" | ") + "\n\nUsa la Plantilla CSV como base y no cambies los nombres de columna.");
+    return;
+  }
+  const imported = [];
+  table.slice(1).forEach(cols => {
+    if(!cols.some(c => String(c == null ? "" : c).trim() !== "")) return;
+    const get = h => { const i = idx[normalizeHeader(h)]; return i === undefined ? undefined : cols[i]; };
+    const vals = {}; FIELDS.forEach(f => vals[f.key] = T[f.type].fromCsv(f, get));
+    const fe = get("FECHA"); vals.fecha = (fe && String(fe).trim()) ? String(fe).trim() : todayLocal(); vals.__v4 = true; vals.id = uid();
+    imported.push(vals);
+  });
+  if(!imported.length){ alert("El archivo no trae filas con datos."); return; }
+  if(!confirm("El archivo trae " + imported.length + " cuenta(s) (" + label + "). Se agregarán al final de tus cuentas; no se borra nada.\n\n¿Continuar?")) return;
+  rows = rows.concat(imported); saveRows(); backfillDB(imported); imported.forEach(r => logEvent(r, "importación", r.fecha)); saveHist();
+  DB_META.forEach(m => { renderDBPanel(m.k); refreshDbUsers(m.k); });
+  renderTable(); renderIO();
+  alert("Se importaron " + imported.length + " cuenta(s) de " + label + (extra ? " " + extra : "") + ".");
+}
 $("importCSVInput").addEventListener("change", e => {
   const file = e.target.files[0]; if(!file) return;
   const input = e.target, reader = new FileReader();
@@ -1530,29 +1595,159 @@ $("importCSVInput").addEventListener("change", e => {
     try{
       const text = evt.target.result.replace(/^﻿/, "");
       const delimiter = detectDelimiter(text), table = parseCSVText(text, delimiter);
-      if(table.length < 1){ alert("El archivo está vacío."); return; }
-      const idx = {}; table[0].map(normalizeHeader).forEach((h,i) => { if(!(h in idx)) idx[h] = i; });
-      if(FIELDS.filter(f => idx[normalizeHeader(f.label)] !== undefined).length === 0){
-        alert("No reconocí ninguno de los encabezados del archivo.\n\nEncabezados encontrados:\n" + table[0].join(" | ") + "\n\nUsa la Plantilla CSV como base y no cambies los nombres de columna.");
-        return;
-      }
-      const imported = [];
-      table.slice(1).forEach(cols => {
-        const get = h => { const i = idx[normalizeHeader(h)]; return i === undefined ? undefined : cols[i]; };
-        const vals = {}; FIELDS.forEach(f => vals[f.key] = T[f.type].fromCsv(f, get));
-        const fe = get("FECHA"); vals.fecha = (fe && fe.trim()) ? fe.trim() : todayLocal(); vals.__v4 = true; vals.id = uid();
-        imported.push(vals);
-      });
-      rows = rows.concat(imported); saveRows(); backfillDB(imported); imported.forEach(r => logEvent(r, "importación", r.fecha)); saveHist();
-      DB_META.forEach(m => { renderDBPanel(m.k); refreshDbUsers(m.k); });
-      renderTable();
       const dn = delimiter === "\t" ? "tabulación" : (delimiter === ";" ? "punto y coma" : "coma");
-      alert("Se importaron " + imported.length + " cuenta(s) del CSV (separador detectado: " + dn + ").");
+      importCSVTable(table, "CSV", "(separador detectado: " + dn + ")");
     }catch(err){ alert("No se pudo leer el CSV: " + err.message); }
     finally{ input.value = ""; }
   };
   reader.readAsText(file);
 });
+
+/* ---------- Excel (.xlsx) sin librerías ---------- */
+const CRC_T = (() => { const t = new Uint32Array(256); for(let n = 0; n < 256; n++){ let c = n; for(let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(u8){ let c = 0xFFFFFFFF; for(let i = 0; i < u8.length; i++) c = CRC_T[(c ^ u8[i]) & 255] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zipStore(files){
+  const enc = new TextEncoder(), parts = [], central = []; let off = 0;
+  const n = new Date(), time = (n.getHours() << 11) | (n.getMinutes() << 5) | (n.getSeconds() >> 1), date = ((n.getFullYear() - 1980) << 9) | ((n.getMonth() + 1) << 5) | n.getDate();
+  files.forEach(f => {
+    const name = enc.encode(f.name), crc = crc32(f.data), sz = f.data.length;
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
+    lh.setUint16(10, time, true); lh.setUint16(12, date, true); lh.setUint32(14, crc, true); lh.setUint32(18, sz, true); lh.setUint32(22, sz, true); lh.setUint16(26, name.length, true);
+    parts.push(new Uint8Array(lh.buffer), name, f.data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true);
+    ch.setUint16(12, time, true); ch.setUint16(14, date, true); ch.setUint32(16, crc, true); ch.setUint32(20, sz, true); ch.setUint32(24, sz, true); ch.setUint16(28, name.length, true); ch.setUint32(42, off, true);
+    central.push(new Uint8Array(ch.buffer), name);
+    off += 30 + name.length + sz;
+  });
+  const csize = central.reduce((a,p) => a + p.length, 0), end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true); end.setUint32(12, csize, true); end.setUint32(16, off, true);
+  return new Blob([...parts, ...central, new Uint8Array(end.buffer)], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"});
+}
+function colName(i){ let x = "", n = i + 1; while(n > 0){ const m = (n - 1) % 26; x = String.fromCharCode(65 + m) + x; n = Math.floor((n - 1) / 26); } return x; }
+function xmlEsc(v){ return String(v).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+function sheetXml(table){
+  const nc = Math.max(1, ...table.map(r => r.length));
+  let x = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetViews><sheetView workbookViewId="0"><pane ySplit="1" topLeftCell="A2" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews><cols><col min="1" max="' + nc + '" width="24" customWidth="1"/></cols><sheetData>';
+  table.forEach((r, ri) => {
+    x += '<row r="' + (ri + 1) + '">';
+    r.forEach((v, ci) => { if(v === "" || v == null) return; x += '<c r="' + colName(ci) + (ri + 1) + '" t="inlineStr"' + (ri === 0 ? ' s="1"' : "") + '><is><t xml:space="preserve">' + xmlEsc(v) + '</t></is></c>'; });
+    x += '</row>';
+  });
+  return x + '</sheetData></worksheet>';
+}
+function buildXlsx(){
+  const enc = new TextEncoder();
+  const cat = [DB_META.map(m => m.title)]; const mx = Math.max(0, ...DB_META.map(m => DB[m.k].length));
+  for(let i = 0; i < mx; i++) cat.push(DB_META.map(m => DB[m.k][i] || ""));
+  const json = JSON.stringify(backupPayload()), resp = [["Respaldo completo (no editar esta hoja)"]];
+  for(let i = 0; i < json.length; i += 30000) resp.push([json.slice(i, i + 30000)]);
+  const sheets = [["Cuentas", accountsTable()], ["Catálogos", cat], ["Respaldo", resp]];
+  const NS = 'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"', H = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+  const files = [
+    {name:"[Content_Types].xml", text:H + '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' + sheets.map((x,i) => '<Override PartName="/xl/worksheets/sheet' + (i+1) + '.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>').join("") + '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>'},
+    {name:"_rels/.rels", text:H + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>'},
+    {name:"xl/workbook.xml", text:H + '<workbook ' + NS + ' xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>' + sheets.map((x,i) => '<sheet name="' + xmlEsc(x[0]) + '" sheetId="' + (i+1) + '" r:id="rId' + (i+1) + '"/>').join("") + '</sheets></workbook>'},
+    {name:"xl/_rels/workbook.xml.rels", text:H + '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' + sheets.map((x,i) => '<Relationship Id="rId' + (i+1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet' + (i+1) + '.xml"/>').join("") + '<Relationship Id="rId' + (sheets.length+1) + '" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>'},
+    {name:"xl/styles.xml", text:H + '<styleSheet ' + NS + '><fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts><fills count="2"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill></fills><borders count="1"><border><left/><right/><top/><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="2"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>'},
+  ];
+  sheets.forEach((x,i) => files.push({name:"xl/worksheets/sheet" + (i+1) + ".xml", text:sheetXml(x[1])}));
+  return zipStore(files.map(f => ({name:f.name, data:enc.encode(f.text)})));
+}
+async function inflateRaw(u8){
+  const ds = new DecompressionStream("deflate-raw");
+  return new Uint8Array(await new Response(new Blob([u8]).stream().pipeThrough(ds)).arrayBuffer());
+}
+function unzipIndex(buf){
+  const u8 = new Uint8Array(buf), dv = new DataView(buf); let e = u8.length - 22;
+  while(e >= 0 && dv.getUint32(e, true) !== 0x06054b50) e--;
+  if(e < 0) throw new Error("No es un archivo .xlsx válido.");
+  const n = dv.getUint16(e + 10, true); let p = dv.getUint32(e + 16, true); const out = {}, dec = new TextDecoder();
+  for(let i = 0; i < n; i++){
+    if(dv.getUint32(p, true) !== 0x02014b50) break;
+    const method = dv.getUint16(p + 10, true), csz = dv.getUint32(p + 20, true), nl = dv.getUint16(p + 28, true), xl = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), lo = dv.getUint32(p + 42, true);
+    const name = dec.decode(u8.subarray(p + 46, p + 46 + nl));
+    const ds = lo + 30 + dv.getUint16(lo + 26, true) + dv.getUint16(lo + 28, true);
+    out[name] = {method, raw:u8.subarray(ds, ds + csz)}; p += 46 + nl + xl + cl;
+  }
+  return out;
+}
+async function zipText(z, name){ const e = z[name]; if(!e) return null; return new TextDecoder().decode(e.method === 0 ? e.raw : await inflateRaw(e.raw)); }
+async function readXlsx(buf){
+  const z = unzipIndex(buf), P = new DOMParser();
+  const wbx = await zipText(z, "xl/workbook.xml"), relx = await zipText(z, "xl/_rels/workbook.xml.rels");
+  if(!wbx || !relx) throw new Error("El archivo no parece un Excel (.xlsx).");
+  const wb = P.parseFromString(wbx, "application/xml"), rel = P.parseFromString(relx, "application/xml"), rels = {};
+  [...rel.getElementsByTagName("Relationship")].forEach(r => rels[r.getAttribute("Id")] = r.getAttribute("Target"));
+  const sheets = [...wb.getElementsByTagName("sheet")].map(sh => {
+    const id = sh.getAttribute("r:id") || sh.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships", "id");
+    let t = (rels[id] || "").replace(/^\//, ""); if(!t.startsWith("xl/")) t = "xl/" + t;
+    return {name:sh.getAttribute("name"), path:t};
+  });
+  const strings = [], ssx = await zipText(z, "xl/sharedStrings.xml");
+  if(ssx) [...P.parseFromString(ssx, "application/xml").getElementsByTagName("si")].forEach(si => {
+    strings.push([...si.getElementsByTagName("t")].filter(t => t.parentNode.nodeName !== "rPh").map(t => t.textContent).join(""));
+  });
+  const tables = {};
+  for(const sh of sheets){
+    const x = await zipText(z, sh.path); if(!x) continue;
+    const table = [];
+    [...P.parseFromString(x, "application/xml").getElementsByTagName("row")].forEach(row => {
+      const r = [];
+      [...row.getElementsByTagName("c")].forEach(c => {
+        const m = /^([A-Z]+)/.exec(c.getAttribute("r") || ""); let ci = r.length;
+        if(m){ ci = 0; for(const ch of m[1]) ci = ci * 26 + ch.charCodeAt(0) - 64; ci--; }
+        const t = c.getAttribute("t"); let v = "";
+        if(t === "inlineStr") v = [...c.getElementsByTagName("t")].map(q => q.textContent).join("");
+        else { const ve = c.getElementsByTagName("v")[0]; v = ve ? ve.textContent : ""; if(t === "s") v = strings[Number(v)] || ""; else if(t === "b") v = v === "1" ? "TRUE" : "FALSE"; }
+        while(r.length < ci) r.push(""); r[ci] = v;
+      });
+      table.push(r);
+    });
+    tables[sh.name] = table;
+  }
+  return {sheets, tables};
+}
+$("btnExportXLSX").addEventListener("click", () => {
+  if(!confirm("El Excel guarda tus contraseñas en TEXTO SIMPLE (sin cifrar).\n\n¿Continuar? Si no lo necesitas, usa el backup cifrado.")) return;
+  try{ downloadBlob(buildXlsx(), slug(appName()) + "_" + todayLocal() + ".xlsx", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"); markBackup("Excel sin cifrar"); }
+  catch(err){ alert("No se pudo crear el Excel: " + err.message); }
+});
+$("btnImportXLSXTrigger").addEventListener("click", () => $("importXLSXInput").click());
+$("importXLSXInput").addEventListener("change", async e => {
+  const input = e.target, file = input.files[0]; if(!file) return;
+  try{
+    if(typeof DecompressionStream === "undefined") throw new Error("Este navegador es muy antiguo para leer Excel. Usa Chrome, Edge o Firefox actualizados.");
+    const x = await readXlsx(await file.arrayBuffer());
+    const resp = x.tables["Respaldo"];
+    if(resp && resp.length > 1){
+      applyBackupData(JSON.parse(resp.slice(1).map(r => r[0] || "").join("")));
+    } else {
+      const first = x.tables[x.sheets[0].name] || [];
+      const fi = first.length ? first[0].map(normalizeHeader).indexOf("fecha") : -1;
+      if(fi >= 0) first.slice(1).forEach(r => { if(/^\d{5}(\.\d+)?$/.test(r[fi] || "")) r[fi] = new Date(Date.UTC(1899, 11, 30) + Math.floor(Number(r[fi])) * 864e5).toISOString().slice(0, 10); });
+      importCSVTable(first, "Excel");
+    }
+  }catch(err){ alert("No se pudo leer el Excel: " + err.message); }
+  finally{ input.value = ""; }
+});
+
+/* ---------- panel Importar / Exportar ---------- */
+function renderIO(){
+  const cat = DB_META.reduce((a,m) => a + DB[m.k].length, 0);
+  $("ioExpList").innerHTML =
+    `<li><b>${rows.length} cuenta${rows.length === 1 ? "" : "s"}</b> con todos sus campos: contraseñas, códigos de respaldo, PIN y fechas</li>
+     <li><b>Catálogos</b> (${cat} registro${cat === 1 ? "" : "s"}): correos, usuarios, teléfonos, passkeys, apps 2FA y tarjetas</li>
+     <li><b>Historial</b> de modificaciones (${hist.length}) y <b>notas de mejoras</b> (${notes.length})</li>
+     <li>Solo el <b>cifrado</b> protege tus datos. JSON, Excel y CSV quedan en texto simple; el CSV lleva únicamente las cuentas</li>`;
+  $("ioImpList").innerHTML =
+    `<li>Antes de aplicar, te muestra <b>cuántas cuentas y valores de catálogo</b> trae</li>
+     <li>Se <b>combina</b> con lo que ya tienes: agrega lo nuevo y actualiza las cuentas que ya existen. No borra nada</li>
+     <li>El JSON cifrado se detecta solo y te pide la <b>clave maestra</b></li>
+     <li>Un Excel con hoja «Respaldo» restaura todo; si no la trae, la primera hoja se lee como lista de cuentas. Mismo caso para el CSV. <button class="linkbtn" id="btnTemplate">Descargar plantilla CSV</button></li>`;
+  $("btnTemplate").addEventListener("click", downloadTemplate);
+}
 
 /* ---------- panel de mejoras (siempre arriba) ---------- */
 function loadNotes(){ try{ notes = JSON.parse(lsGet(NOTES_KEY) || "[]"); if(!Array.isArray(notes)) notes = []; }catch(e){ notes = []; } }
@@ -1874,7 +2069,7 @@ if(!snaps.length && rows.length) takeSnapshot();
 applyAppName(); buildTabs(); buildSearchControls();
 buildForm(); buildHeader(); buildConfig();
 FIELDS.forEach(f => { if(f.type === "dbselect") rebuildDbSelect(f); });
-clearForm(); renderTable(); renderNotes(); showStorageWarn(); showBackupInfo(); showCloudInfo();
+clearForm(); renderTable(); renderNotes(); showStorageWarn(); showBackupInfo(); showCloudInfo(); renderIO();
 goTab("buscar");
 </script>
 </body>
