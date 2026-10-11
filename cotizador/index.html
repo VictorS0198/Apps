@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Cotizador de proyectos de arquitectura</title>
-<meta name="theme-color" content="#20252A">
+<meta name="theme-color" content="#111A27">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2320252A'/%3E%3Cpath d='M14 50V22l18-10 18 10v28' fill='none' stroke='%23FBFBF8' stroke-width='4'/%3E%3Cpath d='M14 56h36' stroke='%238DB4DA' stroke-width='4'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -12,214 +12,282 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 <style>
 :root{
-  --papel:#E9ECE7; --hoja:#FBFBF8; --grafito:#20252A; --tenue:#5E666C; --linea:#BCC2BC; --linea-suave:#D9DDD7;
-  --cota:#2D5C88; --cota-suave:#DCE6EF; --ocre:#A9751C; --ocre-suave:#F3E8D2; --ok:#2E6B4A; --alerta:#9A3B2E;
-  --sombra:0 1px 0 rgba(32,37,42,.06);
+  --papel:#F1F3F7; --hoja:#FFFFFF; --grafito:#152033; --tenue:#5F6B7D; --linea:#D9DFE8; --linea-suave:#E8ECF2;
+  --cota:#1463E6; --cota-hover:#0F55C9; --cota-suave:#E9F1FE; --ocre:#B7791F; --ocre-suave:#FDF4E3; --ok:#18915A; --alerta:#C2412D;
+  --navy:#111A27; --navy-2:#182334; --navy-linea:#26334A; --navy-txt:#C9D3E1;
+  --radio:12px; --sombra:0 1px 2px rgba(16,24,40,.05),0 4px 14px rgba(16,24,40,.05);
   color-scheme:light;
   box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme:dark){
   :root:not([data-theme="light"]){
-    --papel:#15191C; --hoja:#1D2226; --grafito:#E4E7E3; --tenue:#9AA3A8; --linea:#3A4248; --linea-suave:#2A3136;
-    --cota:#8DB4DA; --cota-suave:#22313F; --ocre:#D8AA55; --ocre-suave:#3A2F1C; --ok:#7CC39A; --alerta:#E58A7B; color-scheme:dark;
+    --papel:#0C121A; --hoja:#141C27; --grafito:#E6EBF2; --tenue:#94A1B3; --linea:#283447; --linea-suave:#1F2938;
+    --cota:#4D8DFF; --cota-hover:#6A9FFF; --cota-suave:#18284A; --ocre:#E0A84C; --ocre-suave:#33291A; --ok:#4CC38A; --alerta:#F0806C;
+    --sombra:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.25); color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --papel:#15191C; --hoja:#1D2226; --grafito:#E4E7E3; --tenue:#9AA3A8; --linea:#3A4248; --linea-suave:#2A3136;
-  --cota:#8DB4DA; --cota-suave:#22313F; --ocre:#D8AA55; --ocre-suave:#3A2F1C; --ok:#7CC39A; --alerta:#E58A7B; color-scheme:dark;
+  --papel:#0C121A; --hoja:#141C27; --grafito:#E6EBF2; --tenue:#94A1B3; --linea:#283447; --linea-suave:#1F2938;
+  --cota:#4D8DFF; --cota-hover:#6A9FFF; --cota-suave:#18284A; --ocre:#E0A84C; --ocre-suave:#33291A; --ok:#4CC38A; --alerta:#F0806C;
+  --sombra:0 1px 2px rgba(0,0,0,.35),0 6px 18px rgba(0,0,0,.25); color-scheme:dark;
 }
-html{scroll-padding-top:env(safe-area-inset-top,0px)}
 *,*::before,*::after{box-sizing:inherit}
-body{margin:0;background:var(--papel);color:var(--grafito);font-family:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.45;
-  background-image:linear-gradient(var(--linea-suave) 1px,transparent 1px),linear-gradient(90deg,var(--linea-suave) 1px,transparent 1px);background-size:24px 24px;background-attachment:fixed}
+body{margin:0;background:var(--papel);color:var(--grafito);font-family:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.45}
 button,input,select,textarea{font:inherit;color:inherit}
 :focus-visible{outline:2px solid var(--cota);outline-offset:2px}
 .num{font-variant-numeric:tabular-nums}
+svg.i{width:20px;height:20px;flex:none;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
 
 /* barra superior */
-.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--grafito);color:var(--hoja)}
-.top-in{max-width:1320px;margin:0 auto;display:flex;align-items:center;gap:20px;padding:10px 20px;flex-wrap:wrap}
-.marca{display:flex;align-items:baseline;gap:10px;margin-right:auto}
-.marca b{font-stretch:125%;font-weight:750;font-size:17px;letter-spacing:.01em}
-.marca span{font-size:13px;opacity:.7;font-stretch:87%}
-.nav{display:flex;gap:2px;flex-wrap:wrap}
-.nav button{background:transparent;border:0;color:inherit;padding:7px 12px;border-radius:3px;cursor:pointer;opacity:.75;font-size:14px}
-.nav button:hover{opacity:1;background:rgba(255,255,255,.08)}
-.nav button[aria-current="page"]{opacity:1;background:var(--hoja);color:var(--grafito);font-weight:600}
-.estado-nube{font-size:12px;opacity:.75;font-stretch:87%}
-.estado-nube.on{opacity:1}
-.estado-nube.err{opacity:1;border-color:var(--alerta)!important}
+.top{position:sticky;top:0;z-index:30;background:var(--navy);color:#fff;border-bottom:1px solid var(--navy-linea)}
+.top-in{display:flex;align-items:center;gap:24px;padding:0 22px;height:70px}
+.marca{display:flex;align-items:center;gap:14px;width:340px;flex:none;color:#fff;text-decoration:none}
+.marca svg{width:44px;height:44px;stroke-width:1.4}
+.marca b{display:block;font-size:20px;font-weight:700;letter-spacing:.06em;line-height:1.1}
+.marca .lema{display:block;font-size:13px;color:var(--navy-txt);white-space:nowrap}
+.nav{display:flex;gap:4px;margin:0 auto;height:100%;overflow-x:auto;scrollbar-width:none}
+.nav button{background:transparent;border:0;color:var(--navy-txt);padding:0 14px;cursor:pointer;font-size:14px;height:100%;border-bottom:2px solid transparent;white-space:nowrap}
+.nav button:hover{color:#fff}
+.nav button[aria-current="page"]{color:#fff;font-weight:600;border-bottom-color:var(--cota)}
+.cuenta{display:flex;align-items:center;gap:10px;flex:none}
+.estado-nube{font-size:12px;color:var(--navy-txt);background:transparent;border:1px solid var(--navy-linea);border-radius:999px;padding:5px 11px;cursor:pointer;white-space:nowrap;max-width:240px;overflow:hidden;text-overflow:ellipsis}
+.estado-nube.on{color:#fff}
+.estado-nube.on::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#4CC38A;margin-right:6px;vertical-align:1px}
+.estado-nube.err{color:#fff;border-color:var(--alerta)}
+.avatar{width:42px;height:42px;border-radius:50%;border:1.5px solid rgba(255,255,255,.55);background:transparent;color:#fff;font-weight:600;font-size:15px;cursor:pointer;display:grid;place-items:center}
+.avatar:hover{border-color:#fff}
 
-main{max-width:1320px;margin:0 auto;padding:22px 20px 80px}
+/* armazón con barra lateral */
+.shell{display:grid;grid-template-columns:226px minmax(0,1fr);min-height:calc(100vh - 70px)}
+.lateral{position:sticky;top:70px;height:calc(100vh - 70px);background:var(--navy);color:var(--navy-txt);display:flex;flex-direction:column;overflow:hidden}
+.lateral nav{display:flex;flex-direction:column;gap:4px;padding:28px 10px;position:relative;z-index:1}
+.lateral nav button,.lateral nav a{white-space:nowrap;display:flex;align-items:center;gap:14px;background:transparent;border:0;color:var(--navy-txt);padding:13px 16px;border-radius:8px;cursor:pointer;font-size:15px;text-align:left;text-decoration:none}
+.lateral nav button svg.i,.lateral nav a svg.i{width:22px;height:22px}
+.lateral nav button:hover,.lateral nav a:hover{background:var(--navy-2);color:#fff}
+.lateral nav button[aria-current="page"]{background:#24324A;color:#fff;font-weight:600}
+.lateral .arte{position:absolute;left:0;right:0;bottom:0;height:58%;opacity:.6;-webkit-mask-image:linear-gradient(to bottom,transparent,#000 35%);mask-image:linear-gradient(to bottom,transparent,#000 35%)}
+.lateral .arte svg{width:100%;height:100%;display:block}
+.lateral .ver{position:absolute;left:16px;bottom:12px;font-size:12px;color:rgba(255,255,255,.55);z-index:1}
+.lateral .volver{margin-top:auto}
+
+main{padding:22px 22px 80px;min-width:0}
 .vista{display:none}.vista.activa{display:block}
-h1{font-stretch:125%;font-weight:750;font-size:26px;line-height:1.15;margin:0 0 4px}
-h2{font-stretch:112%;font-weight:700;font-size:18px;margin:0}
+h1{font-weight:700;font-size:26px;line-height:1.15;margin:0 0 4px}
+h2{font-weight:700;font-size:19px;margin:0}
 h3{font-size:15px;font-weight:650;margin:0 0 8px}
 .sub{color:var(--tenue);margin:0 0 18px;max-width:70ch}
 
 /* layout cotizar */
-.cotizar{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:22px;align-items:start}
-.paso{background:var(--hoja);border:1px solid var(--linea);border-radius:4px;margin-bottom:16px;box-shadow:var(--sombra)}
-.paso>header{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--linea-suave)}
-.paso>header .n{width:28px;height:28px;border:1.5px solid var(--grafito);border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;flex:none}
-.paso>header p{margin:0;color:var(--tenue);font-size:13px}
-.paso .cuerpo{padding:16px}
-.rejilla{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px 14px}
-.campo{display:flex;flex-direction:column;gap:4px;min-width:0}
+.cotizar{display:grid;grid-template-columns:minmax(0,1fr) 470px;gap:18px;align-items:start}
+.paso{background:var(--hoja);border:1px solid var(--linea-suave);border-radius:var(--radio);margin-bottom:16px;box-shadow:var(--sombra)}
+.paso>header{display:flex;align-items:center;gap:16px;padding:18px 22px 14px;margin:0 22px 0 0}
+.paso>header .n{width:42px;height:42px;border-radius:50%;background:var(--cota);color:#fff;display:grid;place-items:center;font-weight:600;font-size:18px;flex:none}
+.paso>header p{margin:2px 0 0;color:var(--tenue);font-size:14px}
+.paso .cuerpo{padding:16px 22px 22px;border-top:1px solid var(--linea-suave);margin:0 22px;padding-left:0;padding-right:0}
+.rejilla{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:14px 16px}
+.campo{display:flex;flex-direction:column;gap:6px;min-width:0}
 .campo.ancho{grid-column:1/-1}
-.campo label,.etq{font-size:12.5px;color:var(--tenue);font-weight:500}
-input[type=text],input[type=number],input[type=email],input[type=tel],input[type=date],select,textarea{width:100%;background:var(--hoja);border:1px solid var(--linea);border-radius:3px;padding:7px 9px;min-height:36px}
+.campo label,.etq{font-size:13.5px;color:var(--grafito);font-weight:500}
+input[type=text],input[type=number],input[type=email],input[type=tel],input[type=date],input[type=password],select,textarea{width:100%;background:var(--hoja);border:1px solid var(--linea);border-radius:6px;padding:8px 11px;min-height:42px}
 textarea{min-height:90px;resize:vertical;line-height:1.4}
-input:focus,select:focus,textarea:focus{border-color:var(--cota);outline:none;box-shadow:0 0 0 2px var(--cota-suave)}
+input:focus,select:focus,textarea:focus{border-color:var(--cota);outline:none;box-shadow:0 0 0 3px var(--cota-suave)}
 input[type=number]{font-variant-numeric:tabular-nums}
-.ayuda{font-size:12px;color:var(--tenue)}
+input::placeholder{color:#97A1B0}
+.ayuda{font-size:12.5px;color:var(--tenue)}
+.inp{position:relative}
+.inp>svg.i{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--tenue);pointer-events:none}
+.inp>input,.inp>select{padding-left:42px}
+.inp>.suf{position:absolute;right:12px;top:50%;transform:translateY(-50%);color:var(--tenue);font-size:13px;pointer-events:none}
+.inp.con-suf>input{padding-right:40px}
+.fila-seg{grid-template-columns:1fr 1.35fr 1fr}
+@media (max-width:1500px){.fila-seg{grid-template-columns:1fr}}
+.franja{display:flex;align-items:center;gap:10px;background:var(--cota-suave);color:var(--tenue);border-radius:6px;padding:9px 12px;margin-top:14px;font-size:13px}
+.franja svg.i{color:var(--tenue);width:18px;height:18px}
 
-.seg{display:flex;border:1px solid var(--linea);border-radius:3px;overflow:hidden;flex-wrap:wrap}
-.seg button{flex:1;background:var(--hoja);border:0;border-right:1px solid var(--linea);padding:7px 10px;cursor:pointer;font-size:13.5px;min-height:36px;white-space:nowrap}
+.seg{display:flex;border:1px solid var(--linea);border-radius:6px;overflow:hidden;flex-wrap:wrap}
+.seg{flex-wrap:nowrap}
+.seg button{flex:1 1 auto;background:var(--hoja);border:0;border-right:1px solid var(--linea);padding:8px 10px;cursor:pointer;font-size:14px;min-height:40px;white-space:nowrap}
 .seg button:last-child{border-right:0}
-.seg button[aria-pressed="true"]{background:var(--grafito);color:var(--hoja);font-weight:600}
+.seg button:hover{background:var(--papel)}
+.seg button[aria-pressed="true"]{background:var(--cota-suave);color:var(--cota);font-weight:600;box-shadow:inset 0 0 0 1.5px var(--cota)}
 
-.metodos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
-.metodo{border:1px solid var(--linea);border-radius:4px;padding:10px 12px;background:var(--hoja);cursor:pointer;text-align:left}
-.metodo b{display:block;font-size:14px;margin-bottom:2px}
-.metodo span{font-size:12.5px;color:var(--tenue)}
+.metodos{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:14px}
+.metodo{position:relative;display:flex;gap:14px;align-items:center;border:1px solid var(--linea);border-radius:8px;padding:14px 16px;background:var(--hoja);cursor:pointer;text-align:left}
+.metodo:hover{border-color:var(--cota)}
+.metodo .m-ic{width:40px;height:40px;border-radius:8px;display:grid;place-items:center;flex:none;color:var(--grafito)}
+.metodo .m-ic svg.i{width:30px;height:30px}
+.metodo b{display:block;font-size:15px;margin-bottom:2px}
+.metodo span.d{display:block;font-size:13px;color:var(--tenue)}
+.metodo .ok{position:absolute;top:8px;right:8px;width:20px;height:20px;border-radius:50%;background:var(--cota);color:#fff;display:none;place-items:center}
+.metodo .ok svg.i{width:13px;height:13px;stroke-width:3}
 .metodo[aria-pressed="true"]{border-color:var(--cota);box-shadow:inset 0 0 0 1px var(--cota);background:var(--cota-suave)}
+.metodo[aria-pressed="true"] .m-ic{background:var(--cota);color:#fff}
+.metodo[aria-pressed="true"] .ok{display:grid}
 
-.paquetes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
-.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--grafito);background:var(--hoja);color:var(--grafito);padding:7px 13px;border-radius:3px;cursor:pointer;font-size:14px;min-height:36px;text-decoration:none}
-.btn:hover{background:var(--papel)}
-.btn.prim{background:var(--grafito);color:var(--hoja)}
-.btn.prim:hover{opacity:.9}
+.paquetes{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+.paquetes .chip{border:1px solid var(--linea);background:var(--hoja);border-radius:6px;padding:7px 22px;cursor:pointer;font-size:14px;min-height:36px}
+.paquetes .chip:hover{border-color:var(--cota)}
+.paquetes .chip[aria-pressed="true"]{background:var(--cota);border-color:var(--cota);color:#fff;font-weight:600}
+.btn{display:inline-flex;align-items:center;gap:7px;border:1px solid var(--linea);background:var(--hoja);color:var(--grafito);padding:8px 14px;border-radius:6px;cursor:pointer;font-size:14px;min-height:38px;text-decoration:none}
+.btn:hover{border-color:var(--cota);color:var(--cota)}
+.btn.prim{background:var(--cota);border-color:var(--cota);color:#fff}
+.btn.prim:hover{background:var(--cota-hover);color:#fff}
 .btn.leve{border-color:var(--linea)}
 .btn.peligro{border-color:var(--alerta);color:var(--alerta)}
-.btn.chico{padding:4px 9px;min-height:30px;font-size:13px}
+.btn.chico{padding:5px 10px;min-height:32px;font-size:13px}
 
-.grupo-serv{margin-bottom:14px}
-.grupo-serv>h3{display:flex;justify-content:space-between;border-bottom:1px solid var(--grafito);padding-bottom:4px;margin-bottom:0;font-stretch:112%}
-.grupo-serv>h3 span{font-weight:500;color:var(--tenue);font-stretch:100%}
-.serv{display:grid;grid-template-columns:24px minmax(0,1fr) 84px 110px 110px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--linea-suave)}
+.grupo-serv{border:1px solid var(--linea);border-radius:8px;margin-bottom:10px;background:var(--hoja)}
+.grupo-serv>summary{display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;list-style:none;font-size:15px}
+.grupo-serv>summary::-webkit-details-marker{display:none}
+.grupo-serv>summary b{font-weight:600}
+.grupo-serv>summary .gt{margin-left:auto;color:var(--tenue);font-weight:500}
+.grupo-serv>summary .chev{transition:transform .15s;color:var(--tenue)}
+.grupo-serv[open]>summary .chev{transform:rotate(180deg)}
+.grupo-serv[open]>summary{border-bottom:1px solid var(--linea-suave)}
+.grupo-serv .filas{padding:0 14px 6px}
+.serv{display:grid;grid-template-columns:24px minmax(0,1fr) 88px 116px 110px;gap:12px;align-items:center;padding:9px 0;border-bottom:1px solid var(--linea-suave)}
+.serv:last-child{border-bottom:0}
 .serv.off{opacity:.55}
 .serv input[type=checkbox]{width:18px;height:18px;accent-color:var(--cota)}
 .serv .nom{font-size:14px}
 .serv .det{font-size:12px;color:var(--tenue)}
-.serv input{min-height:32px;padding:5px 7px}
+.serv input{min-height:34px;padding:5px 8px}
 .serv .imp{text-align:right;font-weight:600}
-.serv-cab{font-size:11.5px;color:var(--tenue);border-bottom:0;padding:6px 0 0}
+.serv-cab{font-size:11.5px;color:var(--tenue);padding:8px 0 2px}
 .serv-cab div:nth-child(5){text-align:right}
 
-/* pie de plano */
-.pie{position:sticky;top:76px;background:var(--hoja);border:2px solid var(--grafito);font-size:13px}
-.pie .celda{border-bottom:1px solid var(--grafito);padding:7px 10px}
-.pie .fila2{display:grid;grid-template-columns:1fr 1fr}
-.pie .fila2 .celda+.celda{border-left:1px solid var(--grafito)}
-.pie .k{font-size:11px;color:var(--tenue);display:block}
-.pie .v{font-weight:600;overflow-wrap:anywhere}
-.pie .total{padding:14px 12px 10px;border-bottom:2px solid var(--grafito)}
-.pie .total .v{font-size:32px;font-stretch:118%;font-weight:750;line-height:1.05;display:block}
-.cota-linea{display:flex;align-items:center;gap:6px;margin-top:8px;color:var(--cota);font-size:12px}
-.cota-linea::before,.cota-linea::after{content:"";flex:1;height:1px;background:var(--cota);}
-.cota-linea i{font-style:normal;white-space:nowrap}
-.cota-wrap{position:relative;padding:0 2px}
-.cota-wrap::before,.cota-wrap::after{content:"";position:absolute;top:2px;width:1px;height:12px;background:var(--cota)}
-.cota-wrap::before{left:0}.cota-wrap::after{right:0}
+/* resumen */
+.pie{position:sticky;top:88px;background:var(--hoja);border:1px solid var(--linea-suave);border-radius:var(--radio);box-shadow:var(--sombra);overflow:hidden;font-size:14.5px}
+.hero{position:relative;background:var(--navy);color:#fff;min-height:172px;overflow:hidden}
+.hero .arte{position:absolute;inset:0}
+.hero .arte svg{width:100%;height:100%;display:block}
+.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,rgba(14,21,32,.96) 0%,rgba(14,21,32,.82) 45%,rgba(14,21,32,.15) 100%)}
+.hero-in{position:relative;z-index:1;padding:24px 26px 22px}
+.hero-top{display:flex;justify-content:space-between;gap:10px;font-size:15px;color:#E4EAF3}
+.hero-top .folio{font-size:12px;color:rgba(255,255,255,.65);white-space:nowrap}
+.hero-total{display:block;font-size:52px;font-weight:700;line-height:1.08;margin:6px 0 12px;letter-spacing:-.01em}
+.hero-pie{display:flex;align-items:center;gap:12px;font-size:13.5px;color:#D5DDE9}
+.hero-bar{width:92px;height:5px;border-radius:3px;background:rgba(255,255,255,.18);overflow:hidden;flex:none}
+.hero-bar i{display:block;height:100%;background:linear-gradient(90deg,#3B82F6,#7FB2FF);border-radius:3px}
+.pie-body{padding:16px 18px 18px}
+.pie-meta{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:0 0 6px;font-size:13px;color:var(--tenue)}
+.pie-meta span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pie-meta select{width:auto;min-height:30px;padding:2px 8px;font-size:13px}
 .pie table{width:100%;border-collapse:collapse}
-.pie td{padding:5px 10px;border-bottom:1px solid var(--linea-suave)}
-.pie td:last-child{text-align:right;font-variant-numeric:tabular-nums}
-.pie tr.fuerte td{font-weight:700;border-bottom:1px solid var(--grafito)}
-.pie .indic{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--grafito)}
-.pie .indic div{padding:7px 10px;border-bottom:1px solid var(--linea-suave)}
-.pie .indic div:nth-child(odd){border-right:1px solid var(--linea-suave)}
-.pie .acciones{display:flex;gap:6px;padding:10px;flex-wrap:wrap}
-.pie .acciones .btn{flex:1;justify-content:center}
-.aviso{margin:8px 10px;padding:7px 9px;font-size:12.5px;border-left:3px solid var(--ocre);background:var(--ocre-suave)}
-.aviso.ok{border-color:var(--ok);background:transparent}
+.pie td{padding:11px 10px;border-bottom:1px solid var(--linea-suave)}
+.pie td:last-child{text-align:right;font-variant-numeric:tabular-nums;font-weight:600}
+.pie tr.fuerte td{font-weight:700;background:var(--papel);border-bottom:0;font-size:15.5px}
+.pie tr.fuerte td:first-child{border-radius:6px 0 0 6px}.pie tr.fuerte td:last-child{border-radius:0 6px 6px 0}
+.kpis{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;margin:16px 0}
+.kpi{display:flex;align-items:center;gap:12px;border:1px solid var(--linea);border-radius:8px;padding:14px 12px}
+.kpi .kpi-ic{color:var(--cota);flex:none}
+.kpi .kpi-ic svg.i{width:32px;height:32px}
+.kpi .k{display:block;font-size:12.5px;color:var(--tenue)}
+.kpi b{display:block;font-size:20px;font-weight:700;line-height:1.2;white-space:nowrap}
+.kpi .k{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi>div{min-width:0}
+.btn-guardar{width:100%;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--cota);color:#fff;border:0;border-radius:8px;min-height:52px;font-size:16px;font-weight:600;cursor:pointer}
+.btn-guardar:hover{background:var(--cota-hover)}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
+.tiles button{display:flex;flex-direction:column;align-items:center;gap:6px;border:1px solid var(--linea);background:var(--hoja);border-radius:8px;padding:14px 6px;cursor:pointer;font-size:14px}
+.tiles button svg.i{width:24px;height:24px}
+.tiles button:hover{border-color:var(--cota);color:var(--cota)}
+.aviso{margin:8px 0;padding:8px 10px;font-size:13px;border-left:3px solid var(--ocre);background:var(--ocre-suave);border-radius:0 6px 6px 0}
 
 /* cronograma */
 .crono{margin-top:4px}
 .crono .fila{display:grid;grid-template-columns:200px 1fr 54px;gap:10px;align-items:center;padding:4px 0;font-size:13px}
 .crono .barra{position:relative;height:14px;background:repeating-linear-gradient(90deg,var(--linea-suave) 0 1px,transparent 1px 100%);background-size:calc(100%/var(--sem)) 100%}
-.crono .barra i{position:absolute;top:2px;bottom:2px;background:var(--cota);border-radius:1px}
-.crono .barra i.alt{background:var(--ocre)}
+.crono .barra i{position:absolute;top:2px;bottom:2px;background:var(--cota);border-radius:3px}
+.crono .barra i.alt{background:#8FB4F5}
 .crono .eje{display:grid;grid-template-columns:200px 1fr 54px;gap:10px;font-size:11px;color:var(--tenue)}
 
-.pagos-ed .fila{display:grid;grid-template-columns:minmax(0,1fr) 90px 120px 36px;gap:8px;align-items:center;margin-bottom:6px}
-.icono{border:1px solid var(--linea);background:var(--hoja);border-radius:3px;width:34px;height:34px;cursor:pointer;color:var(--tenue)}
+.pagos-ed .fila{display:grid;grid-template-columns:minmax(0,1fr) 90px 120px 38px;gap:8px;align-items:center;margin-bottom:8px}
+.icono{border:1px solid var(--linea);background:var(--hoja);border-radius:6px;width:36px;height:36px;cursor:pointer;color:var(--tenue)}
 .icono:hover{color:var(--alerta);border-color:var(--alerta)}
 
 /* tablas generales */
-.tabla-wrap{overflow-x:auto;background:var(--hoja);border:1px solid var(--linea);border-radius:4px}
+.tabla-wrap{overflow-x:auto;background:var(--hoja);border:1px solid var(--linea-suave);border-radius:var(--radio);box-shadow:var(--sombra)}
 table.dat{border-collapse:collapse;width:100%;font-size:13.5px}
-table.dat th{text-align:left;font-weight:600;font-size:12px;color:var(--tenue);padding:8px 10px;border-bottom:1px solid var(--grafito);white-space:nowrap;background:var(--hoja);position:sticky;top:0}
-table.dat td{padding:6px 10px;border-bottom:1px solid var(--linea-suave);vertical-align:middle}
+table.dat th{text-align:left;font-weight:600;font-size:12px;color:var(--tenue);padding:11px 12px;border-bottom:1px solid var(--linea);white-space:nowrap;background:var(--hoja);position:sticky;top:0}
+table.dat td{padding:8px 12px;border-bottom:1px solid var(--linea-suave);vertical-align:middle}
 table.dat td.r,table.dat th.r{text-align:right}
 table.dat tr:hover td{background:var(--papel)}
-table.dat input,table.dat select{min-height:30px;padding:4px 6px;font-size:13px;min-width:70px}
+table.dat input,table.dat select{min-height:32px;padding:4px 7px;font-size:13px;min-width:70px}
 table.dat input.largo{min-width:240px}
-.barra-herr{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.barra-herr{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:14px}
 .barra-herr .esp{flex:1}
-.pestanas{display:flex;gap:0;border-bottom:1px solid var(--grafito);margin-bottom:12px;overflow-x:auto}
-.pestanas button{background:transparent;border:1px solid transparent;border-bottom:0;padding:8px 12px;cursor:pointer;white-space:nowrap;color:var(--tenue);border-radius:3px 3px 0 0}
-.pestanas button[aria-selected="true"]{border-color:var(--grafito);background:var(--hoja);color:var(--grafito);font-weight:600;margin-bottom:-1px}
-.estado-chip{display:inline-block;font-size:12px;padding:1px 8px;border-radius:10px;border:1px solid var(--linea)}
-.estado-chip.aceptada{border-color:var(--ok);color:var(--ok)}
-.estado-chip.rechazada{border-color:var(--alerta);color:var(--alerta)}
-.estado-chip.enviada{border-color:var(--cota);color:var(--cota)}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0;border:1px solid var(--grafito);background:var(--hoja);margin-bottom:16px}
-.stats div{padding:10px 14px;border-right:1px solid var(--linea)}
-.stats div:last-child{border-right:0}
-.stats b{display:block;font-size:22px;font-stretch:115%;font-variant-numeric:tabular-nums}
-.stats span{font-size:12px;color:var(--tenue)}
+.pestanas{display:flex;gap:4px;border-bottom:1px solid var(--linea);margin-bottom:12px;overflow-x:auto}
+.pestanas button{background:transparent;border:0;border-bottom:2px solid transparent;padding:9px 14px;cursor:pointer;white-space:nowrap;color:var(--tenue)}
+.pestanas button[aria-selected="true"]{border-bottom-color:var(--cota);color:var(--cota);font-weight:600}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:16px}
+.stats div{padding:14px 16px;background:var(--hoja);border:1px solid var(--linea-suave);border-radius:var(--radio);box-shadow:var(--sombra)}
+.stats b{display:block;font-size:24px;font-variant-numeric:tabular-nums}
+.stats span{font-size:12.5px;color:var(--tenue)}
 .vacio{padding:40px 20px;text-align:center;color:var(--tenue)}
 
 /* documento */
 .doc-herr{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
-.doc{background:#fff;color:#1d2125;max-width:860px;margin:0 auto;padding:48px 52px;border:1px solid var(--linea);box-shadow:0 2px 12px rgba(0,0,0,.08);font-size:13.5px}
-.doc .enc{display:flex;justify-content:space-between;gap:20px;border-bottom:2px solid #1d2125;padding-bottom:14px;margin-bottom:18px}
-.doc .desp{font-stretch:120%;font-weight:750;font-size:20px;line-height:1.1}
-.doc .desp small{display:block;font-stretch:100%;font-weight:400;font-size:12px;color:#555;margin-top:4px}
+.doc{background:#fff;color:#1d2125;max-width:860px;margin:0 auto;padding:48px 52px;border:1px solid var(--linea-suave);border-radius:6px;box-shadow:0 2px 14px rgba(0,0,0,.08);font-size:13.5px}
+.doc .enc{display:flex;justify-content:space-between;gap:20px;border-bottom:2px solid #152033;padding-bottom:14px;margin-bottom:18px}
+.doc .desp{font-weight:700;font-size:20px;line-height:1.1}
+.doc .desp small{display:block;font-weight:400;font-size:12px;color:#555;margin-top:4px}
 .doc .folio{text-align:right;font-size:12.5px}
 .doc .folio b{font-size:16px;display:block}
-.doc h2{font-size:15px;font-stretch:112%;border-bottom:1px solid #1d2125;padding-bottom:3px;margin:22px 0 8px}
+.doc h2{font-size:15px;border-bottom:1px solid #152033;padding-bottom:3px;margin:22px 0 8px}
 .doc .datos{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px}
 .doc .datos div span{color:#666}
 .doc table{width:100%;border-collapse:collapse}
-.doc th{text-align:left;font-size:11.5px;color:#555;border-bottom:1px solid #1d2125;padding:5px 6px}
+.doc th{text-align:left;font-size:11.5px;color:#555;border-bottom:1px solid #152033;padding:5px 6px}
 .doc td{padding:6px;border-bottom:1px solid #e3e3e3;vertical-align:top}
 .doc td.r,.doc th.r{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
-.doc .grp td{font-weight:650;background:#f3f4f2;border-bottom:1px solid #ccc}
+.doc .grp td{font-weight:650;background:#f2f5fa;border-bottom:1px solid #ccc}
 .doc .tot{margin-left:auto;width:320px;margin-top:10px}
 .doc .tot td{border:0;padding:3px 6px}
-.doc .tot tr.g td{border-top:2px solid #1d2125;font-weight:750;font-size:16px;padding-top:7px}
+.doc .tot tr.g td{border-top:2px solid #152033;font-weight:750;font-size:16px;padding-top:7px}
 .doc .letra{text-align:right;font-size:12px;color:#444;margin-top:4px}
 .doc ul{margin:4px 0 0;padding-left:18px}
 .doc .dos{display:grid;grid-template-columns:1fr 1fr;gap:24px}
 .doc .firmas{display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-top:56px;text-align:center;font-size:12.5px}
-.doc .firmas div{border-top:1px solid #1d2125;padding-top:6px}
-.doc .crono .barra i{background:#2D5C88}
+.doc .firmas div{border-top:1px solid #152033;padding-top:6px}
+.doc .crono .barra i{background:#1463E6}
+.doc .crono .barra i.alt{background:#8FB4F5}
 .doc .crono .barra{background:repeating-linear-gradient(90deg,#e6e6e6 0 1px,transparent 1px 100%);background-size:calc(100%/var(--sem)) 100%}
 .doc .pie-doc{margin-top:28px;font-size:11px;color:#777;border-top:1px solid #ddd;padding-top:8px}
 
-.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--grafito);color:var(--hoja);padding:9px 16px;border-radius:3px;opacity:0;transition:.25s;z-index:50;font-size:14px;pointer-events:none}
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:10px 18px;border-radius:8px;opacity:0;transition:.25s;z-index:60;font-size:14px;pointer-events:none}
 .toast.ver{opacity:1;transform:translateX(-50%) translateY(0)}
-.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:40;padding:20px}
+.modal{position:fixed;inset:0;background:rgba(8,13,20,.55);display:none;align-items:center;justify-content:center;z-index:50;padding:20px}
 .modal.ver{display:flex}
-.modal .caja{background:var(--hoja);border:2px solid var(--grafito);max-width:640px;width:100%;padding:18px;max-height:85vh;overflow:auto}
+.modal .caja{background:var(--hoja);border-radius:var(--radio);box-shadow:0 20px 50px rgba(0,0,0,.3);max-width:640px;width:100%;padding:22px;max-height:85vh;overflow:auto}
 .modal textarea{min-height:260px;font-size:13px}
-.guia{max-width:78ch;background:var(--hoja);border:1px solid var(--linea);padding:22px 26px;border-radius:4px}
+.guia{max-width:78ch;background:var(--hoja);border:1px solid var(--linea-suave);padding:24px 28px;border-radius:var(--radio);box-shadow:var(--sombra)}
 .guia h2{margin:22px 0 6px}.guia h2:first-child{margin-top:0}
 .guia p,.guia li{line-height:1.6}
-.guia code{background:var(--papel);padding:1px 5px;border-radius:2px;font-size:13px}
+.guia code{background:var(--papel);padding:1px 5px;border-radius:4px;font-size:13px}
 .barra-movil{display:none}
 
+@media (max-width:1380px){ .cotizar{grid-template-columns:minmax(0,1fr) 400px} .hero-total{font-size:44px} }
+@media (max-width:1180px){ .marca{width:auto} .marca .lema{display:none} .shell{grid-template-columns:72px minmax(0,1fr)} .lateral nav span{display:none} .lateral nav button,.lateral nav a{justify-content:center;padding:13px 0} .lateral .ver{display:none} }
 @media (max-width:1020px){
   .cotizar{grid-template-columns:1fr}
   .pie{position:static}
-  .barra-movil{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--grafito);color:var(--hoja);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));align-items:center;justify-content:space-between;gap:10px}
-  .barra-movil b{font-size:20px;font-stretch:115%}
-  .barra-movil button{background:var(--hoja);color:var(--grafito);border:0;padding:7px 12px;border-radius:3px;font-weight:600}
+  .barra-movil{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--navy);color:#fff;padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));align-items:center;justify-content:space-between;gap:10px}
+  .barra-movil b{font-size:21px}
+  .barra-movil button{background:var(--cota);color:#fff;border:0;padding:8px 14px;border-radius:6px;font-weight:600}
+}
+@media (max-width:760px){
+  .shell{grid-template-columns:1fr}
+  .lateral{display:none}
+  .top-in{height:auto;flex-wrap:wrap;padding:10px 14px 0;gap:10px}
+  .marca svg{width:34px;height:34px}.marca b{font-size:17px}
+  .cuenta{margin-left:auto}
+  .nav{order:3;width:100%;height:44px;margin:0}
+  .estado-nube{max-width:150px}
 }
 @media (max-width:680px){
-  main{padding:16px 12px 90px}
+  main{padding:14px 12px 90px}
+  .paso>header{padding:14px 14px 12px}.paso .cuerpo{margin:0 14px}
   .metodos{grid-template-columns:1fr}
   .serv{grid-template-columns:24px minmax(0,1fr) 96px;row-gap:6px}
   .serv .q,.serv .ov{grid-column:2/3}
@@ -228,14 +296,16 @@ table.dat input.largo{min-width:240px}
   .crono .fila,.crono .eje{grid-template-columns:110px 1fr 40px}
   .doc{padding:24px 18px}
   .doc .datos,.doc .dos{grid-template-columns:1fr}
-  .pagos-ed .fila{grid-template-columns:1fr 70px 36px}
+  .pagos-ed .fila{grid-template-columns:1fr 70px 38px}
   .pagos-ed .fila .mto{display:none}
-  .marca span{display:none}
+  .hero-total{font-size:40px}
+  .kpi{padding:10px;gap:8px}.kpi b{font-size:17px;white-space:normal}.kpi .kpi-ic svg.i{width:24px;height:24px}.kpi .k{white-space:normal}
 }
 @media (prefers-reduced-motion:reduce){*{transition:none!important}}
 @media print{
   body{background:#fff}
-  .top,.doc-herr,.vista:not(#v-doc),.barra-movil,.toast{display:none!important}
+  .top,.lateral,.doc-herr,.vista:not(#v-doc),.barra-movil,.toast{display:none!important}
+  .shell{display:block}
   #v-doc{display:block!important}
   main{padding:0;max-width:none}
   .doc{border:0;box-shadow:none;padding:0;max-width:none}
@@ -247,7 +317,7 @@ table.dat input.largo{min-width:240px}
 </head>
 <body>
 <header class="top"><div class="top-in">
-  <div class="marca"><b>Cotizador</b><span>Honorarios de proyectos de arquitectura</span></div>
+  <a class="marca" href="../" title="Mis apps"><svg class="i" viewBox="0 0 48 48" aria-hidden="true"><path d="M3 44h42M7 44V21L24 6l17 15v23M13 44V23M19 44V18M25 44V13M31 44V18M37 44V24"/></svg><span><b>COTIZADOR</b><span class="lema">Honorarios de proyectos de arquitectura</span></span></a>
   <nav class="nav" aria-label="Secciones">
     <button data-vista="cotizar" aria-current="page">Cotizar</button>
     <button data-vista="doc">Documento</button>
@@ -256,9 +326,25 @@ table.dat input.largo{min-width:240px}
     <button data-vista="despacho">Mi despacho</button>
     <button data-vista="guia">Cómo calcula</button>
   </nav>
-  <a class="estado-nube" href="../" style="color:inherit">Mis apps</a>
-  <button class="estado-nube" id="estadoNube" type="button" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:inherit;border-radius:3px;padding:4px 9px;cursor:pointer">Solo en este dispositivo</button>
+  <div class="cuenta">
+    <button class="estado-nube" id="estadoNube" type="button">Solo en este dispositivo</button>
+    <button class="avatar" id="avatar" type="button" aria-label="Cuenta">··</button>
+  </div>
 </div></header>
+<div class="shell">
+<aside class="lateral" aria-label="Menú">
+  <nav>
+    <button data-vista="cotizar" aria-current="page"><i data-ic="calc"></i><span>Cotizar</span></button>
+    <button data-vista="doc"><i data-ic="doc"></i><span>Documento</span></button>
+    <button data-vista="hist"><i data-ic="history"></i><span>Historial</span></button>
+    <button data-vista="cat"><i data-ic="catalog"></i><span>Catálogo de precios</span></button>
+    <button data-vista="despacho"><i data-ic="user"></i><span>Mi despacho</span></button>
+    <button data-vista="guia"><i data-ic="help"></i><span>Cómo calcula</span></button>
+    <a href="../" class="volver"><i data-ic="back"></i><span>Mis apps</span></a>
+  </nav>
+  <div class="arte" data-fachada="xMidYMax"></div>
+  <span class="ver">v1.0</span>
+</aside>
 
 <main>
 <!-- ============ COTIZAR ============ -->
@@ -269,23 +355,23 @@ table.dat input.largo{min-width:240px}
         <header><span class="n">1</span><div><h2>Proyecto y cliente</h2><p>Con tipología, m² y acabado ya tienes un precio estimado.</p></div></header>
         <div class="cuerpo">
           <div class="rejilla">
-            <div class="campo"><label for="f-tip">Tipología</label><select id="f-tip" data-k="proyecto.tipologia"></select></div>
-            <div class="campo"><label for="f-m2">m² de construcción</label><input id="f-m2" type="number" min="0" step="1" data-k="proyecto.m2" data-n></div>
-            <div class="campo"><label for="f-ter">m² de terreno</label><input id="f-ter" type="number" min="0" step="1" data-k="proyecto.m2_terreno" data-n></div>
-            <div class="campo"><label for="f-niv">Niveles</label><input id="f-niv" type="number" min="1" step="1" data-k="proyecto.niveles" data-n></div>
+            <div class="campo"><label for="f-tip">Tipología</label><div class="inp"><i data-ic="home"></i><select id="f-tip" data-k="proyecto.tipologia"></select></div></div>
+            <div class="campo"><label for="f-m2">m² de construcción</label><div class="inp con-suf"><i data-ic="area"></i><input id="f-m2" type="number" min="0" step="1" data-k="proyecto.m2" data-n><span class="suf">m²</span></div></div>
+            <div class="campo"><label for="f-ter">m² de terreno</label><div class="inp con-suf"><i data-ic="grid"></i><input id="f-ter" type="number" min="0" step="1" data-k="proyecto.m2_terreno" data-n><span class="suf">m²</span></div></div>
+            <div class="campo"><label for="f-niv">Niveles</label><div class="inp"><i data-ic="layers"></i><input id="f-niv" type="number" min="1" step="1" data-k="proyecto.niveles" data-n></div></div>
           </div>
-          <div class="rejilla" style="margin-top:14px">
+          <div class="rejilla fila-seg" style="margin-top:14px">
             <div class="campo"><span class="etq">Nivel de acabados</span><div class="seg" data-seg="proyecto.acabado"><button data-v="c1">Económico</button><button data-v="c2">Medio</button><button data-v="c3">Premium</button></div></div>
             <div class="campo"><span class="etq">Complejidad</span><div class="seg" data-seg="proyecto.complejidad" id="segComp"></div></div>
             <div class="campo"><span class="etq">Urgencia</span><div class="seg" data-seg="proyecto.urgencia" id="segUrg"></div></div>
           </div>
           <div class="rejilla" style="margin-top:14px">
             <div class="campo"><label for="f-pnom">Nombre del proyecto</label><input id="f-pnom" type="text" data-k="proyecto.nombre" placeholder="Casa Valle Real"></div>
-            <div class="campo"><label for="f-ubi">Ubicación</label><input id="f-ubi" type="text" data-k="proyecto.ubicacion" placeholder="Zapopan, Jalisco"></div>
-            <div class="campo"><label for="f-cli">Cliente</label><input id="f-cli" type="text" data-k="cliente.nombre" placeholder="Nombre completo"></div>
-            <div class="campo"><label for="f-emp">Empresa (opcional)</label><input id="f-emp" type="text" data-k="cliente.empresa"></div>
-            <div class="campo"><label for="f-tel">Teléfono</label><input id="f-tel" type="tel" data-k="cliente.tel"></div>
-            <div class="campo"><label for="f-cor">Correo</label><input id="f-cor" type="email" data-k="cliente.correo"></div>
+            <div class="campo"><label for="f-ubi">Ubicación</label><div class="inp"><i data-ic="pin"></i><input id="f-ubi" type="text" data-k="proyecto.ubicacion" placeholder="Zapopan, Jalisco"></div></div>
+            <div class="campo"><label for="f-cli">Cliente</label><div class="inp"><i data-ic="user"></i><input id="f-cli" type="text" data-k="cliente.nombre" placeholder="Nombre completo"></div></div>
+            <div class="campo"><label for="f-emp">Empresa (opcional)</label><div class="inp"><i data-ic="building"></i><input id="f-emp" type="text" data-k="cliente.empresa" placeholder="Empresa"></div></div>
+            <div class="campo"><label for="f-tel">Teléfono</label><div class="inp"><i data-ic="phone"></i><input id="f-tel" type="tel" data-k="cliente.tel"></div></div>
+            <div class="campo"><label for="f-cor">Correo</label><div class="inp"><i data-ic="mail"></i><input id="f-cor" type="email" data-k="cliente.correo"></div></div>
           </div>
         </div>
       </div>
@@ -294,17 +380,17 @@ table.dat input.largo{min-width:240px}
         <header><span class="n">2</span><div><h2>Cómo calcular el honorario de arquitectura</h2><p>Elige el método; los demás servicios se suman aparte.</p></div></header>
         <div class="cuerpo">
           <div class="metodos" data-seg="proyecto.metodo">
-            <button class="metodo" data-v="pct"><b>% del costo de obra</b><span>Estándar de aranceles. Escala con tamaño y acabados.</span></button>
-            <button class="metodo" data-v="m2"><b>Tarifa por m²</b><span>Rápido y fácil de explicar al cliente.</span></button>
-            <button class="metodo" data-v="manual"><b>Monto fijo</b><span>Cuando ya negociaste una cifra.</span></button>
+            <button class="metodo" data-v="pct"><span class="m-ic"><i data-ic="percentbox"></i></span><span><b>% del costo de obra</b><span class="d">Estándar de aranceles. Escala con tamaño y acabados.</span></span><span class="ok"><i data-ic="check"></i></span></button>
+            <button class="metodo" data-v="m2"><span class="m-ic"><i data-ic="calc"></i></span><span><b>Tarifa por m²</b><span class="d">Rápido y fácil de explicar al cliente.</span></span><span class="ok"><i data-ic="check"></i></span></button>
+            <button class="metodo" data-v="manual"><span class="m-ic"><i data-ic="coins"></i></span><span><b>Monto fijo</b><span class="d">Cuando ya negociaste una cifra.</span></span><span class="ok"><i data-ic="check"></i></span></button>
           </div>
           <div class="rejilla">
-            <div class="campo"><label for="f-cobra">Costo de obra estimado</label><input id="f-cobra" type="number" min="0" step="1000" data-k="proyecto.costo_obra_manual" data-n><span class="ayuda" id="ayCobra"></span></div>
-            <div class="campo" id="c-pct"><label for="f-pct">% de honorarios</label><input id="f-pct" type="number" min="0" step="0.1" data-k="proyecto.pct_manual" data-n><span class="ayuda" id="ayPct"></span></div>
-            <div class="campo" id="c-m2"><label for="f-tm2">Tarifa $/m²</label><input id="f-tm2" type="number" min="0" step="10" data-k="proyecto.tarifa_m2" data-n><span class="ayuda" id="ayTm2"></span></div>
-            <div class="campo" id="c-man"><label for="f-hman">Honorario de arquitectura</label><input id="f-hman" type="number" min="0" step="1000" data-k="proyecto.honorario_manual" data-n></div>
+            <div class="campo"><label for="f-cobra">Costo de obra estimado</label><div class="inp"><i data-ic="dollar"></i><input id="f-cobra" type="number" min="0" step="1000" data-k="proyecto.costo_obra_manual" data-n></div><span class="ayuda" id="ayCobra"></span></div>
+            <div class="campo" id="c-pct"><label for="f-pct">% de honorarios</label><div class="inp"><i data-ic="percent"></i><input id="f-pct" type="number" min="0" step="0.1" data-k="proyecto.pct_manual" data-n></div><span class="ayuda" id="ayPct"></span></div>
+            <div class="campo" id="c-m2"><label for="f-tm2">Tarifa $/m²</label><div class="inp con-suf"><i data-ic="dollar"></i><input id="f-tm2" type="number" min="0" step="10" data-k="proyecto.tarifa_m2" data-n><span class="suf">/m²</span></div><span class="ayuda" id="ayTm2"></span></div>
+            <div class="campo" id="c-man"><label for="f-hman">Honorario de arquitectura</label><div class="inp"><i data-ic="dollar"></i><input id="f-hman" type="number" min="0" step="1000" data-k="proyecto.honorario_manual" data-n></div></div>
           </div>
-          <p class="ayuda" style="margin:10px 0 0" id="ayFactores"></p>
+          <div class="franja"><i data-ic="info"></i><span id="ayFactores"></span></div>
         </div>
       </div>
 
@@ -439,6 +525,7 @@ table.dat input.largo{min-width:240px}
   </div>
 </section>
 </main>
+</div>
 
 <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTit"><div class="caja">
   <h2 id="modalTit" style="margin-bottom:10px">Texto</h2>
@@ -497,6 +584,54 @@ function numLetras(n){
   return (s.charAt(0).toUpperCase()+s.slice(1)) + " pesos " + String(cent).padStart(2,"0") + "/100 M.N.";
 }
 
+/* ---------- íconos y arte ---------- */
+const ICONOS = {"home": "M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z", "area": "M4 20V9M4 20h11M4 20L18 6M13 6h5v5", "grid": "M4 4h16v16H4zM4 12h16M12 4v16", "layers": "M12 3l9 5-9 5-9-5zM3 12.5l9 5 9-5M3 16.5l9 5 9-5", "pin": "M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21zM12 12a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z", "user": "M12 12a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM4 21a8 8 0 0 1 16 0", "building": "M5 21V4h10v17M15 9h4v12M3 21h18M8 8h4M8 12h4M8 16h4", "phone": "M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2", "mail": "M3 6h18v12H3zM3 7l9 6 9-6", "dollar": "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM15 9.5c-.5-1-1.6-1.5-3-1.5-1.7 0-3 .9-3 2.2 0 3 6 1.6 6 4.6 0 1.3-1.3 2.2-3 2.2-1.4 0-2.6-.6-3-1.6M12 6.5v11", "percent": "M19 5L5 19M7.5 9a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3zM16.5 18a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z", "percentbox": "M4 3h16v18H4zM16 8l-8 8M9 9h.01M15 15h.01", "calc": "M6 3h12v18H6zM9 7h6M9 11h.01M12 11h.01M15 11h.01M9 14h.01M12 14h.01M15 14h.01M9 17h.01M12 17h.01M15 17h.01", "coins": "M12 8c4.4 0 8-1.3 8-3s-3.6-3-8-3-8 1.3-8 3 3.6 3 8 3zM4 5v5c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 10v5c0 1.7 3.6 3 8 3s8-1.3 8-3v-5M4 15v4c0 1.7 3.6 3 8 3s8-1.3 8-3v-4", "doc": "M6 3h8l4 4v14H6zM14 3v4h4M9 12h6M9 16h6", "history": "M3 12a9 9 0 1 0 3-6.7M3 4v4h4M12 7v5l3 2", "catalog": "M5 5a2 2 0 0 1 2-2h12v16H7a2 2 0 0 0-2 2zM5 21a2 2 0 0 1 2-2h12v2M9 7h6M9 11h6", "help": "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.6.3-1 .9-1 1.6v.6M12 17h.01", "info": "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 11v5M12 8h.01", "check": "M5 12l4 4 10-10", "chev": "M6 9l6 6 6-6", "plus": "M12 5v14M5 12h14", "back": "M15 6l-6 6 6 6", "copy": "M9 9h11v11H9zM5 15V4h11", "save": "M6 3h8l4 4v14H6zM14 3v4h4M9 14l2 2 4-4", "pie": "M12 3v9h9A9 9 0 1 1 12 3zM15 3.5A9 9 0 0 1 20.5 9H15z", "calendar": "M4 6h16v15H4zM4 10h16M8 3v4M16 3v4M8 14h2M14 14h2M8 17h2", "clock": "M12 21a9 9 0 1 0 0-18 9 9 0 0 0 0 18zM12 7v5l3 2", "bars": "M5 20v-6M10 20V9M15 20v-8M20 20V4", "clipboard": "M8 3h8v3H8zM6 5H5v16h14V5h-1M9 12h6M9 16h4", "compass": "M12 3v3M12 6L6 21M12 6l6 15M8 15h8", "bolt": "M13 3L5 14h6l-1 7 8-11h-6z", "eye": "M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12zM12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z", "stamp": "M9 3h6v6l3 3v3H6v-3l3-3zM5 21h14M7 18h10", "lamp": "M9 3h6l3 8H6zM12 11v8M8 21h8", "leaf": "M5 19c0-8 6-14 15-14 0 9-6 15-14 15M5 19l7-7", "helmet": "M3 18h18M5 18v-3a7 7 0 0 1 14 0v3M10 8V5h4v3", "chat": "M4 5h16v11H9l-5 4z", "folder": "M3 6h6l2 2h10v11H3z"};
+const ICON = n => `<svg class="i" viewBox="0 0 24 24" aria-hidden="true"><path d="${ICONOS[n]||ICONOS.folder}"/></svg>`;
+const ICONO_GRUPO = {"Estudios previos":"clipboard","Arquitectura":"compass","Ingenierías":"bolt","Visualización":"eye","Trámites":"stamp","Costos":"calc","Interiorismo":"lamp","Paisajismo":"leaf","Obra":"helmet","Consultoría":"chat"};
+let _fid=0;
+function FACHADA(align){
+  const id="fa"+(++_fid);
+  return `<svg viewBox="0 0 400 520" preserveAspectRatio="${align} slice" aria-hidden="true"><defs>
+  <linearGradient id="${id}c" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#1A2433"/><stop offset="1" stop-color="#0B1119"/></linearGradient>
+  <linearGradient id="${id}a" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#2E405A"/><stop offset="1" stop-color="#141D2A"/></linearGradient>
+  <linearGradient id="${id}b" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#0F1722"/><stop offset="1" stop-color="#223047"/></linearGradient>
+  <pattern id="${id}v" width="22" height="26" patternUnits="userSpaceOnUse"><rect x="2" y="2" width="18" height="22" fill="#3A4F6B" opacity=".5"/><path d="M0 0H22V26" fill="none" stroke="#0B1119" stroke-width="2"/></pattern>
+  <pattern id="${id}w" width="34" height="18" patternUnits="userSpaceOnUse"><path d="M0 17H34" stroke="#61758F" stroke-width="1.4" opacity=".55"/><path d="M33 0V18" stroke="#0B1119" stroke-width="2"/></pattern></defs>
+  <rect width="400" height="520" fill="url(#${id}c)"/>
+  <polygon points="214,60 340,28 340,520 214,520" fill="url(#${id}b)"/><polygon points="214,60 340,28 340,520 214,520" fill="url(#${id}w)"/>
+  <polygon points="40,150 215,95 215,520 40,520" fill="url(#${id}a)"/><polygon points="40,150 215,95 215,520 40,520" fill="url(#${id}v)"/>
+  <polygon points="215,95 292,128 292,520 215,520" fill="#0E1520"/><polygon points="215,95 292,128 292,520 215,520" fill="url(#${id}w)" opacity=".7"/>
+  <g fill="#F2C27B" opacity=".5"><rect x="68" y="314" width="18" height="22"/><rect x="156" y="366" width="18" height="22"/><rect x="112" y="418" width="18" height="22"/><rect x="239" y="289" width="32" height="15"/><rect x="239" y="397" width="32" height="15"/></g>
+  <rect y="492" width="400" height="28" fill="#0A0F16"/></svg>`;
+}
+function FACHADA_HERO(){
+  const id="fh"+(++_fid); let v="", h="", luz="";
+  for(let x=262;x<=470;x+=17) v+=`M${x} 0V180`;
+  for(let y=6;y<=180;y+=13) h+=`M240 ${y}H470`;
+  [[279,32],[347,71],[415,45],[313,123],[432,136],[381,110]].forEach(([x,y])=>luz+=`<rect x="${x+1}" y="${y+1}" width="15" height="11"/>`);
+  return `<svg viewBox="0 0 470 180" preserveAspectRatio="xMaxYMid slice" aria-hidden="true"><defs>
+  <linearGradient id="${id}s" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#121B28"/><stop offset="1" stop-color="#1D2A3D"/></linearGradient>
+  <linearGradient id="${id}t" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#22324A"/><stop offset=".6" stop-color="#3A5172"/><stop offset="1" stop-color="#5E7799"/></linearGradient>
+  <clipPath id="${id}c"><polygon points="262,0 470,0 470,180 290,180"/></clipPath></defs>
+  <rect width="470" height="180" fill="url(#${id}s)"/>
+  <polygon points="200,40 262,22 262,180 200,180" fill="#151F2D"/><path d="M200 60H262M200 80H262M200 100H262M200 120H262M200 140H262M200 160H262M221 30V180M241 25V180" stroke="#2A3A52" stroke-width="1"/>
+  <g clip-path="url(#${id}c)"><rect x="240" width="230" height="180" fill="url(#${id}t)"/>
+  <path d="${v}" stroke="#0F1722" stroke-width="2.2"/><path d="${h}" stroke="#0F1722" stroke-width="1.6" opacity=".85"/>
+  <g fill="#F4C987" opacity=".55">${luz}</g>
+  <polygon points="262,0 470,0 470,60" fill="#ffffff" opacity=".06"/></g></svg>`;
+}
+function ponerIconos(raiz){
+  (raiz||document).querySelectorAll("i[data-ic]").forEach(el=>{ el.outerHTML=ICON(el.dataset.ic); });
+  (raiz||document).querySelectorAll("[data-fachada]").forEach(el=>{ if(!el.firstChild) el.innerHTML=FACHADA(el.dataset.fachada); });
+}
+ponerIconos();
+function iniciales(){
+  const src=(DESP.arquitecto||"").trim() || (Store.email||"").split("@")[0];
+  const p=src.replace(/[^\p{L}\s.]/gu," ").split(/[\s.]+/).filter(Boolean);
+  return ((p[0]||"")[0]||"·").toUpperCase()+((p[1]||"")[0]||"").toUpperCase();
+}
+function pintarAvatar(){ const a=$("#avatar"); if(a){ a.textContent=iniciales(); a.title=Store.email?("Sesión: "+Store.email):"Entrar con tu cuenta"; } }
+
 /* ---------- almacenamiento: este navegador + Supabase personal (tabla registros) ---------- */
 const SUPA = { url:"https://gosfucaweteaqrvftgfq.supabase.co", key:"sb_publishable_ooOdrO4PNPyeOUdxqEB4pQ_xuYIo59d", app:"cotizador", table:"registros" };
 const Store = {
@@ -508,7 +643,8 @@ const Store = {
   estado(s,txt){
     this.state=s; const el=$("#estadoNube"); if(!el) return;
     el.className="estado-nube "+(s==="on"?"on":s==="err"?"err":"");
-    el.textContent = txt || ({on:"Sincronizado"+(this.email?" · "+this.email:""), busy:"Guardando en la nube…", err:"Sin conexión con la nube", off:"Solo en este dispositivo · Entrar"})[s];
+    el.textContent = txt || ({on:"Sincronizado", busy:"Guardando en la nube…", err:"Sin conexión con la nube", off:"Solo en este dispositivo · Entrar"})[s];
+    if(typeof pintarAvatar==="function") pintarAvatar();
   },
   write(id,data){
     if(!this.sb) return;
@@ -621,7 +757,7 @@ async function iniciarNube(){
   Store.sb.auth.onAuthStateChange(ev=>{ if(ev==="SIGNED_OUT") location.reload(); });
 }
 document.addEventListener("click",async e=>{
-  if(!e.target.closest("#estadoNube")) return;
+  if(!e.target.closest("#estadoNube,#avatar")) return;
   if(Store.sb && Store.uid){ if(confirm("¿Cerrar sesión"+(Store.email?" de "+Store.email:"")+"? Tus datos se quedan en la nube y en este navegador.")){ await Store.sb.auth.signOut(); location.reload(); } }
   else { Store.ldel("solo_local"); location.reload(); }
 });
@@ -781,7 +917,7 @@ function llenarSelects(){
   tip.innerHTML=Object.entries(grupos).map(([g,l])=>`<optgroup label="${esc(g)}">${l.map(t=>`<option value="${esc(t.clave)}">${esc(t.nombre)}</option>`).join("")}</optgroup>`).join("");
   $("#segComp").innerHTML=factores("complejidad").map(f=>`<button data-v="${esc(f.clave)}" title="${esc(f.notas||"")}">${esc(f.nombre)}</button>`).join("");
   $("#segUrg").innerHTML=factores("urgencia").map(f=>`<button data-v="${esc(f.clave)}">${esc(f.nombre)}</button>`).join("");
-  $("#paquetes").innerHTML='<span class="etq" style="margin-right:4px">Paquetes:</span>'+CAT.paquete.map(p=>`<button class="btn chico leve" data-paq="${esc(p.clave)}" type="button" title="${esc(p.lista.length)} servicios">${esc(p.nombre)}</button>`).join("")+'<button class="btn chico leve" data-paq="_ninguno" type="button">Quitar todo</button>';
+  $("#paquetes").innerHTML='<span class="etq" style="margin-right:6px">Paquetes:</span>'+CAT.paquete.map(p=>`<button class="chip" data-paq="${esc(p.clave)}" type="button" aria-pressed="false" title="${esc(p.lista.length)} servicios">${esc(p.nombre)}</button>`).join("")+'<button class="chip" data-paq="_ninguno" type="button" aria-pressed="false">Quitar todo</button>';
 }
 function pintarForm(){
   $$("[data-k]").forEach(el=>{ const v=getPath(Q,el.dataset.k); if(el.hasAttribute("data-lines")) el.value=(v||[]).join("\n"); else el.value=v??""; });
@@ -793,9 +929,12 @@ function pintarServicios(){
   CAT.servicio.forEach(s=>{ (grupos[s.grupo]=grupos[s.grupo]||[]).push(s); });
   const needQty=u=>["pieza","mes","hora","lote"].includes(u);
   const uLab={pct_hon:"% hon.",m2:"$/m²",m2_terreno:"$/m² ter.",pct_obra:"% obra",pieza:"pza",mes:"meses",hora:"horas",lote:"lote"};
-  $("#servicios").innerHTML=Object.entries(grupos).map(([g,l])=>`
-    <div class="grupo-serv"><h3>${esc(g)} <span class="num" data-gtot="${esc(g)}"></span></h3>
-    <div class="serv serv-cab"><div></div><div>Servicio</div><div>Cantidad</div><div>Precio a mano</div><div>Importe</div></div>
+  const abiertos=new Set($$("#servicios details[open]").map(d=>d.dataset.g));
+  const primera=!$("#servicios details");
+  $("#servicios").innerHTML=Object.entries(grupos).map(([g,l])=>{
+    const abierto = primera ? l.some(s=>srv(Q,s.clave).on) : abiertos.has(g);
+    return `<details class="grupo-serv" data-g="${esc(g)}" ${abierto?"open":""}><summary>${ICON(ICONO_GRUPO[g]||"folder")}<b>${esc(g)}</b><span class="gt num" data-gtot="${esc(g)}"></span>${ICON("chev").replace('class="i"','class="i chev"')}</summary>
+    <div class="filas"><div class="serv serv-cab"><div></div><div>Servicio</div><div>Cantidad</div><div>Precio a mano</div><div>Importe</div></div>
     ${l.map(s=>{ const st=srv(Q,s.clave); return `
       <div class="serv ${st.on?"":"off"}" data-row="${esc(s.clave)}">
         <input type="checkbox" data-srv-on="${esc(s.clave)}" ${st.on?"checked":""} aria-label="Incluir ${esc(s.nombre)}">
@@ -804,7 +943,7 @@ function pintarServicios(){
         <div class="ov"><input type="number" min="0" step="100" placeholder="Catálogo" value="${esc(st.precio)}" data-srv-precio="${esc(s.clave)}" aria-label="Precio a mano"></div>
         <div class="imp num" data-imp="${esc(s.clave)}">—</div>
       </div>`; }).join("")}
-    </div>`).join("");
+    </div></details>`; }).join("");
 }
 function pintarPagos(){
   $("#pagosEd").innerHTML=Q.pagos.map((p,i)=>`<div class="fila">
@@ -848,6 +987,8 @@ function recalc(){
   $$("[data-gtot]").forEach(el=>{ const g=el.dataset.gtot; const t=r.lineas.filter(l=>l.grupo===g).reduce((a,l)=>a+l.imp,0); el.textContent=t?fmt(t):""; });
   Q.pagos.forEach((p,i)=>{ const el=$(`[data-pago-m="${i}"]`); if(el) el.textContent=fmt(r.total*num(p.pct)/100); });
   $("#cronoForm").innerHTML=cronoHTML(r);
+  const on=new Set(Object.entries(Q.servicios).filter(([k,v])=>v.on).map(([k])=>k));
+  $$("[data-paq]").forEach(b=>{ const p=CAT.paquete.find(x=>x.clave===b.dataset.paq); const igual = p ? (p.lista.length===on.size && p.lista.every(k=>on.has(k))) : on.size===0; b.setAttribute("aria-pressed", igual?"true":"false"); });
   pintarPie(r);
   $("#totMovil").textContent=fmt(r.total);
   autosave();
@@ -859,35 +1000,43 @@ function pintarPie(r){
   if(r.margen!==null && r.margen<P("margen_objetivo")) avisos.push(`Margen estimado de ${fmtN(r.margen,0)}% en arquitectura, debajo de tu objetivo de ${fmtN(P("margen_objetivo"))}%.`);
   if(r.pctArq>0 && Math.abs(r.pctArq-100)>0.01) avisos.push(`Se cobra ${fmtN(r.pctArq)}% del honorario de arquitectura porque hay fases desactivadas.`);
   if(!r.m2) avisos.push("Escribe los m² de construcción.");
+  const pctObra = r.costoObra ? r.subHon/r.costoObra*100 : 0;
+  const barra = Math.max(4, Math.min(100, pctObra/12*100));
+  const malo = r.margen!==null && r.margen<P("margen_objetivo");
+  const kpi=(ic,k,v,col)=>`<div class="kpi"><span class="kpi-ic">${ICON(ic)}</span><div><span class="k">${k}</span><b class="num"${col?` style="color:${col}"`:""}>${v}</b></div></div>`;
   $("#pie").innerHTML=`
-    <div class="fila2"><div class="celda"><span class="k">Proyecto</span><span class="v">${esc(Q.proyecto.nombre||r.t.nombre)}</span></div><div class="celda"><span class="k">Cliente</span><span class="v">${esc(Q.cliente.nombre||"Sin nombre")}</span></div></div>
-    <div class="fila2"><div class="celda"><span class="k">Folio</span><span class="v num">${esc(Q.folio)}</span></div><div class="celda"><span class="k">Estado</span>
-      <select id="pieEstado" style="min-height:28px;padding:2px 6px;margin-top:2px">${est.map(e=>`<option ${Q.estado===e?"selected":""}>${e}</option>`).join("")}</select></div></div>
-    <div class="total"><span class="k">Total de la cotización${Q.ajustes.iva==="1"?" con IVA":""}</span><span class="v num">${fmt(r.total)}</span>
-      <div class="cota-wrap"><div class="cota-linea"><i>${fmtN(r.m2)} m² · ${fmt(r.m2?r.subHon/r.m2:0)} por m² en honorarios</i></div></div></div>
-    <table>
-      <tr><td>Costo de obra estimado</td><td>${fmt(r.costoObra)}</td></tr>
-      <tr><td>Honorario de arquitectura</td><td>${fmt(r.honArq)}</td></tr>
-      <tr><td>Ingenierías y otros servicios</td><td>${fmt(r.otros)}</td></tr>
-      ${r.viaticos?`<tr><td>Viáticos</td><td>${fmt(r.viaticos)}</td></tr>`:""}
-      ${r.descuento?`<tr><td>Descuento ${fmtN(num(Q.ajustes.descuento),1)}%</td><td>−${fmt(r.descuento)}</td></tr>`:""}
-      <tr class="fuerte"><td>Subtotal</td><td>${fmt(r.baseImp)}</td></tr>
-      ${r.iva?`<tr><td>IVA ${fmtN(P("iva"))}%</td><td>${fmt(r.iva)}</td></tr>`:""}
-      ${r.retIsr?`<tr><td>Retención ISR</td><td>−${fmt(r.retIsr)}</td></tr>`:""}
-      ${r.retIva?`<tr><td>Retención IVA</td><td>−${fmt(r.retIva)}</td></tr>`:""}
-    </table>
-    <div class="indic">
-      <div><span class="k">Honorarios sobre obra</span><b class="num">${r.costoObra?fmtN(r.subHon/r.costoObra*100,1):0}%</b></div>
-      <div><span class="k">Tiempo de proyecto</span><b class="num">${fmtN(r.semanas,1)} semanas</b></div>
-      <div><span class="k">Horas estimadas</span><b class="num">${fmtN(r.horas)} h</b></div>
-      <div><span class="k">Margen en arquitectura</span><b class="num" style="color:${r.margen!==null&&r.margen<P("margen_objetivo")?"var(--alerta)":"var(--ok)"}">${r.margen===null?"—":fmtN(r.margen)+"%"}</b></div>
-    </div>
-    ${avisos.map(a=>`<div class="aviso">${esc(a)}</div>`).join("")}
-    <div class="acciones">
-      <button class="btn prim" id="pieGuardar" type="button">Guardar</button>
-      <button class="btn" data-ir="doc" type="button">Ver documento</button>
-      <button class="btn leve" id="pieNueva" type="button">Nueva</button>
-      <button class="btn leve" id="pieDup" type="button">Duplicar</button>
+    <div class="hero"><div class="arte">${FACHADA_HERO()}</div><div class="hero-in">
+      <div class="hero-top"><span>Total de la cotización${Q.ajustes.iva==="1"?" con IVA":""}</span><span class="folio num">${esc(Q.folio)}</span></div>
+      <b class="hero-total num">${fmt(r.total)}</b>
+      <div class="hero-pie"><span class="hero-bar"><i style="width:${barra}%"></i></span><span class="num">${fmtN(r.m2)} m² · ${fmt(r.m2?r.subHon/r.m2:0)} por m² en honorarios</span></div>
+    </div></div>
+    <div class="pie-body">
+      <div class="pie-meta"><span>${esc(Q.proyecto.nombre||r.t.nombre)}${Q.cliente.nombre?" · "+esc(Q.cliente.nombre):""}</span>
+        <select id="pieEstado" aria-label="Estado">${est.map(e=>`<option ${Q.estado===e?"selected":""}>${e}</option>`).join("")}</select></div>
+      <table>
+        <tr><td>Costo de obra estimado</td><td>${fmt(r.costoObra)}</td></tr>
+        <tr><td>Honorario de arquitectura</td><td>${fmt(r.honArq)}</td></tr>
+        <tr><td>Ingenierías y otros servicios</td><td>${fmt(r.otros)}</td></tr>
+        ${r.viaticos?`<tr><td>Viáticos</td><td>${fmt(r.viaticos)}</td></tr>`:""}
+        ${r.descuento?`<tr><td>Descuento ${fmtN(num(Q.ajustes.descuento),1)}%</td><td>−${fmt(r.descuento)}</td></tr>`:""}
+        <tr class="fuerte"><td>Subtotal</td><td>${fmt(r.baseImp)}</td></tr>
+        ${r.iva?`<tr><td>IVA ${fmtN(P("iva"))}%</td><td>${fmt(r.iva)}</td></tr>`:""}
+        ${r.retIsr?`<tr><td>Retención ISR</td><td>−${fmt(r.retIsr)}</td></tr>`:""}
+        ${r.retIva?`<tr><td>Retención IVA</td><td>−${fmt(r.retIva)}</td></tr>`:""}
+      </table>
+      <div class="kpis">
+        ${kpi("pie","Honorarios sobre obra",fmtN(pctObra,1)+"%")}
+        ${kpi("calendar","Tiempo de proyecto",fmtN(r.semanas,1)+" semanas")}
+        ${kpi("clock","Horas estimadas",fmtN(r.horas)+" h")}
+        ${kpi("bars","Margen en arquitectura",r.margen===null?"—":fmtN(r.margen)+"%",r.margen===null?"":malo?"var(--alerta)":"var(--ok)")}
+      </div>
+      ${avisos.map(a=>`<div class="aviso">${esc(a)}</div>`).join("")}
+      <button class="btn-guardar" id="pieGuardar" type="button">${ICON("save")}Guardar cotización</button>
+      <div class="tiles">
+        <button data-ir="doc" type="button">${ICON("doc")}<span>Ver documento</span></button>
+        <button id="pieNueva" type="button">${ICON("plus")}<span>Nueva</span></button>
+        <button id="pieDup" type="button">${ICON("copy")}<span>Duplicar</span></button>
+      </div>
     </div>`;
 }
 
@@ -931,7 +1080,7 @@ document.addEventListener("click", async e=>{
 function aplicarPaquete(clave){
   if(clave==="_ninguno"){ Object.values(Q.servicios).forEach(s=>s.on=false); }
   else { const p=CAT.paquete.find(x=>x.clave===clave); if(!p) return; Object.keys(Q.servicios).forEach(k=>Q.servicios[k].on=false); p.lista.forEach(k=>srv(Q,k).on=true); toast("Paquete "+p.nombre+" aplicado"); }
-  pintarServicios(); recalc();
+  $$("#servicios details").forEach(d=>d.remove()); pintarServicios(); recalc();
 }
 function duplicar(src){
   const c=clone(src); c.folio=nuevoFolio(); c.fecha=hoy(); c.estado="borrador"; c.creada=Date.now();
@@ -1137,12 +1286,12 @@ function pintarDesp(){
   $("#despForm").innerHTML=DESP_CAMPOS.map(([k,l])=>`<div class="campo ${k==="direccion"?"ancho":""}"><label for="d-${k}">${l}</label><input id="d-${k}" type="text" value="${esc(DESP[k]||"")}" data-desp="${k}"></div>`).join("");
 }
 let _ds;
-$("#despForm").addEventListener("input",e=>{ const k=e.target.dataset.desp; if(!k) return; DESP[k]=e.target.value; clearTimeout(_ds); _ds=setTimeout(()=>Store.set("despacho",DESP),500); });
+$("#despForm").addEventListener("input",e=>{ const k=e.target.dataset.desp; if(!k) return; DESP[k]=e.target.value; pintarAvatar(); clearTimeout(_ds); _ds=setTimeout(()=>Store.set("despacho",DESP),500); });
 
 /* ---------- navegación ---------- */
 function ir(v){
   $$(".vista").forEach(s=>s.classList.toggle("activa", s.id==="v-"+v));
-  $$(".nav button").forEach(b=>b.setAttribute("aria-current", b.dataset.vista===v?"page":"false"));
+  $$("button[data-vista]").forEach(b=>b.setAttribute("aria-current", b.dataset.vista===v?"page":"false"));
   if(v==="doc") pintarDoc();
   if(v==="hist") pintarHist();
   if(v==="cat") pintarCat();
@@ -1158,7 +1307,7 @@ async function arrancar(){
   HIST=Store.localQuotes();
   llenarSelects();
   Q=Store.lget("actual") || cotNueva();
-  pintarForm(); recalc();
+  pintarForm(); recalc(); pintarAvatar();
   // 2) sesión de Supabase y sincronización
   await iniciarNube();
 }
