@@ -294,6 +294,8 @@ svg.chart2 [data-cvk]:focus{outline:none}
 .chartgrid2 .cv-pie,.rcharts .cv-pie{grid-template-columns:minmax(0,1fr);gap:12px}
 .chartgrid2 .cv-pie svg.chart2,.rcharts .cv-pie svg.chart2{max-width:210px}
 
+.sm-top{display:inline-flex;align-items:center;padding:6px 12px;font-size:13px;border:1px solid var(--ln);border-radius:8px;cursor:pointer;background:var(--sf);margin:0}
+.sm-top:hover{border-color:var(--mu)}
 </style>
 </head>
 <body>
@@ -307,7 +309,7 @@ svg.chart2 [data-cvk]:focus{outline:none}
 <div class="topright">
 <div class="bkgen">
 <div class="row">
-<button class="p sm" id="expAll" type="button" title="Guarda todo en un solo archivo JSON">Respaldar todo</button>
+<button class="p sm" id="expAll" type="button" title="Guarda todo en un solo archivo JSON">Respaldar todo</button><label class="lbtn sm-top" title="Carga un respaldo completo (.json) y reemplaza todo lo actual"><input id="impAllTop" type="file" accept=".json,application/json" style="display:none"><span>Restaurar todo</span></label>
 <button class="sm" id="expAllXlsx" type="button" title="Libro de Excel con una hoja por tema">Excel completo</button>
 </div>
 <div class="mu" id="bkInfo"></div>
@@ -2108,6 +2110,7 @@ renderBkCards();
 (function(){var c=$('#bk5');if(!c)return;
  c.insertAdjacentHTML('beforeend','<h2 style="margin:16px 0 6px">Restaurar respaldo general</h2><p class="mu" style="margin:0 0 8px">Carga el archivo que descargaste con "Respaldar todo" (arriba a la derecha). Reemplaza TODO lo actual: movimientos, tenencias, brokers, monedas, configuración y reportes.</p><label class="lbtn"><input id="impAll" type="file" accept=".json" style="display:none">Restaurar respaldo completo</label>');
  $('#impAll').onchange=restoreAllFile})();
+$('#impAllTop').onchange=restoreAllFile;
 
 renderCoinSelect('');renderPlatSelect('');updateFeeDisplay();$('#time').value=now();validateForm();fetchFX().then(function(r){if(r){$('#fx').value=r;$('#fxlabel').textContent=n(r);validateForm()}});refreshBackground();render();fetchMarket(false).then(afterMarket);
 
