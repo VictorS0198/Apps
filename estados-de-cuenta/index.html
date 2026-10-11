@@ -214,11 +214,6 @@ ${sel?vEstDet(sel):""}
 ${rows.map(r=>`<tr data-e="${r.e.id}" class="${r.e.id==E.sel?"sel":""}"><td>${r.e.fin}</td><td>${esc(r.c.banco+" "+r.c.producto)}</td><td>${r.e.ini} a ${r.e.fin}</td><td class="n">${$$(r.e.si)}</td><td class="n">${$$(r.e.sf)}</td><td class="n">${r.n}</td><td>${Math.abs(r.d)<.005?'<span class="tag ok">cuadra</span>':`<span class="tag bad">dif ${$$(r.d)}</span>`}</td><td>${r.pdf?'<span class="tag ok">sí</span>':'<span class="tag">no</span>'}</td><td>${vcount(r.v)==5?'<span class="tag ok">conciliado</span>':vcount(r.v)?`<span class="tag">${vcount(r.v)}/5</span>`:"—"}</td></tr>`).join("")}</table></div>
 <p class="mut">Ordenados por fecha de corte, del más antiguo al más reciente. Toca el título de una columna para ordenar de otra forma, o una fila para abrir su detalle, respaldo en PDF y exportación.</p>`}
 const COLS="cuenta,estado,fecha_operacion,fecha_cargo,descripcion,comercio,monto,tipo,tarjeta,referencia,categoria,moneda,monto_orig,tc,plan_msi,msi_num";
-function toCSV(){const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';return COLS+"\n"+S.m.map(x=>[x.cuenta,x.estado,x.fop,x.fcar,x.desc,x.comercio,x.monto.toFixed(2),x.tipo,x.tarjeta,x.ref,x.categoria,x.moneda,x.monto_orig,x.tc,x.plan_msi,x.msi_num].map(q).join(",")).join("\n")}
-function vIO(){return`<div class="box"><b>Importar</b><p class="mut">Pega un CSV (obligatorias: cuenta, fecha_operacion, descripcion, monto) con <code>${COLS}</code>, o un JSON con <code>cuentas</code>, <code>estados</code> y <code>movimientos</code>. Fechas como AAAA-MM-DD. Los movimientos repetidos se omiten solos.</p>
-<textarea id="imp" placeholder="Pega aquí el CSV o JSON"></textarea><div class="bar" style="margin-top:8px"><input type="file" id="file" accept=".csv,.json,.txt"><button class="btn" id="go">Importar</button></div><div class="msg" id="msg">${esc(msg)}</div></div>
-<div class="box"><b>Exportar</b> <span class="mut">${S.bk?"Último respaldo: "+S.bk.slice(0,10):"Sin respaldo todavía"}</span><div class="bar" style="margin-top:8px"><button class="btn g" id="ecsv">Mostrar CSV</button><button class="btn g" id="ejson">Mostrar JSON completo</button><button class="btn g" id="cp">Copiar</button></div><textarea id="out" readonly></textarea></div>
-<div class="box"><button class="btn g" id="rs">Borrar datos locales</button> <span class="mut">Borra lo que está en este dispositivo (no toca la nube).</span></div>`}
 function draw(){$("#nav").innerHTML=["Movimientos","Resumen","Gráficas","Estados","Configuración","Importar y exportar"].map(t=>`<button class="${t==tab?"on":""}">${t}</button>`).join("");
 $("#v").innerHTML=banner()+(tab=="Movimientos"?vMov():tab=="Resumen"?vRes():tab=="Gráficas"?vGra():tab=="Estados"?vEst():tab=="Configuración"?vCfg():vIO());
 document.querySelectorAll("[data-st]").forEach(h=>h.onclick=()=>{const[t,c]=h.dataset.st.split("|"),o=SORT[t];SORT[t]=o&&o.c==c?{c,d:-o.d}:{c,d:1};draw()});
@@ -248,14 +243,89 @@ document.querySelectorAll("select[data-s]").forEach(x=>x.onchange=()=>{S.cfg[x.d
 $("#cfgrec").onclick=()=>{SETS.forEach(x=>S.cfg[x.k]=x.r);S.cfg.tema="auto";applyCfg();save();draw()};$("#cfgdef").onclick=()=>{S.cfg={};applyCfg();save();draw()}}
 if(tab=="Gráficas"){$("#gg").onchange=e=>{G.g=e.target.value;G.k="";draw()};$("#gt").onchange=e=>{G.t=e.target.value;draw()};$("#gy").onchange=e=>{G.y=e.target.value;G.k="";draw()};$("#gc").onchange=e=>{G.c=e.target.value;G.k="";draw()};const gq=$("#gq");if(gq)gq.onclick=()=>{G.k="";draw()};
 document.querySelectorAll("svg g[data-k]").forEach(g=>g.onclick=()=>{const k=g.dataset.k;if(G.g=="anio"){G.y=k;G.g="mes";G.k=""}else G.k=G.k==k?"":k;draw()})}
-if(tab=="Importar y exportar"){$("#go").onclick=()=>{msg=doImport($("#imp").value);draw()};
-$("#file").onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{$("#imp").value=r.result};r.readAsText(f)};
-$("#ecsv").onclick=()=>{$("#out").value=toCSV()};$("#ejson").onclick=()=>{$("#out").value=JSON.stringify({cuentas:S.c,estados:S.e,movimientos:S.m,verificacion:S.v||{},respaldos_pdf:S.pdfs||{}},null,1)};
-$("#cp").onclick=()=>{const o=$("#out");o.select();try{document.execCommand("copy")}catch(e){}if(o.value[0]=="{"){S.bk=new Date().toISOString();save()}};
-$("#rs").onclick=()=>{reset();msg="Datos locales borrados.";draw()}}}
+if(tab=="Importar y exportar")bindIO()}
 S.k=S.k||{};S.cfg=S.cfg||{};S.v=S.v||{};S.pdfs=S.pdfs||{};tab=CF("ini","Movimientos");applyCfg();autoCat();save();draw();
 if(typeof window!=="undefined"&&typeof fetch!=="undefined"){tick();setInterval(tick,1000);renderMk();fetchMk();setInterval(fetchMk,36e5);const r=document.getElementById("mkr");if(r)r.onclick=fetchMk}
 
+/* ===== Importar / exportar: un solo archivo (Excel, CSV o JSON) con todo ===== */
+const TBL=["cuentas","estados","movimientos","verificacion","ajustes","planes_msi"];
+function tablas(){const T={};
+T.cuentas=Object.entries(S.c).map(([k,c])=>({cuenta:k,banco:c.banco,producto:c.producto,tipo:c.tipo,ult4:c.ult4}));
+T.estados=S.e.map(e=>({id:e.id,cuenta:e.cuenta,periodo_inicio:e.ini,periodo_fin:e.fin,fecha_corte:e.fecha_corte||e.fin,fecha_limite_pago:e.limite||"",saldo_inicial:e.si,saldo_final:e.sf,pago_no_intereses:e.pni??"",pago_minimo:e.min??"",limite_credito:e.lc??"",saldo_msi_pendiente:e.saldo_msi_pendiente??"",deuda_total:e.deuda_total??""}));
+T.movimientos=S.m.map(x=>({cuenta:x.cuenta,estado:x.estado||"",fecha_operacion:x.fop,fecha_cargo:x.fcar,descripcion:x.desc,comercio:x.comercio||"",monto:x.monto,tipo:x.tipo,tarjeta:x.tarjeta||"",referencia:x.ref||"",categoria:x.categoria||"",moneda:x.moneda||"MXN",monto_orig:x.monto_orig||"",tc:x.tc||"",plan_msi:x.plan_msi||"",msi_num:x.msi_num||""}));
+T.verificacion=[];Object.entries(S.v||{}).forEach(([id,o])=>Object.entries(o).forEach(([k,v])=>T.verificacion.push({estado:id,clave:k,valor:v})));
+T.ajustes=[...Object.entries(S.k||{}).map(([k,v])=>({grupo:"categoria",clave:k,valor:v})),...Object.entries(S.cfg||{}).map(([k,v])=>({grupo:"config",clave:k,valor:v}))];
+T.planes_msi=S.pl||[];return T}
+function xJSON(){return JSON.stringify({formato:"estados-de-cuenta",version:2,exportado:new Date().toISOString(),...tablas()},null,1)}
+function xCSV(){const T=tablas(),cols=["tabla"],rows=[];TBL.forEach(n=>T[n].forEach(r=>{Object.keys(r).forEach(k=>{if(!cols.includes(k))cols.push(k)});rows.push({tabla:n,...r})}));
+const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"';return"﻿"+cols.join(",")+"\n"+rows.map(r=>cols.map(c=>q(r[c])).join(",")).join("\n")}
+const nv=v=>v===""||v==null?undefined:num(v);
+const dt=v=>typeof v=="number"&&v>20000&&v<80000?new Date(Math.round((v-25569)*864e5)).toISOString().slice(0,10):String(v??"").trim();
+const bo=v=>v===true||/^(true|verdadero)$/i.test(String(v))?true:v===false||/^(false|falso)$/i.test(String(v))?false:v;
+function deTablas(T){const J={cuentas:{},estados:[],movimientos:[],verificacion:{}};
+(T.cuentas||[]).forEach(r=>{const k=String(r.cuenta||"").trim();if(!k)return;let u=String(r.ult4??"");if(/^\d{1,3}$/.test(u))u=u.padStart(4,"0");J.cuentas[k]={banco:r.banco||"",producto:r.producto||"",tipo:r.tipo||"debito",ult4:u}});
+(T.estados||[]).forEach(r=>{if(!r.cuenta)return;J.estados.push({id:String(r.id||""),cuenta:String(r.cuenta).trim(),periodo_inicio:dt(r.periodo_inicio),periodo_fin:dt(r.periodo_fin),fecha_corte:dt(r.fecha_corte)||dt(r.periodo_fin),fecha_limite_pago:dt(r.fecha_limite_pago)||undefined,saldo_inicial:nv(r.saldo_inicial),saldo_final:nv(r.saldo_final),pago_no_intereses:nv(r.pago_no_intereses),pago_minimo:nv(r.pago_minimo),limite_credito:nv(r.limite_credito),saldo_msi_pendiente:nv(r.saldo_msi_pendiente),deuda_total:nv(r.deuda_total)})});
+(T.movimientos||[]).forEach(r=>{if(r.cuenta===""&&r.descripcion==="")return;J.movimientos.push({...r,cuenta:String(r.cuenta||"").trim(),fecha_operacion:dt(r.fecha_operacion),fecha_cargo:dt(r.fecha_cargo)||dt(r.fecha_operacion),referencia:String(r.referencia??""),tarjeta:String(r.tarjeta??"")})});
+(T.verificacion||[]).forEach(r=>{if(!r.estado||!r.clave)return;(J.verificacion[r.estado]=J.verificacion[r.estado]||{})[r.clave]=bo(r.valor)});
+return J}
+function aplicarAjustes(T){let n=0;(T.ajustes||[]).forEach(r=>{if(!r.clave)return;if(r.grupo=="categoria"){S.k[r.clave]=String(r.valor);n++}else if(r.grupo=="config"){S.cfg[r.clave]=String(r.valor);n++}});if(T.planes_msi&&T.planes_msi.length)S.pl=T.planes_msi;if(n)applyCfg();return n}
+function importarTablas(T){if(!T.movimientos&&!T.cuentas&&!T.estados){const k=Object.keys(T)[0];T={movimientos:T[k]||[]}}
+const a=aplicarAjustes(T);return doImport(JSON.stringify(deTablas(T)))+(a?" Ajustes aplicados: "+a+".":"")}
+async function importarArchivo(f){const n=f.name.toLowerCase();try{
+if(/\.xlsx$/.test(n))return importarTablas(await leerXLSX(await f.arrayBuffer()));if(/\.xls$/.test(n))return"Ese es un Excel antiguo (.xls). Guárdalo como .xlsx e inténtalo de nuevo.";
+let t=(await f.text()).replace(/^﻿/,"").trim();
+if(t[0]=="{"){const j=JSON.parse(t);if(Array.isArray(j.planes_msi)&&j.planes_msi.length)S.pl=j.planes_msi;return Array.isArray(j.cuentas)||Array.isArray(j.verificacion)||Array.isArray(j.ajustes)?importarTablas(j):doImport(t)}
+const p=csvParse(t),h=p[0].map(x=>x.trim().toLowerCase());if(h[0]=="tabla"){const T={};p.slice(1).forEach(c=>{if(!c[0])return;const o=Object.fromEntries(h.map((k,i)=>[k,c[i]??""]));const tb=o.tabla;delete o.tabla;(T[tb]=T[tb]||[]).push(o)});return importarTablas(T)}
+return doImport(t)}catch(e){return"No se pudo leer el archivo: "+e.message}}
+function vIO(){return`<div class="box"><b>Importar</b> <span class="mut">Un solo archivo con todo (cuentas, estados, movimientos, verificación y ajustes): Excel (.xlsx), CSV o JSON. También acepta un CSV de solo movimientos. Lo repetido se omite solo.</span>
+<div class="bar" style="margin-top:8px"><input type="file" id="jfile" accept=".xlsx,.xls,.csv,.json,.txt"></div>
+<details style="margin-top:8px"><summary class="mut">O pega el texto (CSV o JSON)</summary><textarea id="imp" placeholder="Pega aquí el CSV o JSON"></textarea><div class="bar" style="margin-top:8px"><button class="btn g" id="go">Importar texto</button></div></details>
+<div class="msg" id="jmsg">${esc(msg)}</div></div>
+<div class="box"><b>Exportar</b> <span class="mut">${S.bk?"Último respaldo: "+S.bk.slice(0,10):"Sin respaldo todavía"}. Los tres formatos llevan lo mismo y se pueden volver a importar.</span>
+<div class="bar" style="margin-top:8px"><button class="btn" id="xx">Excel (.xlsx)</button><button class="btn g" id="xc">CSV</button><button class="btn g" id="xj">JSON</button></div></div>
+<div class="box"><button class="btn g" id="rs">Borrar datos locales</button> <span class="mut">Borra lo que está en este dispositivo (no toca la nube).</span></div>`}
+function bindIO(){const run=async f=>{msg="Importando…";$("#jmsg").textContent=msg;msg=await f();draw()};
+$("#jfile").onchange=e=>{const f=e.target.files[0];if(f)run(()=>importarArchivo(f).then(r=>f.name+": "+r))};
+$("#go").onclick=()=>run(async()=>{const t=$("#imp").value.trim();if(!t)return"No hay nada que importar.";return importarArchivo(new File([t],t[0]=="{"?"texto.json":"texto.csv"))});
+const ex=async(ext,get)=>{const d=new Date().toISOString().slice(0,10);const r=await saveFile(`estados_de_cuenta_${d}.${ext}`,get());if(r=="ok"){S.bk=new Date().toISOString();save();msg="Exportado: estados_de_cuenta_"+d+"."+ext}else msg=r=="declined"?"Descarga cancelada.":"No se pudo exportar.";draw()};
+$("#xx").onclick=()=>ex("xlsx",xXLSX);
+$("#xc").onclick=()=>ex("csv",()=>new Blob([xCSV()],{type:"text/csv;charset=utf-8"}));$("#xj").onclick=()=>ex("json",()=>new Blob([xJSON()],{type:"application/json"}));
+$("#rs").onclick=()=>{reset();msg="Datos locales borrados.";draw()}}
+/* ===== Excel (.xlsx) sin librerías: escribe y lee el formato directamente ===== */
+const CRCT=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
+const crc32=b=>{let c=-1;for(let i=0;i<b.length;i++)c=CRCT[(c^b[i])&255]^(c>>>8);return(c^-1)>>>0};
+const enc=new TextEncoder(),dec=new TextDecoder(),xe=s=>String(s).replace(/[\x00-\x08\x0B\x0C\x0E-\x1F]/g,"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+function zipStore(files){const P=[],C=[];let off=0;const u16=n=>[n&255,n>>8&255],u32=n=>[n&255,n>>8&255,n>>16&255,n>>24&255];
+files.forEach(([name,data])=>{const nm=enc.encode(name),cr=crc32(data),h=new Uint8Array([0x50,0x4B,3,4,...u16(20),...u16(0x0800),...u16(0),...u16(0),...u16(0x21),...u32(cr),...u32(data.length),...u32(data.length),...u16(nm.length),...u16(0)]);
+P.push(h,nm,data);C.push(new Uint8Array([0x50,0x4B,1,2,...u16(20),...u16(20),...u16(0x0800),...u16(0),...u16(0),...u16(0x21),...u32(cr),...u32(data.length),...u32(data.length),...u16(nm.length),...u16(0),...u16(0),...u16(0),...u16(0),...u32(0),...u32(off)]),nm);off+=h.length+nm.length+data.length});
+const cl=C.reduce((a,x)=>a+x.length,0);return new Blob([...P,...C,new Uint8Array([0x50,0x4B,5,6,0,0,0,0,...u16(files.length),...u16(files.length),...u32(cl),...u32(off),0,0])],{type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"})}
+const colL=i=>{let s="";for(i++;i>0;i=Math.floor((i-1)/26))s=String.fromCharCode(65+(i-1)%26)+s;return s};
+function sheetXml(rows){const cols=[];rows.forEach(r=>Object.keys(r).forEach(k=>{if(!cols.includes(k))cols.push(k)}));
+const cell=(v,r,c)=>{const ref=colL(c)+r;if(v===""||v==null)return"";if(typeof v=="number"&&isFinite(v))return`<c r="${ref}"><v>${v}</v></c>`;if(typeof v=="boolean")return`<c r="${ref}" t="b"><v>${v?1:0}</v></c>`;return`<c r="${ref}" t="inlineStr"><is><t xml:space="preserve">${xe(v)}</t></is></c>`};
+let x='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>';
+if(cols.length){x+=`<row r="1">${cols.map((k,c)=>cell(k,1,c)).join("")}</row>`;rows.forEach((r,i)=>{x+=`<row r="${i+2}">${cols.map((k,c)=>cell(r[k],i+2,c)).join("")}</row>`})}
+return x+"</sheetData></worksheet>"}
+function xXLSX(){const T=tablas(),F=[],X='<?xml version="1.0" encoding="UTF-8" standalone="yes"?>';
+F.push(["[Content_Types].xml",enc.encode(X+'<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>'+TBL.map((n,i)=>`<Override PartName="/xl/worksheets/sheet${i+1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")+'</Types>')]);
+F.push(["_rels/.rels",enc.encode(X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>')]);
+F.push(["xl/workbook.xml",enc.encode(X+'<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>'+TBL.map((n,i)=>`<sheet name="${n}" sheetId="${i+1}" r:id="rId${i+1}"/>`).join("")+'</sheets></workbook>')]);
+F.push(["xl/_rels/workbook.xml.rels",enc.encode(X+'<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+TBL.map((n,i)=>`<Relationship Id="rId${i+1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i+1}.xml"/>`).join("")+'</Relationships>')]);
+TBL.forEach((n,i)=>F.push([`xl/worksheets/sheet${i+1}.xml`,enc.encode(sheetXml(T[n]))]));return zipStore(F)}
+async function unzip(buf){const v=new DataView(buf),u=new Uint8Array(buf);let e=u.length-22;while(e>=0&&v.getUint32(e,true)!=0x06054b50)e--;if(e<0)throw new Error("no es un archivo Excel válido");
+const n=v.getUint16(e+10,true);let p=v.getUint32(e+16,true);const out={};
+for(let i=0;i<n;i++){const m=v.getUint16(p+10,true),cs=v.getUint32(p+20,true),nl=v.getUint16(p+28,true),el=v.getUint16(p+30,true),cl=v.getUint16(p+32,true),lo=v.getUint32(p+42,true),name=dec.decode(u.subarray(p+46,p+46+nl));p+=46+nl+el+cl;
+const ds=lo+30+v.getUint16(lo+26,true)+v.getUint16(lo+28,true),raw=u.subarray(ds,ds+cs);
+if(!/\.(xml|rels)$/.test(name))continue;
+if(m==0)out[name]=dec.decode(raw);else if(m==8){const s=new Blob([raw]).stream().pipeThrough(new DecompressionStream("deflate-raw"));out[name]=dec.decode(await new Response(s).arrayBuffer())}}return out}
+const px=s=>new DOMParser().parseFromString(s,"application/xml"),tx=n=>[...n.getElementsByTagName("t")].map(t=>t.textContent).join("");
+const colN=r=>{let n=0;for(const ch of r.replace(/\d+/g,""))n=n*26+ch.charCodeAt(0)-64;return n-1};
+async function leerXLSX(buf){const Z=await unzip(buf),wb=px(Z["xl/workbook.xml"]),rl=px(Z["xl/_rels/workbook.xml.rels"]),tg={};
+[...rl.getElementsByTagName("Relationship")].forEach(r=>tg[r.getAttribute("Id")]=r.getAttribute("Target"));
+const ss=Z["xl/sharedStrings.xml"]?[...px(Z["xl/sharedStrings.xml"]).getElementsByTagName("si")].map(tx):[],T={};
+for(const s of wb.getElementsByTagName("sheet")){const idA=[...s.attributes].find(a=>a.name=="r:id"||a.name.endsWith(":id")),t=tg[idA.value].replace(/^\//,""),path=t.startsWith("xl/")?t:"xl/"+t,d=px(Z[path]),g=[];
+[...d.getElementsByTagName("row")].forEach(r=>{const row=[];[...r.getElementsByTagName("c")].forEach(c=>{const k=colN(c.getAttribute("r")),ty=c.getAttribute("t"),ve=c.getElementsByTagName("v")[0],v=ve?ve.textContent:"";
+row[k]=ty=="s"?ss[+v]??"":ty=="inlineStr"?tx(c):ty=="b"?v=="1":ty=="str"||ty=="e"?v:v===""?"":Number(v)});g.push(row)});
+const h=(g[0]||[]).map(x=>String(x??"").trim());T[s.getAttribute("name").toLowerCase().trim()]=g.slice(1).filter(r=>r.some(x=>x!==""&&x!=null)).map(r=>Object.fromEntries(h.map((k,i)=>[k,r[i]??""]).filter(([k])=>k)))}return T}
 /* ===== Nube: Supabase personal (mismo patrón que las demás apps) ===== */
 const SUPA={url:"https://gosfucaweteaqrvftgfq.supabase.co",key:"sb_publishable_ooOdrO4PNPyeOUdxqEB4pQ_xuYIo59d",app:"estados-de-cuenta",table:"registros"};
 let sb=null,cu=null,cmsg="",cbusy=false;
@@ -275,14 +345,12 @@ ${cu?`<div class="bar" style="margin-top:8px"><button class="btn" id="cl-up"${cb
 :`<div class="bar" style="margin-top:8px"><input id="cl-e" type="email" placeholder="Correo" autocomplete="username"><input id="cl-p" type="password" placeholder="Contraseña" autocomplete="current-password"><button class="btn" id="cl-in">Entrar</button></div>`}
 <div class="msg" id="cl-m">${esc(cmsg)}</div></div>`}
 function bindCloud(){if(tab!="Importar y exportar")return;const run=async f=>{cbusy=true;cmsg="Trabajando…";draw();try{cmsg=await f()}catch(e){cmsg="Error: "+(e&&e.message||e)}cbusy=false;draw()};
-const jf=$("#jfile");if(jf)jf.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{msg=f.name+": "+doImport(r.result);draw()};r.readAsText(f)};
 const i=$("#cl-in");if(i)i.onclick=async()=>{if(!sbInit()){cmsg="No se pudo cargar la conexión con Supabase (¿sin internet?).";draw();return}
 const em=$("#cl-e").value.trim().toLowerCase(),pw=$("#cl-p").value;cmsg="Entrando…";$("#cl-m").textContent=cmsg;
 const{data,error}=await sb.auth.signInWithPassword({email:em,password:pw});if(error){cmsg=/invalid/i.test(error.message)?"Correo o contraseña incorrectos.":error.message}else{cu=data.session.user;cmsg="Sesión iniciada."}draw()};
 const u=$("#cl-up");if(u)u.onclick=()=>run(nubeSubir);const d=$("#cl-dn");if(d)d.onclick=()=>run(nubeBajar);
 const o=$("#cl-out");if(o)o.onclick=async()=>{await sb.auth.signOut();cu=null;cmsg="Sesión cerrada.";draw()}}
-function impBox(){return`<div class="box"><b>Importar archivo del maestro</b> <span class="mut">Elige el JSON completo (o un CSV) y se importa directo, sin pegar texto. Los repetidos se omiten solos.</span><div class="bar" style="margin-top:8px"><input type="file" id="jfile" accept=".json,.csv,.txt"></div><div class="msg" id="jmsg">${esc(msg)}</div></div>`}
-{const _v=vIO;vIO=()=>impBox()+_v()+cloudBox();const _d=draw;draw=function(){_d();bindCloud()}}
+{const _v=vIO;vIO=()=>_v()+cloudBox();const _d=draw;draw=function(){_d();bindCloud()}}
 if(sbInit())sb.auth.getSession().then(({data})=>{cu=data.session&&data.session.user||null;if(cu&&tab=="Importar y exportar")draw()}).catch(()=>{});
 draw();
 </script></body></html>
