@@ -275,12 +275,14 @@ ${cu?`<div class="bar" style="margin-top:8px"><button class="btn" id="cl-up"${cb
 :`<div class="bar" style="margin-top:8px"><input id="cl-e" type="email" placeholder="Correo" autocomplete="username"><input id="cl-p" type="password" placeholder="Contraseña" autocomplete="current-password"><button class="btn" id="cl-in">Entrar</button></div>`}
 <div class="msg" id="cl-m">${esc(cmsg)}</div></div>`}
 function bindCloud(){if(tab!="Importar y exportar")return;const run=async f=>{cbusy=true;cmsg="Trabajando…";draw();try{cmsg=await f()}catch(e){cmsg="Error: "+(e&&e.message||e)}cbusy=false;draw()};
+const jf=$("#jfile");if(jf)jf.onchange=e=>{const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{msg=f.name+": "+doImport(r.result);draw()};r.readAsText(f)};
 const i=$("#cl-in");if(i)i.onclick=async()=>{if(!sbInit()){cmsg="No se pudo cargar la conexión con Supabase (¿sin internet?).";draw();return}
 const em=$("#cl-e").value.trim().toLowerCase(),pw=$("#cl-p").value;cmsg="Entrando…";$("#cl-m").textContent=cmsg;
 const{data,error}=await sb.auth.signInWithPassword({email:em,password:pw});if(error){cmsg=/invalid/i.test(error.message)?"Correo o contraseña incorrectos.":error.message}else{cu=data.session.user;cmsg="Sesión iniciada."}draw()};
 const u=$("#cl-up");if(u)u.onclick=()=>run(nubeSubir);const d=$("#cl-dn");if(d)d.onclick=()=>run(nubeBajar);
 const o=$("#cl-out");if(o)o.onclick=async()=>{await sb.auth.signOut();cu=null;cmsg="Sesión cerrada.";draw()}}
-{const _v=vIO;vIO=()=>_v()+cloudBox();const _d=draw;draw=function(){_d();bindCloud()}}
+function impBox(){return`<div class="box"><b>Importar archivo del maestro</b> <span class="mut">Elige el JSON completo (o un CSV) y se importa directo, sin pegar texto. Los repetidos se omiten solos.</span><div class="bar" style="margin-top:8px"><input type="file" id="jfile" accept=".json,.csv,.txt"></div><div class="msg" id="jmsg">${esc(msg)}</div></div>`}
+{const _v=vIO;vIO=()=>impBox()+_v()+cloudBox();const _d=draw;draw=function(){_d();bindCloud()}}
 if(sbInit())sb.auth.getSession().then(({data})=>{cu=data.session&&data.session.user||null;if(cu&&tab=="Importar y exportar")draw()}).catch(()=>{});
 draw();
 </script></body></html>
