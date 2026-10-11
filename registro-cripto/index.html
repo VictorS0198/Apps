@@ -313,6 +313,78 @@ svg.chart2 [data-cvk]:focus{outline:none}
 .bkfmt{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;border:1px solid var(--ln);border-radius:10px;padding:12px;background:var(--sf);color:var(--ink);cursor:pointer;margin:0;font:inherit}
 .bkfmt:hover{border-color:var(--buy)}.bkfmt b{font-size:16px}.bkfmt span{font-size:12px;color:var(--mu)}
 @media(max-width:480px){.bkfmts{grid-template-columns:1fr}}
+/* ---- Dashboard ---- */
+.dash-bar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px}
+.dash-bar h2{margin:0;font-size:20px}
+.dash-view{display:inline-flex;align-items:center;gap:8px;margin:0}.dash-view select{width:auto;margin:0}
+.dash-tools{border:1px dashed var(--ln);border-radius:12px;padding:12px;margin:0 0 12px;background:var(--sf)}
+.dadd-wrap>summary{cursor:pointer}
+.dadd-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,220px),1fr));gap:8px;margin-top:10px}
+.dadd{display:flex;flex-direction:column;align-items:flex-start;gap:2px;text-align:left;padding:10px 12px;border:1px solid var(--ln);border-radius:10px;background:var(--bg);color:var(--ink);cursor:pointer;font:inherit}
+.dadd span{font-size:12px;color:var(--mu)}.dadd:hover:not([disabled]){border-color:var(--buy)}.dadd[disabled]{opacity:.45;cursor:not-allowed}
+.dash-grid{display:grid;grid-template-columns:repeat(12,minmax(0,1fr));gap:12px;align-items:start}
+.dw{margin:0;min-width:0;padding:14px 16px;border-radius:14px}
+.dw.w3{grid-column:span 3}.dw.w4{grid-column:span 4}.dw.w6{grid-column:span 6}.dw.w8{grid-column:span 8}.dw.w9{grid-column:span 9}.dw.w12{grid-column:span 12}
+@media(max-width:980px){.dw.w3{grid-column:span 6}.dw.w4{grid-column:span 6}.dw.w6,.dw.w8,.dw.w9{grid-column:span 12}}
+@media(max-width:560px){.dash-grid .dw{grid-column:span 12}}
+.dash-grid.editing .dw{outline:1px dashed var(--ln);outline-offset:3px}
+.dw.dragging{opacity:.55;outline:2px solid var(--buy)!important}
+.dw-new{animation:dwnew 1.2s ease}
+@keyframes dwnew{0%{box-shadow:0 0 0 3px var(--buy)}100%{box-shadow:none}}
+.wtools{display:flex;align-items:center;gap:6px;margin:-4px 0 10px;padding-bottom:8px;border-bottom:1px solid var(--ln);font-size:13px}
+.wtools select{width:auto;margin:0;padding:3px 6px;font-size:12px;min-height:0}
+.whandle{cursor:grab;touch-action:none;user-select:none;font-size:18px;line-height:1;padding:2px 6px;border-radius:6px;background:var(--bg)}
+.whandle:active{cursor:grabbing}
+.wname{font-size:12px;color:var(--mu);font-weight:600}
+.wbtn{border:1px solid var(--ln);background:var(--bg);color:var(--ink);border-radius:6px;padding:2px 8px;font-size:13px;cursor:pointer;min-height:0}
+.wcfg{margin:-2px 0 10px}.wcfg select,.wcfg input{margin:0}
+.wh{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin:0 0 10px}.wh h3{margin:0;font-size:15px}
+.dwin>div>h2:first-child{font-size:15px}
+/* indicadores */
+.kpi{display:flex;align-items:center;gap:12px;min-height:64px}
+.kpi-icon{flex:none;width:46px;height:46px;border-radius:12px;display:grid;place-items:center}
+.kpi-body{min-width:0;flex:1}
+.kpi-l{font-size:12.5px}.kpi-v{font-size:22px;font-weight:700;line-height:1.25;margin:2px 0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kpi-s{font-size:12px}
+.spark{flex:none;width:96px;height:34px;align-self:flex-end}
+.t-kpi .kpi-v{font-size:clamp(17px,2vw,24px)}
+/* héroe */
+.hero{display:grid;grid-template-columns:minmax(220px,1fr) minmax(0,2fr);gap:18px;align-items:center}
+@media(max-width:760px){.hero{grid-template-columns:1fr}}
+.hero-v{font-size:clamp(30px,5vw,44px);font-weight:800;line-height:1.1;margin:6px 0}.hero-v small{font-size:.45em;font-weight:600}
+.hero-f{margin-top:8px;font-weight:600}
+.hr-seg button{padding:4px 10px;font-size:12px}
+.hero-r .hr-seg{margin-bottom:6px}
+.hist-empty{padding:30px 10px;text-align:center;font-size:13px;border:1px dashed var(--ln);border-radius:10px}
+/* detalle y tabla */
+.dgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,240px),1fr));gap:4px 24px}
+.drow{display:flex;justify-content:space-between;gap:12px;padding:6px 0;border-bottom:1px solid var(--ln);font-size:14px}
+.ptable{min-width:520px;font-size:13px}.ptable td.num,.ptable th{text-align:right}.ptable td:first-child,.ptable th:first-child{text-align:left}
+.ptable tfoot td{border-top:2px solid var(--ln)}
+.lotgrp{border-top:1px solid var(--ln);padding:6px 0}.lotgrp>summary{cursor:pointer;list-style:none}.lotgrp>summary::-webkit-details-marker{display:none}
+.dnote{width:100%;min-height:110px;resize:vertical;margin:0}
+.t-comp .cv-bar{margin-top:0}
+/* menú lateral */
+@media(min-width:900px){
+ body.nav-side main{padding-left:236px}
+ body.nav-side .tabs{position:fixed;left:0;top:0;bottom:0;width:216px;flex-direction:column;align-items:stretch;gap:4px;padding:92px 14px 16px;background:var(--sf);border-right:1px solid var(--ln);z-index:50;overflow:auto}
+ body.nav-side .tabs button{text-align:left;border-radius:10px;padding:10px 12px;justify-content:flex-start}
+ body.nav-side .tabs::before{content:"Registro de actividad";position:absolute;top:28px;left:18px;right:12px;font-weight:700;font-size:16px;color:var(--ink)}
+ body.nav-side .tabs .tab-ord{margin-top:auto}
+}
+.dw{container-type:inline-size}
+.kpi{position:relative}
+.spark{position:absolute;right:0;bottom:0;width:38%;height:30px;opacity:.9;pointer-events:none}
+.kpi-v{font-size:clamp(16px,9cqi,26px)!important}
+@container (max-width:250px){.kpi{flex-direction:column;align-items:flex-start;gap:8px}.kpi-icon{width:36px;height:36px;border-radius:10px}.kpi-icon svg{width:18px;height:18px}.kpi-v{font-size:clamp(16px,12cqi,24px)!important}.spark{width:45%}}
+.t-kpi .kpi-has-spark .kpi-body{padding-bottom:26px}
+.t-comp .cv-stage{border:0;padding:0;background:none}
+@container (max-width:560px){.cv-pie{grid-template-columns:minmax(0,1fr)!important;gap:12px}.cv-pie svg.chart2{max-width:220px}}
+.cv-leg,.cv-li{min-width:0}
+body.nav-side .filters{display:none}
+.wtools{flex-wrap:wrap}
+.wtools select{width:auto!important;max-width:92px;flex:none}
+@container (max-width:300px){.wtools .wname{display:none}}
 </style>
 </head>
 <body>
@@ -337,7 +409,7 @@ svg.chart2 [data-cvk]:focus{outline:none}
 <div class="tabs row">
 <button id="t1" aria-pressed="true">Ciclos</button>
 <button id="t2" aria-pressed="false">Movimientos</button>
-<button id="t7" aria-pressed="false">Posiciones</button>
+<button id="t7" aria-pressed="false">Dashboard</button>
 <button id="t8" aria-pressed="false">Reportes</button>
 <button id="t9" aria-pressed="false">Brokers</button>
 <button id="t3" aria-pressed="false">Gráficas</button>
@@ -406,7 +478,7 @@ svg.chart2 [data-cvk]:focus{outline:none}
 
 <script>
 /* --- sincronización: registra qué datos cambian para subirlos a la nube --- */
-var SYNC_KEYS=['registro-cripto.v3','registro-cripto.holdings','registro-cripto.fees2','registro-cripto.coins','registro-cripto.reports','registro-cripto.flows','registro-cripto.ledger','registro-cripto.taborder','registro-cripto.theme'];
+var SYNC_KEYS=['registro-cripto.v3','registro-cripto.holdings','registro-cripto.fees2','registro-cripto.coins','registro-cripto.reports','registro-cripto.flows','registro-cripto.ledger','registro-cripto.taborder','registro-cripto.theme','registro-cripto.dash','registro-cripto.hist'];
 var SYNC_META={},CLOUD_DIRTY={},CLOUD_READY=false,CLOUD_APPLYING=false;
 try{SYNC_META=JSON.parse(localStorage.getItem('registro-cripto.syncmeta')||'{}')||{}}catch(e){SYNC_META={}}
 function saveSyncMeta(){try{Storage.prototype._rcSet.call(localStorage,'registro-cripto.syncmeta',JSON.stringify(SYNC_META))}catch(e){}}
@@ -801,7 +873,7 @@ document.addEventListener('click',function(e){
 
 /* ---------- tabs ---------- */
 var tab=1;
-function setTab(t){tab=t;$('#tab1').hidden=t!=1;for(var i=2;i<=9;i++)$('#w'+i).hidden=t!=i;
+function setTab(t){tab=t;$('#tab1').hidden=t!=1;var _fl=document.querySelector('.filters');if(_fl)_fl.style.display=(t==1||t==2)?'':'none';for(var i=2;i<=9;i++)$('#w'+i).hidden=t!=i;
  for(var j=1;j<=9;j++)$('#t'+j).setAttribute('aria-pressed',t==j);
  if(t==3)renderCharts();if(t==4)renderDatos();if(t==5){renderConfig();refreshBkAll()}if(t==7)renderPositions();if(t==8)renderReports();if(t==9)renderBrokers();if(t==6){renderMarket();fetchMarket(true).then(afterMarket)}}
 /* reordenar pestañas: modo edición con flechas o arrastrando */
@@ -811,6 +883,7 @@ var KTABS='registro-cripto.taborder';
  function tabs(){return [].slice.call(bar.querySelectorAll('button[id^="t"]')).filter(function(b){return /^t\d$/.test(b.id)})}
  function save(){try{localStorage.setItem(KTABS,JSON.stringify(tabs().map(function(b){return b.id})))}catch(e){}}
  try{var ord=JSON.parse(localStorage.getItem(KTABS)||'null');if(Array.isArray(ord))ord.forEach(function(id){var b=$('#'+id);if(b)bar.insertBefore(b,btn)})}catch(e){}
+ try{if(!localStorage.getItem('registro-cripto.dashfirst')){bar.insertBefore($('#t7'),bar.firstChild);localStorage.setItem('registro-cripto.dashfirst','1');save()}}catch(e){}
  function deco(on){tabs().forEach(function(b){
   if(on){b.dataset.label=b.textContent;b.innerHTML='<span class="tmv" data-mv="-1" aria-label="Mover a la izquierda">‹</span>'+esc(b.dataset.label)+'<span class="tmv" data-mv="1" aria-label="Mover a la derecha">›</span>';b.draggable=true}
   else{if(b.dataset.label!=null)b.textContent=b.dataset.label;b.draggable=false}
@@ -980,7 +1053,7 @@ function fetchMarket(withBingx){
  }).catch(function(){}));
  return Promise.allSettled(jobs).then(function(){mktBusy=false;mktTime=new Date()});
 }
-function afterMarket(){if(tab==6)renderMarket();if(tab==7)renderPositions();if(tab==1)render()}
+function afterMarket(){if(typeof recordHist=='function')recordHist();if(tab==6)renderMarket();if(tab==7)renderPositions();if(tab==1)render()}
 function refPrice(c){var o=MKT[c]||{};return o.binance||o.bybit||o.bingx||null}
 function px(p){return p==null||isNaN(p)?'—':'$'+n(p,p<1?6:p<100?4:2)}
 $('#v6').innerHTML='<div class="card"><div class="row"><h2 style="margin:0">Mercado de tus criptomonedas</h2><span class="sp"></span><span class="mu" id="mktMsg"></span><button id="mktRefresh" type="button">Actualizar</button></div>'+
@@ -1245,46 +1318,6 @@ function flowCardHtml(at){
 var holdOpen=false;
 function placeHold(){var c=$('#holdCard')||window._holdCard,slot=$('#holdSlot');if(!c||!slot)return;window._holdCard=c;c.classList.remove('card');c.classList.add('hold-in');slot.appendChild(c)}
 document.addEventListener('toggle',function(e){if(e.target&&e.target.id=='holdWrap')holdOpen=e.target.open},true);
-function renderPositions(){
- var _hc=$('#holdCard');if(_hc)window._holdCard=_hc;
- var L=lots(),keys={};L.forEach(function(l){keys[l.key]=1});
- var coins=[];L.forEach(function(l){if(coins.indexOf(l.coin)<0)coins.push(l.coin)});coins.sort();
- var totCost=0,totVal=0,totPL=0,totRea=0,win=0,loss=0,missing=[];
- var groups=coins.map(function(c){
-  var cl=L.filter(function(l){return l.coin==c}).sort(function(a,b){return a.time<b.time?1:-1});
-  var p=refPrice(c),open=cl.filter(function(l){return l.rem>0});
-  var remQ=open.reduce(function(a,l){return a+l.rem},0),cost=open.reduce(function(a,l){return a+l.price*l.rem},0);
-  var rea=cl.reduce(function(a,l){return a+l.realized},0);
-  var val=p?remQ*p:null,pl=p?val-cost:null,plp=(p&&cost)?pl/cost*100:null;
-  totCost+=cost;totRea+=rea;
-  if(p){totVal+=val;totPL+=pl}else if(remQ>0)missing.push(c);
-  open.forEach(function(l){if(p){if(p>=l.price)win++;else loss++}});
-  var head='<div class="row cyc-head">'+coinIcon(c,22)+'<b style="font-size:16px">'+esc(c)+'</b><span class="mu">'+n(remQ,8)+' restantes · precio hoy '+px(p)+'</span><span class="sp"></span>'+
-   (pl!=null?'<b class="num" style="color:'+col(pl)+'">'+usdTxt(pl)+(plp!=null?' ('+pctTxt(plp)+')':'')+'</b>':'<span class="mu">sin precio</span>')+'</div>'+
-   '<div class="mu">Costo de lo abierto: '+n(cost)+' USD'+(val!=null?' · Valor actual: '+n(val)+' USD':'')+(rea?' · Realizado: <b class="num" style="color:'+col(rea)+'">'+usdTxt(rea)+'</b>':'')+'</div>';
-  return '<article class="card cyc-card">'+head+cl.map(function(l){return lotHtml(l,p)}).join('')+'</article>';
- }).join('');
- var stat=function(t,v,c){return '<div><div class="mu">'+t+'</div><div class="num" style="font-size:18px'+(c?';color:'+c:'')+'">'+v+'</div></div>'};
- var at=accountTotals(FX),atd=at.total-at.totalC;
- var acc='<div class="acct"><div><div class="mu">Valor total de las cuentas</div><div class="acct-big num">'+n(at.total,2)+' USD'+(at.miss?'*':'')+'</div><div class="mu num">≈ '+n(at.total*FX,2)+' MXN</div></div>'+
-  '<div class="acct-parts"><div><span class="mu">Cripto (valor actual)</span><b class="num">'+n(at.cripto,2)+'</b></div><div><span class="mu">USDT</span><b class="num">'+n(at.usdt,2)+'</b></div>'+(at.mxn?'<div><span class="mu">Pesos ('+n(at.mxn,2)+' MXN)</span><b class="num">'+n(at.mxnUsd,2)+'</b></div>':'')+
-  '<div class="acct-alt"><span class="mu">A precio de entrada (Valor)</span><b class="num">'+n(at.totalC,2)+' <span style="color:'+col(atd)+'">('+(atd>=0?'+':'')+n(atd,2)+')</span></b></div>'+
-  (FLW.length?(function(){var ft=flowTotals(),fv=at.total*FX-ft.net;return '<div><span class="mu">Neto aportado (ingresado − retirado)</span><b class="num">'+n(ft.net,2)+' MXN</b></div><div><span class="mu">'+(fv>=0?'Vas a favor':'Vas en contra')+'</span><b class="num" style="color:'+col(fv)+'">'+(fv>=0?'+':'')+n(fv,2)+' MXN'+(ft.net>0?' ('+(fv>=0?'+':'')+n(fv/ft.net*100,1)+'%)':'')+'</b></div>'})():'')+'</div></div>';
- var sum='<div class="card"><div class="row"><h2 style="margin:0">Resumen</h2><span class="sp"></span><span class="mu">'+(win+loss?win+' entradas en ganancia · '+loss+' en pérdida':'')+'</span></div>'+acc+
-  '<div class="grid" style="margin-top:8px;grid-template-columns:repeat(auto-fit,minmax(150px,1fr))">'+
-  stat('Costo abierto',n(totCost)+' USD')+stat('Valor actual',n(totVal)+' USD')+stat('Ganancia/pérdida abierta',usdTxt(totPL),col(totPL))+stat('Realizado',usdTxt(totRea),col(totRea))+'</div>'+
-  (missing.length?'<p class="mu" style="margin:8px 0 0">Sin precio de mercado para: '+missing.join(', ')+'</p>':'')+sumChartsHtml()+'</div>';
- var detail=flowCardHtml(at)+'<div class="card"><div class="row"><h2 style="margin:0">Detalle por broker</h2><span class="sp"></span><button type="button" data-print="1">Generar reporte</button></div><p class="mu" style="margin:4px 0 8px">Despliega cada broker para ver cuánto hay de cada criptomoneda, en USDT y en pesos.</p>'+detailHtml(brokerData())+'</div>';
- var un=M.filter(function(s){return s.action=='VENTA'&&s.qty>0&&!reflected(s)&&!(s.lote&&keys[s.lote])});
- var unHtml=un.length?'<div class="card"><h2>Ventas sin entrada asignada</h2><p class="mu" style="margin:0 0 8px">Estas ventas no descuentan de ninguna entrada. Asígnalas para que cada una cuente en su ganancia o pérdida.</p>'+un.map(function(s){
-  var cands=L.filter(function(l){return l.coin==s.coin&&l.rem>0});
-  return '<div class="row bgrow"><span class="VENTA"><b>VENTA</b></span>'+coinIcon(s.coin,16)+'<b>'+esc(s.coin)+'</b><span class="num">'+n(s.qty,8)+' @ '+px(s.price)+'</span><span class="mu">'+fd(s.time)+'</span>'+
-   (cands.length?'<select id="asg'+s.id+'" style="width:auto;margin:0">'+cands.map(function(l){return '<option value="'+l.key+'">'+l.code+' · quedan '+n(l.rem,8)+' a '+px(l.price)+'</option>'}).join('')+'</select><button data-assign="'+s.id+'">Asignar</button>':'<span class="mu">no hay entradas abiertas de '+esc(s.coin)+'</span>')+'</div>'}).join('')+'</div>':'';
- var holdW='<details class="hold-wrap" id="holdWrap"'+(holdOpen?' open':'')+'><summary><b>Actualizar lo que tengo en los brokers</b> <span class="mu">· para cuando deposites o quieras corregir cantidades</span></summary><div id="holdSlot"></div></details>';
- sum=sum.replace(/<\/div>$/,holdW+'</div>');
- $('#posList').innerHTML=(L.length?sum:'<div class="card">'+holdW+'</div>')+detail+cashCardHtml()+unHtml+(groups||'<div class="card empty">Aún no hay entradas de criptomonedas. Agrégalas arriba, o registra compras con cantidad y precio.</div>');
- placeHold();
-}
 $('#v7').addEventListener('change',function(e){
  if(e.target.id!='flImp')return;var files=[].slice.call(e.target.files||[]);if(!files.length)return;
  var msgs=[],left=files.length;
@@ -1384,7 +1417,7 @@ function bkInfo(){
 function fullBackup(){
  return{app:'registro-actividad',version:1,generado:new Date().toISOString(),
   movimientos:M,tenencias:H,brokers:FEES,monedas:COINS,tipoCambio:FX,
-  ajustes:{tema:theme,fondoActivo:wmOn,modoFondo:bgMode,fondoFijo:bgFixed},fondos:backgrounds,reportes:REPORTS,aportaciones:FLW,estadosCuenta:LED};
+  ajustes:{tema:theme,fondoActivo:wmOn,modoFondo:bgMode,fondoFijo:bgFixed},fondos:backgrounds,reportes:REPORTS,aportaciones:FLW,estadosCuenta:LED,dashboard:DASH,historial:HIST};
 }
 function markBackup(){try{localStorage.setItem(KLAST,String(Date.now()))}catch(e){}bkInfo()}
 /* --- exportar todo: los tres formatos llevan exactamente lo mismo --- */
@@ -1454,7 +1487,7 @@ function restoreFromObject(d){
    if(a.fondoActivo!=null)set(KWM,a.fondoActivo?'1':'0');
    if(a.modoFondo)set(KBGMODE,a.modoFondo);
    set(KBGFIXED,a.fondoFijo||'');
-   set(KBG,d.fondos||{});set(KREP,d.reportes||[]);if(Array.isArray(d.aportaciones))set(KFLOW,d.aportaciones);if(d.estadosCuenta&&d.estadosCuenta.trades)set(KLED,d.estadosCuenta);
+   set(KBG,d.fondos||{});set(KREP,d.reportes||[]);if(Array.isArray(d.aportaciones))set(KFLOW,d.aportaciones);if(d.estadosCuenta&&d.estadosCuenta.trades)set(KLED,d.estadosCuenta);if(d.dashboard&&d.dashboard.items)set(KDASH,d.dashboard);if(Array.isArray(d.historial))set(KHIST,d.historial);
    location.reload();
   }catch(err){alert('No se pudo restaurar: el almacenamiento del navegador está lleno o bloqueado.')}
  }
@@ -2158,7 +2191,7 @@ var BKDEF={
  4:{t:'Datos',d:'Brokers con sus comisiones y la lista de monedas. Importar reemplaza ambos.',ex:['json','xlsx'],im:['json','xlsx']},
  5:{t:'Configuración',d:'Tema, fondo y las imágenes de fondo por moneda. Importar reemplaza la configuración actual.',ex:['json'],im:['json']},
  6:{t:'Mercado',d:'Foto de la tabla de mercado en este momento (los precios son en vivo, por eso no se importa).',ex:['csv','xlsx'],im:[]},
- 7:{t:'Posiciones',d:'Tus tenencias y saldos (y, en Excel, también entradas, efectivo y detalle por broker). Importar reemplaza las tenencias y saldos.',ex:['xlsx','json'],im:['xlsx','json']},
+ 7:{t:'Dashboard',d:'Tus tenencias y saldos (y, en Excel, también entradas, efectivo y detalle por broker). Importar reemplaza las tenencias y saldos.',ex:['xlsx','json'],im:['xlsx','json']},
  8:{t:'Reportes',d:'El historial de reportes, con el contenido de cada uno. Importar agrega los que no existan.',ex:['csv','json'],im:['json']}
 };
 var FL={csv:'CSV',xlsx:'Excel',json:'JSON'},ACC={csv:'.csv',xlsx:'.xlsx,.xls',json:'.json'};
@@ -2403,7 +2436,7 @@ function colsSvg(labels,series,o){
 }
 function lineSvg(labels,series,o){
  o=o||{};var t=th(o);if(!labels.length)return emptyChart();
- var W=620,H=280,lm=58,bm=36,tm=series.length>1?40:20,rm=14,pw=W-lm-rm,ph=H-tm-bm,all=[];
+ var W=620,H=o.h||280,lm=58,bm=36,tm=series.length>1?40:20,rm=14,pw=W-lm-rm,ph=H-tm-bm,all=[];
  series.forEach(function(s){s.vals.forEach(function(v){if(v!=null)all.push(v)})});if(!all.length)return emptyChart();
  var mn=Math.min.apply(null,all),mx=Math.max.apply(null,all);if(o.zero)mn=Math.min(0,mn);
  var tk=niceTicks(mn,mx,5),lo=tk[0],hi=tk[tk.length-1],Y=function(v){return tm+(hi-v)/(hi-lo||1)*ph},X=function(i){return lm+(labels.length==1?pw/2:i*pw/(labels.length-1))},out='';
@@ -2413,7 +2446,7 @@ function lineSvg(labels,series,o){
  series.forEach(function(s){var pts=[];s.vals.forEach(function(v,i){if(v!=null)pts.push([X(i),Y(v),v,labels[i]])});if(!pts.length)return;
   if(s.area&&pts.length>1)out+='<path d="M'+pts[0][0].toFixed(1)+','+Y(Math.max(lo,0)).toFixed(1)+' '+pts.map(function(p){return 'L'+p[0].toFixed(1)+','+p[1].toFixed(1)}).join(' ')+' L'+pts[pts.length-1][0].toFixed(1)+','+Y(Math.max(lo,0)).toFixed(1)+' Z" fill="'+s.color+'" opacity=".12"/>';
   out+='<path class="gpop" d="'+pts.map(function(p,i){return(i?'L':'M')+p[0].toFixed(1)+','+p[1].toFixed(1)}).join(' ')+'" fill="none" stroke="'+s.color+'" stroke-width="2.5" stroke-linejoin="round" stroke-linecap="round"/>';
-  pts.forEach(function(p){out+='<circle class="sl" cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="'+(pts.length>40?2:3.5)+'" fill="'+s.color+'" stroke="'+t.gap+'" stroke-width="1.5"><title>'+esc(p[3])+' · '+esc(s.name)+': '+n(p[2],2)+(o.unit?' '+o.unit:'')+'</title></circle>'});
+  pts.forEach(function(p,pi){var many=pts.length>40&&pi<pts.length-1;out+='<circle class="sl" cx="'+p[0].toFixed(1)+'" cy="'+p[1].toFixed(1)+'" r="'+(many?3:3.5)+'" fill="'+s.color+'"'+(many?' fill-opacity="0" stroke-opacity="0"':'')+' stroke="'+t.gap+'" stroke-width="1.5"><title>'+esc(p[3])+' · '+esc(s.name)+': '+n(p[2],2)+(o.unit?' '+o.unit:'')+'</title></circle>'});
  });
  return '<svg class="chart2" viewBox="0 0 '+W+' '+H+'" role="img">'+out+'</svg>';
 }
@@ -2508,6 +2541,306 @@ $('#v9').addEventListener('change',function(e){
 });
 $('#v9').addEventListener('toggle',function(e){var d=e.target;if(d&&d.getAttribute&&d.getAttribute('data-brks'))BRK.sec[d.getAttribute('data-brks')]=d.open},true);
 
+
+
+/* ================= Dashboard configurable =================
+   Bloques (widgets) en una cuadrícula de 12 columnas. Cada bloque: {id, t:tipo, w:ancho, o:opciones}.
+   Vistas: 4 propuestas listas + vistas propias guardadas. Todo se guarda en registro-cripto.dash. */
+var KDASH='registro-cripto.dash',KHIST='registro-cripto.hist';
+var DICON={
+ wallet:'<path d="M3 7a2 2 0 012-2h13v4"/><path d="M3 7v11a2 2 0 002 2h15V9H5a2 2 0 01-2-2z"/><circle cx="16" cy="14.5" r="1.3"/>',
+ coins:'<ellipse cx="9" cy="6" rx="6" ry="2.5"/><path d="M3 6v4c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5V6"/><path d="M3 10v4c0 1.4 2.7 2.5 6 2.5"/><path d="M9 14.5c0 1.4 2.7 2.5 6 2.5s6-1.1 6-2.5v-4c0-1.4-2.7-2.5-6-2.5"/>',
+ trend:'<path d="M3 17l5-5 4 4 8-8"/><path d="M14 8h6v6"/>',
+ down:'<path d="M3 7l5 5 4-4 8 8"/><path d="M14 16h6v-6"/>',
+ flag:'<path d="M5 21V4"/><path d="M5 4h11l-2 4 2 4H5"/>',
+ tether:'<path d="M5 5h14"/><path d="M12 5v14"/><ellipse cx="12" cy="11" rx="6" ry="2"/>',
+ peso:'<path d="M12 3v18"/><path d="M17 7.5c0-1.9-2.2-3-5-3s-5 1.2-5 3.2c0 4.6 10 2.4 10 7.1 0 2-2.2 3.2-5 3.2s-5-1.1-5-3"/>',
+ pie:'<path d="M12 3a9 9 0 109 9h-9z"/><path d="M15 3.5A9 9 0 0120.5 9H15z"/>',
+ tag:'<path d="M3 12V4h8l10 10-8 8z"/><circle cx="7.5" cy="8.5" r="1.3"/>',
+ bank:'<path d="M3 10l9-6 9 6"/><path d="M5 10v8M9.5 10v8M14.5 10v8M19 10v8"/><path d="M3 20h18"/>',
+ star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+ target:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="4"/><circle cx="12" cy="12" r="1"/>'
+};
+function dIcon(k,sz){return '<svg viewBox="0 0 24 24" width="'+(sz||22)+'" height="'+(sz||22)+'" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+(DICON[k]||DICON.star)+'</svg>'}
+var KPI_METRICS={
+ total:{n:'Valor total de las cuentas',i:'wallet',c:'#4472D8'},
+ cripto:{n:'Valor actual (cripto)',i:'coins',c:'#1F8A7E'},
+ pl:{n:'Ganancia/pérdida abierta',i:'trend',c:'#C8553D'},
+ realized:{n:'Realizado',i:'flag',c:'#2F9E62'},
+ cost:{n:'Costo abierto',i:'pie',c:'#8058C4'},
+ usdt:{n:'USDT',i:'tether',c:'#2E93BE'},
+ pesos:{n:'Pesos',i:'peso',c:'#D19A1E'},
+ valor:{n:'A precio de entrada (Valor)',i:'tag',c:'#5F6FCC'},
+ aportado:{n:'Neto aportado',i:'bank',c:'#94735F'},
+ favor:{n:'A favor respecto a lo aportado',i:'target',c:'#2F9E62'},
+ entradas:{n:'Entradas en ganancia / pérdida',i:'star',c:'#DB7A2C'}
+};
+var WIDGETS={
+ kpi:{n:'Indicador',d:'Una cifra: elige cuál en sus opciones',w:3},
+ hero:{n:'Valor total con tendencia',d:'El total grande con su gráfica en el tiempo',w:12,single:true},
+ detail:{n:'Detalles de la cuenta',d:'Cripto, USDT, pesos, valor de entrada, aportado y a favor',w:6},
+ comp:{n:'Gráficos del resumen',d:'Composición por activo o broker, ganancia/pérdida, costo vs valor',w:6,single:true},
+ history:{n:'Valor total en el tiempo',d:'Gráfica con rangos 1D, 1S, 1M, 3M, 1A y todo',w:12},
+ table:{n:'Posiciones por activo',d:'Tabla con cantidad, precio, valor, costo y ganancia; también por broker',w:8},
+ brokers:{n:'Detalle por broker',d:'Lo que hay en cada broker, con valor y valor actual',w:12},
+ flows:{n:'Dinero ingresado y retirado',d:'Lo aportado contra lo que hay hoy',w:12,single:true},
+ cash:{n:'Efectivo por broker',d:'Saldos de USDT y pesos con su base',w:12},
+ unassigned:{n:'Ventas sin entrada asignada',d:'Aparece solo cuando hay ventas por asignar',w:12},
+ lots:{n:'Entradas por moneda',d:'Cada entrada con su ganancia o pérdida',w:12},
+ hold:{n:'Actualizar lo que tengo',d:'Formulario para capturar tenencias y saldos',w:12,single:true},
+ note:{n:'Nota',d:'Un bloque de texto libre para tus apuntes',w:4}
+};
+var WIDTHS=[[3,'¼'],[4,'⅓'],[6,'½'],[8,'⅔'],[9,'¾'],[12,'Completo']];
+var REST=[{t:'brokers',w:12},{t:'flows',w:12},{t:'cash',w:12},{t:'unassigned',w:12},{t:'lots',w:12},{t:'hold',w:12}];
+var PRESETS={
+ p1:{name:'Propuesta 1 · Clásica',nav:'tabs',kstyle:'plain',items:[{t:'kpi',w:3,o:{m:'total'}},{t:'kpi',w:3,o:{m:'cripto'}},{t:'kpi',w:3,o:{m:'pl'}},{t:'kpi',w:3,o:{m:'realized'}},{t:'detail',w:12},{t:'comp',w:12}].concat(REST)},
+ p2:{name:'Propuesta 2 · Tendencia',nav:'tabs',kstyle:'icon',items:[{t:'hero',w:12},{t:'kpi',w:4,o:{m:'cripto'}},{t:'kpi',w:4,o:{m:'usdt'}},{t:'kpi',w:4,o:{m:'pesos'}},{t:'kpi',w:3,o:{m:'cost'}},{t:'kpi',w:3,o:{m:'valor'}},{t:'kpi',w:3,o:{m:'aportado'}},{t:'kpi',w:3,o:{m:'realized'}},{t:'comp',w:12}].concat(REST)},
+ p3:{name:'Propuesta 3 · Tabla',nav:'tabs',kstyle:'icon',items:[{t:'kpi',w:3,o:{m:'total'}},{t:'kpi',w:3,o:{m:'cripto'}},{t:'kpi',w:3,o:{m:'pl'}},{t:'kpi',w:3,o:{m:'realized'}},{t:'table',w:8},{t:'comp',w:4}].concat(REST)},
+ p4:{name:'Propuesta 4 · Menú lateral',nav:'side',kstyle:'icon',items:[{t:'kpi',w:3,o:{m:'total'}},{t:'kpi',w:3,o:{m:'cripto'}},{t:'kpi',w:3,o:{m:'pl'}},{t:'kpi',w:3,o:{m:'realized'}},{t:'detail',w:6},{t:'comp',w:6},{t:'history',w:12}].concat(REST)}
+};
+function dUid(){return 'w'+Math.random().toString(36).slice(2,9)}
+function fromPreset(k){var p=PRESETS[k];return{v:1,view:k,nav:p.nav,kstyle:p.kstyle,items:p.items.map(function(x){return{id:dUid(),t:x.t,w:x.w,o:JSON.parse(JSON.stringify(x.o||{}))}}),saved:{}}}
+var DASH;
+try{DASH=JSON.parse(localStorage.getItem(KDASH)||'null')}catch(e){DASH=null}
+if(!DASH||!Array.isArray(DASH.items)){var _sv=DASH&&DASH.saved;DASH=fromPreset('p4');if(_sv)DASH.saved=_sv}
+DASH.saved=DASH.saved||{};
+function saveDash(){try{localStorage.setItem(KDASH,JSON.stringify(DASH))}catch(e){}}
+var DEDIT=false;
+
+/* --- historial del valor total (se guarda solo, como mucho cada 30 min) --- */
+var HIST=[];try{HIST=JSON.parse(localStorage.getItem(KHIST)||'[]')||[]}catch(e){HIST=[]}
+function recordHist(){
+ try{
+  if(!MKT||!Object.keys(MKT).length)return;
+  var at=accountTotals(FX);if(!(at.total>0)||at.miss&&at.cripto<=0)return;
+  var now=Date.now(),last=HIST[HIST.length-1];
+  if(last&&now-last[0]<30*60e3){last[1]=+at.total.toFixed(2);}
+  else HIST.push([now,+at.total.toFixed(2)]);
+  /* compacta: >2 días → 1 por hora; >45 días → 1 por día */
+  var out=[],seen={};
+  HIST.forEach(function(p){var age=now-p[0],k=age>45*864e5?'d'+Math.floor(p[0]/864e5):age>2*864e5?'h'+Math.floor(p[0]/36e5):'r'+p[0];seen[k]=p});
+  Object.keys(seen).forEach(function(k){out.push(seen[k])});out.sort(function(a,b){return a[0]-b[0]});HIST=out;
+  localStorage.setItem(KHIST,JSON.stringify(HIST));
+ }catch(e){}
+}
+var HRANGE='1M';try{HRANGE=localStorage.getItem('registro-cripto.hrange')||'1M'}catch(e){}
+var HR={'1D':864e5,'1S':7*864e5,'1M':30*864e5,'3M':91*864e5,'1A':365*864e5,'Todo':Infinity};
+function histSeries(){
+ var now=Date.now(),span=HR[HRANGE]||Infinity,pts=HIST.filter(function(p){return now-p[0]<=span});
+ var at=accountTotals(FX);if(at.total>0)pts=pts.concat([[now,at.total]]);
+ return pts;
+}
+function histLabel(ms){var d=new Date(ms),M=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+ return HRANGE=='1D'?String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'):d.getDate()+' '+M[d.getMonth()]+(HRANGE=='1A'||HRANGE=='Todo'?' '+String(d.getFullYear()).slice(2):'')}
+function histChart(h){
+ var pts=histSeries();
+ var rng='<div class="seg hr-seg" role="group" aria-label="Periodo">'+Object.keys(HR).map(function(k){return '<button type="button" data-hr="'+k+'" aria-pressed="'+(k==HRANGE)+'">'+k+'</button>'}).join('')+'</div>';
+ if(pts.length<2)return{rng:rng,svg:'<div class="hist-empty mu">La gráfica se irá llenando sola: guardo el valor total cada vez que abres la app con precios actualizados (como mucho cada 30 minutos). '+(HIST.length?'Por ahora hay '+HIST.length+' registro(s).':'Aún no hay registros.')+'</div>'};
+ var step=Math.max(1,Math.ceil(pts.length/160)),sp=pts.filter(function(p,i){return i%step==0||i==pts.length-1});
+ return{rng:rng,svg:lineSvg(sp.map(function(p){return histLabel(p[0])}),[{name:'Valor total',color:'#2E93BE',area:true,vals:sp.map(function(p){return p[1]})}],{unit:'USD',h:h})};
+}
+function sparkSvg(){
+ var pts=HIST.slice(-60);if(pts.length<2)return '';
+ var vs=pts.map(function(p){return p[1]}),mn=Math.min.apply(null,vs),mx=Math.max.apply(null,vs),W=120,H=34;
+ var d=vs.map(function(v,i){return (i?'L':'M')+(i*W/(vs.length-1)).toFixed(1)+','+(H-2-(mx>mn?(v-mn)/(mx-mn)*(H-4):H/2)).toFixed(1)}).join(' ');
+ var up=vs[vs.length-1]>=vs[0];
+ return '<svg class="spark" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" aria-hidden="true"><path d="'+d+'" fill="none" stroke="'+(up?'var(--buy)':'var(--sell)')+'" stroke-width="2" stroke-linejoin="round"/></svg>';
+}
+
+/* --- cálculos compartidos por los bloques --- */
+function dashCtx(){
+ var L=lots(),keys={};L.forEach(function(l){keys[l.key]=1});
+ var coins=[];L.forEach(function(l){if(coins.indexOf(l.coin)<0)coins.push(l.coin)});coins.sort();
+ var c={L:L,keys:keys,coins:coins,totCost:0,totVal:0,totPL:0,totRea:0,costP:0,win:0,loss:0,missing:[]};
+ coins.forEach(function(co){
+  var cl=L.filter(function(l){return l.coin==co}),p=refPrice(co),open=cl.filter(function(l){return l.rem>0});
+  var remQ=open.reduce(function(a,l){return a+l.rem},0),cost=open.reduce(function(a,l){return a+l.price*l.rem},0);
+  c.totCost+=cost;c.totRea+=cl.reduce(function(a,l){return a+l.realized},0);
+  if(p){c.totVal+=remQ*p;c.totPL+=remQ*p-cost;c.costP+=cost}else if(remQ>0)c.missing.push(co);
+  open.forEach(function(l){if(p){if(p>=l.price)c.win++;else c.loss++}});
+ });
+ c.at=accountTotals(FX);c.ft=flowTotals();c.fav=c.at.total*FX-c.ft.net;
+ return c;
+}
+function kpiData(m,c){
+ var at=c.at,d=at.total-at.totalC,pp=c.costP?c.totPL/c.costP*100:null;
+ switch(m){
+  case 'total':return{v:n(at.total,2)+' USD'+(at.miss?'*':''),s:'≈ '+n(at.total*FX,2)+' MXN',x:FLW.length?'<span style="color:'+col(c.fav)+'">'+(c.fav>=0?'+':'')+n(c.fav,0)+' MXN vs. aportado</span>':'',spark:true};
+  case 'cripto':return{v:n(at.cripto,2)+' USD',s:'a precio de entrada: '+n(at.criptoC,2)};
+  case 'pl':return{v:usdTxt(c.totPL),s:pp!=null?pctTxt(pp)+' sobre el costo':'',col:col(c.totPL),i:c.totPL<0?'down':'trend'};
+  case 'realized':return{v:usdTxt(c.totRea),s:'neto de comisiones',col:col(c.totRea)};
+  case 'cost':return{v:n(c.totCost,2)+' USD',s:'lo que pagaste por lo abierto'};
+  case 'usdt':return{v:n(at.usdt,2)+' USD',s:'en todos los brokers'};
+  case 'pesos':return{v:n(at.mxnUsd,2)+' USD',s:n(at.mxn,2)+' MXN'};
+  case 'valor':return{v:n(at.totalC,2)+' USD',s:'<span style="color:'+col(d)+'">'+(d>=0?'+':'')+n(d,2)+' vs. valor actual</span>'};
+  case 'aportado':return{v:n(c.ft.net,2)+' MXN',s:'ingresado − retirado'};
+  case 'favor':return{v:(c.fav>=0?'+':'')+n(c.fav,2)+' MXN',s:c.ft.net>0?(c.fav>=0?'+':'')+n(c.fav/c.ft.net*100,1)+'% sobre lo aportado':'',col:col(c.fav)};
+  case 'entradas':return{v:c.win+' / '+c.loss,s:'entradas en ganancia / en pérdida'};
+ }
+ return{v:'—',s:''};
+}
+function wKpi(it,c){
+ var m=(it.o&&it.o.m)||'total',K=KPI_METRICS[m]||KPI_METRICS.total,d=kpiData(m,c),icon=d.i||K.i,ic=DASH.kstyle!='plain';
+ var colr=m=='pl'?(c.totPL<0?'#C8553D':'#1F8A7E'):K.c;
+ return '<div class="kpi'+(ic?' kpi-ic':'')+(d.spark&&HIST.length>1?' kpi-has-spark':'')+'">'+(ic?'<span class="kpi-icon" style="background:'+colr+'22;color:'+colr+'">'+dIcon(icon)+'</span>':'')+
+  '<div class="kpi-body"><div class="mu kpi-l">'+K.n+'</div><div class="num kpi-v"'+(d.col?' style="color:'+d.col+'"':'')+'>'+d.v+'</div>'+(d.s?'<div class="mu kpi-s">'+d.s+'</div>':'')+(d.x?'<div class="kpi-s">'+d.x+'</div>':'')+'</div>'+
+  (d.spark?sparkSvg():'')+'</div>';
+}
+function wHero(it,c){
+ var at=c.at,h=histChart(220);
+ return '<div class="hero"><div class="hero-l"><div class="mu">Valor total de las cuentas</div><div class="hero-v num">'+n(at.total,2)+' <small>USD</small></div><div class="mu num">≈ '+n(at.total*FX,2)+' MXN</div>'+
+  (FLW.length?'<div class="num hero-f" style="color:'+col(c.fav)+'">'+(c.fav>=0?'▲ +':'▼ ')+n(c.fav,1)+' MXN'+(c.ft.net>0?' ('+(c.fav>=0?'+':'')+n(c.fav/c.ft.net*100,1)+'%)':'')+' <span class="mu">vs. lo aportado</span></div>':'')+'</div>'+
+  '<div class="hero-r">'+h.rng+h.svg+'</div></div>';
+}
+function wDetail(it,c){
+ var at=c.at,d=at.total-at.totalC,row=function(l,v,cl){return '<div class="drow"><span class="mu">'+l+'</span><b class="num"'+(cl?' style="color:'+cl+'"':'')+'>'+v+'</b></div>'};
+ return '<div class="wh"><h3>Detalles de la cuenta</h3></div><div class="dgrid"><div>'+row('Cripto (valor actual)',n(at.cripto,2))+row('USDT',n(at.usdt,2))+(at.mxn?row('Pesos ('+n(at.mxn,2)+' MXN)',n(at.mxnUsd,2)):'')+row('Total','<span>'+n(at.total,2)+' USD</span>')+'</div>'+
+  '<div>'+row('A precio de entrada (Valor)',n(at.totalC,2)+' <span style="color:'+col(d)+'">('+(d>=0?'+':'')+n(d,2)+')</span>')+
+  (FLW.length?row('Neto aportado (ingresado − retirado)',n(c.ft.net,2)+' MXN')+row(c.fav>=0?'Vas a favor':'Vas en contra',(c.fav>=0?'+':'')+n(c.fav,2)+' MXN'+(c.ft.net>0?' ('+(c.fav>=0?'+':'')+n(c.fav/c.ft.net*100,1)+'%)':''),col(c.fav)):'')+
+  row('Entradas en ganancia / pérdida',c.win+' / '+c.loss)+'</div></div>'+(c.missing.length?'<p class="mu" style="margin:8px 0 0;font-size:12px">Sin precio de mercado para: '+c.missing.join(', ')+'</p>':'');
+}
+function wComp(){return '<div class="wh"><h3>Gráficos del resumen</h3></div><div id="cvBox">'+cvBoxHtml()+'</div>'}
+function wHistory(it){var h=histChart();return '<div class="wh"><h3>Valor total en el tiempo (USD)</h3><span class="sp"></span>'+h.rng+'</div>'+h.svg}
+function wTable(it,c){
+ var mode=(it.o&&it.o.mode)||'asset',data=brokerData(),rows=[],totV=0,totC=0;
+ var seg='<div class="seg" role="group"><button type="button" data-tmode="asset" data-wid="'+it.id+'" aria-pressed="'+(mode=='asset')+'">Por activo</button><button type="button" data-tmode="broker" data-wid="'+it.id+'" aria-pressed="'+(mode=='broker')+'">Por broker</button></div>';
+ if(mode=='asset'){
+  var agg={};data.forEach(function(b){b.rows.forEach(function(r){var k=r.asset,o=agg[k]||(agg[k]={asset:k,qty:0,val:0,cost:0,miss:false,cmiss:false,plats:{}});
+   o.qty+=r.qty;o.plats[b.plat]=1;var v=r.asset=='MXN'?r.qty/FX:r.val,cc=r.asset=='MXN'?r.qty/FX:r.cost;if(v==null)o.miss=true;else o.val+=v;if(cc==null)o.cmiss=true;else o.cost+=cc})});
+  rows=Object.keys(agg).map(function(k){return agg[k]}).sort(function(a,b){return b.val-a.val});
+ }else{
+  rows=data.map(function(b){var t=brokerTotals(b);return{asset:b.plat,broker:true,val:t.usd+t.mxn/FX,cost:t.cost+t.mxn/FX,miss:t.miss,cmiss:t.cmiss,qty:null,plats:{}}}).sort(function(a,b){return b.val-a.val});
+ }
+ var body=rows.map(function(r){totV+=r.val;totC+=r.cost;var g=r.val-r.cost,gp=r.cost?g/r.cost*100:0,cash=isCash(r.asset);var p=!r.broker&&!cash?refPrice(r.asset):null;
+  return '<tr><td>'+(r.broker?'<b>'+esc(r.asset)+'</b>':(cash?'<b>'+(r.asset=='MXN'?'MXN (pesos)':'USDT')+'</b>':coinIcon(r.asset,16)+esc(r.asset)))+(!r.broker&&Object.keys(r.plats).length>1?' <span class="mu" title="'+esc(Object.keys(r.plats).join(', '))+'">·'+Object.keys(r.plats).length+'</span>':'')+'</td>'+
+   (r.broker?'':'<td class="num">'+(cash?'—':n(r.qty,6))+'</td><td class="num">'+(p?px(p):'—')+'</td>')+
+   '<td class="num">'+n(r.val,2)+(r.miss?'*':'')+'</td><td class="num">'+n(r.cost,2)+'</td><td class="num" style="color:'+col(g)+'">'+(Math.abs(g)<0.005?'0.00':(g>0?'+':'')+n(g,2))+'</td><td class="num" style="color:'+col(g)+'">'+(r.cost?(gp>0?'+':'')+n(gp,1)+'%':'—')+'</td></tr>'}).join('');
+ var tg=totV-totC;
+ return '<div class="wh"><h3>Posiciones '+(mode=='asset'?'por activo':'por broker')+'</h3><span class="sp"></span>'+seg+'</div><div class="wrap"><table class="ptable"><thead><tr><th>'+(mode=='asset'?'Activo':'Broker')+'</th>'+(mode=='asset'?'<th>Cantidad</th><th>Precio actual</th>':'')+'<th>Valor actual</th><th>Costo</th><th>Ganancia/pérdida</th><th>%</th></tr></thead><tbody>'+body+'</tbody>'+
+  '<tfoot><tr><td><b>Total</b></td>'+(mode=='asset'?'<td></td><td></td>':'')+'<td class="num"><b>'+n(totV,2)+'</b></td><td class="num"><b>'+n(totC,2)+'</b></td><td class="num" style="color:'+col(tg)+'"><b>'+(tg>0?'+':'')+n(tg,2)+'</b></td><td class="num" style="color:'+col(tg)+'">'+(totC?(tg>0?'+':'')+n(tg/totC*100,1)+'%':'')+'</td></tr></tfoot></table></div>'+
+  '<p class="mu" style="font-size:12px;margin:6px 0 0">Costo = a precio de entrada; USDT y pesos cuentan igual en las dos columnas.</p>';
+}
+function wBrokers(){return '<div class="wh"><h3>Detalle por broker</h3><span class="sp"></span><button type="button" data-print="1" class="sm">Generar reporte</button></div>'+detailHtml(brokerData())}
+function stripCard(h){return h.replace(/^<div class="card"( id="[^"]*")?>/,'<div$1>')}
+function wFlows(it,c){return stripCard(flowCardHtml(c.at))}
+function wCash(){return stripCard(cashCardHtml())}
+function wUnassigned(it,c){
+ var un=M.filter(function(s){return s.action=='VENTA'&&s.qty>0&&!reflected(s)&&!(s.lote&&c.keys[s.lote])});
+ if(!un.length)return DEDIT?'<div class="wh"><h3>Ventas sin entrada asignada</h3></div><p class="mu">Ahora no hay ventas por asignar; este bloque solo aparece cuando las hay.</p>':null;
+ return '<div class="wh"><h3>Ventas sin entrada asignada</h3></div><p class="mu" style="margin:0 0 8px">Estas ventas no descuentan de ninguna entrada. Asígnalas para que cada una cuente en su ganancia o pérdida.</p>'+un.map(function(s){
+  var cands=c.L.filter(function(l){return l.coin==s.coin&&l.rem>0});
+  return '<div class="row bgrow"><span class="VENTA"><b>VENTA</b></span>'+coinIcon(s.coin,16)+'<b>'+esc(s.coin)+'</b><span class="num">'+n(s.qty,8)+' @ '+px(s.price)+'</span><span class="mu">'+fd(s.time)+'</span>'+
+   (cands.length?'<select id="asg'+s.id+'" style="width:auto;margin:0">'+cands.map(function(l){return '<option value="'+l.key+'">'+l.code+' · quedan '+n(l.rem,8)+' a '+px(l.price)+'</option>'}).join('')+'</select><button data-assign="'+s.id+'">Asignar</button>':'<span class="mu">no hay entradas abiertas de '+esc(s.coin)+'</span>')+'</div>'}).join('');
+}
+function wLots(it,c){
+ if(!c.coins.length)return '<div class="wh"><h3>Entradas por moneda</h3></div><p class="mu">Aún no hay entradas de criptomonedas. Agrégalas en "Actualizar lo que tengo", o registra compras con cantidad y precio.</p>';
+ return '<div class="wh"><h3>Entradas por moneda</h3></div>'+c.coins.map(function(co){
+  var cl=c.L.filter(function(l){return l.coin==co}).sort(function(a,b){return a.time<b.time?1:-1}),p=refPrice(co),open=cl.filter(function(l){return l.rem>0});
+  var remQ=open.reduce(function(a,l){return a+l.rem},0),cost=open.reduce(function(a,l){return a+l.price*l.rem},0),rea=cl.reduce(function(a,l){return a+l.realized},0);
+  var val=p?remQ*p:null,pl=p?val-cost:null,plp=(p&&cost)?pl/cost*100:null;
+  return '<details class="lotgrp"><summary class="row cyc-head">'+coinIcon(co,20)+'<b>'+esc(co)+'</b><span class="mu">'+n(remQ,8)+' restantes · hoy '+px(p)+'</span><span class="sp"></span>'+(pl!=null?'<b class="num" style="color:'+col(pl)+'">'+usdTxt(pl)+(plp!=null?' ('+pctTxt(plp)+')':'')+'</b>':'<span class="mu">sin precio</span>')+'</summary>'+
+   '<div class="mu" style="margin:4px 0">Costo de lo abierto: '+n(cost)+' USD'+(val!=null?' · Valor actual: '+n(val)+' USD':'')+(rea?' · Realizado: <b class="num" style="color:'+col(rea)+'">'+usdTxt(rea)+'</b>':'')+'</div>'+cl.map(function(l){return lotHtml(l,p)}).join('')+'</details>'}).join('');
+}
+function wHold(){return '<details class="hold-wrap" id="holdWrap"'+(holdOpen?' open':'')+' style="margin:0;border:0;padding:0"><summary><b>Actualizar lo que tengo en los brokers</b> <span class="mu">· para cuando deposites o quieras corregir cantidades</span></summary><div id="holdSlot"></div></details>'}
+function wNote(it){var t=(it.o&&it.o.text)||'';return '<div class="wh"><h3>'+esc((it.o&&it.o.title)||'Nota')+'</h3></div><textarea class="dnote" data-note="'+it.id+'" placeholder="Escribe aquí tus apuntes…">'+esc(t)+'</textarea>'}
+var WRENDER={kpi:wKpi,hero:wHero,detail:wDetail,comp:wComp,history:wHistory,table:wTable,brokers:wBrokers,flows:wFlows,cash:wCash,unassigned:wUnassigned,lots:wLots,hold:wHold,note:wNote};
+
+/* --- pintar --- */
+function applyNav(){document.body.classList.toggle('nav-side',DASH.nav=='side')}
+function dashBar(){
+ var opts=Object.keys(PRESETS).map(function(k){return '<option value="'+k+'"'+(DASH.view==k?' selected':'')+'>'+esc(PRESETS[k].name)+'</option>'}).join('')+
+  Object.keys(DASH.saved).map(function(k){return '<option value="s:'+esc(k)+'"'+(DASH.view=='s:'+k?' selected':'')+'>★ '+esc(k)+'</option>'}).join('')+
+  (DASH.view=='custom'?'<option value="custom" selected>Personalizada (sin guardar)</option>':'');
+ var bar='<div class="dash-bar"><h2>Dashboard</h2><span class="sp"></span><label class="dash-view"><span class="mu">Vista</span><select id="dashView">'+opts+'</select></label>'+
+  '<button type="button" class="'+(DEDIT?'p ':'')+'sm" id="dashEdit">'+(DEDIT?'Listo':'Personalizar')+'</button></div>';
+ if(!DEDIT)return bar;
+ var add=Object.keys(WIDGETS).map(function(t){var W=WIDGETS[t],has=W.single&&DASH.items.some(function(x){return x.t==t});
+  return '<button type="button" class="dadd" data-dadd="'+t+'"'+(has?' disabled title="Ya está en el dashboard"':'')+'><b>'+W.n+'</b><span>'+W.d+'</span></button>'}).join('');
+ return bar+'<div class="dash-tools"><div class="row" style="gap:8px;flex-wrap:wrap">'+
+  '<div class="seg" role="group" aria-label="Navegación"><button type="button" data-dnav="tabs" aria-pressed="'+(DASH.nav!='side')+'">Pestañas arriba</button><button type="button" data-dnav="side" aria-pressed="'+(DASH.nav=='side')+'">Menú lateral</button></div>'+
+  '<div class="seg" role="group" aria-label="Estilo de indicadores"><button type="button" data-dks="icon" aria-pressed="'+(DASH.kstyle!='plain')+'">Indicadores con ícono</button><button type="button" data-dks="plain" aria-pressed="'+(DASH.kstyle=='plain')+'">Simples</button></div>'+
+  '<span class="sp"></span><button type="button" class="sm" data-dsave="1">Guardar vista como…</button>'+(DASH.view&&DASH.view.indexOf('s:')==0?'<button type="button" class="sm x" data-ddelview="1">Borrar esta vista</button>':'')+'<button type="button" class="sm" data-dreset="1">Restablecer</button></div>'+
+  '<p class="mu" style="margin:8px 0;font-size:13px">Arrastra cada bloque desde <b>⠿</b> para moverlo, cambia su ancho, ábrele sus opciones con <b>⚙</b> o quítalo con <b>✕</b>. Agrega bloques nuevos aquí abajo; los indicadores puedes repetirlos con la cifra que quieras.</p>'+
+  '<details class="dadd-wrap"><summary><b>+ Agregar bloque</b></summary><div class="dadd-grid">'+add+'</div></details></div>';
+}
+function widgetOpts(it){
+ if(it.t=='kpi')return '<select data-wopt="m" data-wid="'+it.id+'">'+Object.keys(KPI_METRICS).map(function(k){return '<option value="'+k+'"'+(((it.o&&it.o.m)||'total')==k?' selected':'')+'>'+KPI_METRICS[k].n+'</option>'}).join('')+'</select>';
+ if(it.t=='note')return '<input data-wopt="title" data-wid="'+it.id+'" value="'+esc((it.o&&it.o.title)||'Nota')+'" placeholder="Título">';
+ if(it.t=='table')return '<select data-wopt="mode" data-wid="'+it.id+'"><option value="asset"'+((it.o&&it.o.mode)!='broker'?' selected':'')+'>Por activo</option><option value="broker"'+((it.o&&it.o.mode)=='broker'?' selected':'')+'>Por broker</option></select>';
+ return '';
+}
+function renderPositions(){
+ var _hc=$('#holdCard');if(_hc)window._holdCard=_hc;
+ applyNav();
+ var c=dashCtx(),html=dashBar()+'<div class="dash-grid'+(DEDIT?' editing':'')+'" id="dashGrid">';
+ DASH.items.forEach(function(it){
+  var fn=WRENDER[it.t];if(!fn)return;var inner;try{inner=fn(it,c)}catch(e){inner='<p class="mu">No se pudo mostrar este bloque.</p>'}
+  if(inner==null)return;
+  var W=WIDGETS[it.t],op=DEDIT?widgetOpts(it):'';
+  var tools=DEDIT?'<div class="wtools"><span class="whandle" data-whandle="'+it.id+'" title="Arrastra para mover">⠿</span><b class="wname">'+W.n+'</b><span class="sp"></span>'+
+   '<select data-wwidth="'+it.id+'" title="Ancho">'+WIDTHS.map(function(x){return '<option value="'+x[0]+'"'+(it.w==x[0]?' selected':'')+'>'+x[1]+'</option>'}).join('')+'</select>'+
+   (op?'<button type="button" class="wbtn" data-wcfg="'+it.id+'" title="Opciones">⚙</button>':'')+'<button type="button" class="wbtn" data-wdel="'+it.id+'" title="Quitar">✕</button></div>'+(op?'<div class="wcfg" id="wcfg-'+it.id+'" hidden>'+op+'</div>':''):'';
+  html+='<section class="dw card w'+(it.w||W.w)+' t-'+it.t+'" data-wid="'+it.id+'">'+tools+'<div class="dwin">'+inner+'</div></section>';
+ });
+ html+='</div>';
+ $('#posList').innerHTML=html;
+ placeHold();
+}
+function dashChanged(keepView){if(!keepView)DASH.view='custom';saveDash();renderPositions()}
+function findW(id){return DASH.items.filter(function(x){return x.id==id})[0]}
+$('#v7').addEventListener('click',function(e){
+ var t=e.target,b=t.closest&&t.closest('button,[data-whandle]');if(!b)return;var g=function(a){return b.getAttribute(a)};
+ if(b.id=='dashEdit'){DEDIT=!DEDIT;renderPositions();return}
+ if(g('data-hr')){HRANGE=g('data-hr');try{localStorage.setItem('registro-cripto.hrange',HRANGE)}catch(err){}renderPositions();return}
+ if(g('data-tmode')){var w0=findW(g('data-wid'));if(w0){w0.o=w0.o||{};w0.o.mode=g('data-tmode');saveDash();renderPositions()}return}
+ if(!DEDIT)return;
+ if(g('data-dnav')){DASH.nav=g('data-dnav');dashChanged();return}
+ if(g('data-dks')){DASH.kstyle=g('data-dks');dashChanged();return}
+ if(g('data-dadd')){var tt=g('data-dadd'),nw={id:dUid(),t:tt,w:WIDGETS[tt].w,o:tt=='kpi'?{m:'total'}:{}};DASH.items.unshift(nw);dashChanged();setTimeout(function(){var el=document.querySelector('[data-wid="'+nw.id+'"]');if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.classList.add('dw-new')}},50);return}
+ if(g('data-wdel')){DASH.items=DASH.items.filter(function(x){return x.id!=g('data-wdel')});dashChanged();return}
+ if(g('data-wcfg')){var p=$('#wcfg-'+g('data-wcfg'));if(p)p.hidden=!p.hidden;return}
+ if(g('data-dsave')){var nm=prompt('Nombre para esta vista:',DASH.view&&DASH.view.indexOf('s:')==0?DASH.view.slice(2):'Mi vista');if(!nm)return;nm=nm.trim().slice(0,40);if(!nm)return;
+  DASH.saved[nm]={nav:DASH.nav,kstyle:DASH.kstyle,items:JSON.parse(JSON.stringify(DASH.items))};DASH.view='s:'+nm;saveDash();renderPositions();return}
+ if(g('data-ddelview')){var k=DASH.view.slice(2);if(confirm('¿Borrar la vista "'+k+'"?')){delete DASH.saved[k];DASH.view='custom';saveDash();renderPositions()}return}
+ if(g('data-dreset')){var v=DASH.view&&PRESETS[DASH.view]?DASH.view:'p4';if(confirm('¿Volver la vista a "'+PRESETS[v].name+'" como venía?')){var sv=DASH.saved;DASH=fromPreset(v);DASH.saved=sv;saveDash();renderPositions()}return}
+});
+$('#v7').addEventListener('change',function(e){
+ var t=e.target;
+ if(t.id=='dashView'){var v=t.value,sv=DASH.saved;
+  if(PRESETS[v]){DASH=fromPreset(v);DASH.saved=sv}
+  else if(v.indexOf('s:')==0&&sv[v.slice(2)]){var s=sv[v.slice(2)];DASH={v:1,view:v,nav:s.nav,kstyle:s.kstyle,items:JSON.parse(JSON.stringify(s.items)),saved:sv}}
+  saveDash();renderPositions();return}
+ if(t.getAttribute('data-wwidth')){var w=findW(t.getAttribute('data-wwidth'));if(w){w.w=+t.value;dashChanged()}return}
+ if(t.getAttribute('data-wopt')){var w2=findW(t.getAttribute('data-wid'));if(w2){w2.o=w2.o||{};w2.o[t.getAttribute('data-wopt')]=t.value;dashChanged()}return}
+});
+var _noteT=null;
+$('#v7').addEventListener('input',function(e){var t=e.target;if(!t.getAttribute||!t.getAttribute('data-note'))return;var w=findW(t.getAttribute('data-note'));if(!w)return;w.o=w.o||{};w.o.text=t.value;clearTimeout(_noteT);_noteT=setTimeout(saveDash,600)});
+/* arrastrar para mover (mouse y dedo) */
+(function(){
+ var drag=null;
+ $('#v7').addEventListener('pointerdown',function(e){
+  var h=e.target.closest&&e.target.closest('[data-whandle]');if(!h||!DEDIT)return;
+  var el=h.closest('.dw');drag={el:el,id:h.getAttribute('data-whandle')};el.classList.add('dragging');e.preventDefault();
+  try{h.setPointerCapture(e.pointerId)}catch(err){}
+ });
+ $('#v7').addEventListener('pointermove',function(e){
+  if(!drag)return;var grid=$('#dashGrid');if(!grid)return;
+  drag.el.style.visibility='hidden';var under=document.elementFromPoint(e.clientX,e.clientY);drag.el.style.visibility='';
+  var tgt=under&&under.closest&&under.closest('.dw');if(!tgt||tgt==drag.el||tgt.parentNode!=grid)return;
+  var r=tgt.getBoundingClientRect(),before=(e.clientY<r.top+r.height/2&&(e.clientX<r.left+r.width/2||r.width>grid.clientWidth*0.6))||(e.clientY<r.top+r.height*0.25);
+  grid.insertBefore(drag.el,before?tgt:tgt.nextSibling);
+  if(e.clientY<60)window.scrollBy(0,-14);else if(e.clientY>window.innerHeight-60)window.scrollBy(0,14);
+ });
+ function end(){if(!drag)return;drag.el.classList.remove('dragging');
+  var order=[].slice.call(document.querySelectorAll('#dashGrid .dw')).map(function(x){return x.getAttribute('data-wid')});
+  var hidden=DASH.items.filter(function(x){return order.indexOf(x.id)<0});
+  var moved=order.map(findW).filter(Boolean).concat(hidden);
+  var same=moved.every(function(x,i){return x===DASH.items[i]});drag=null;
+  if(!same){DASH.items=moved;DASH.view='custom';saveDash()}
+ }
+ $('#v7').addEventListener('pointerup',end);$('#v7').addEventListener('pointercancel',end);
+})();
+applyNav();
 
 /* ================= Nube: Supabase personal (misma cuenta y tabla que tus otras apps) =================
    Cada dato guardado en este navegador (movimientos, tenencias, ingresos/retiros, estados de cuenta, reportes…)
