@@ -39,6 +39,12 @@ tr[data-r]{cursor:pointer}tr[data-r]:hover{background:var(--bg)}[data-dens="comp
 :root[data-theme="papel"]{--bg:#f4f1ea;--card:#fbf9f4;--ink:#2a2622;--mut:#6e675c;--line:#ddd6c8;--acc:#6b4f2a;--pos:#4f6f3f;--neg:#9a4538;--warn:#94681f}
 .mk{display:flex;gap:6px 16px;flex-wrap:wrap;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:8px 12px;margin-bottom:12px;font-size:13px}.mk b{font-variant-numeric:tabular-nums}.mk .btn{padding:3px 10px;font-weight:400;margin-left:auto}
 .srt{cursor:pointer;user-select:none}.srt:hover{color:var(--ink)}.hh{color:var(--mut);font-size:13px;margin-bottom:2px}.dot{display:inline-block;width:10px;height:10px;border-radius:2px;margin:0 4px 0 10px}tr.sel{background:var(--bg)}.chk label{display:block;margin:6px 0}
+.io2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}@media(max-width:760px){.io2{grid-template-columns:1fr}}
+.iocard{margin:0;padding:18px}.iocard h3{display:flex;align-items:center;gap:12px;margin:0 0 12px;font-size:19px;font-weight:800}.iocard h3 i{display:inline-grid;place-items:center;width:30px;height:30px;border-radius:50%;background:var(--acc);color:var(--bg);font:800 15px/1 inherit;font-style:normal}
+.iocard ul{margin:8px 0 14px;padding-left:20px}.iocard li{margin:5px 0}
+.tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}@media(max-width:520px){.tiles{grid-template-columns:1fr}}
+.tile{display:flex;flex-direction:column;gap:2px;text-align:left;font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:12px;cursor:pointer}.tile:hover{border-color:var(--acc)}.tile b{font-size:17px;font-weight:800}.tile span{font-size:12px;color:var(--mut)}
+.prev{margin-top:14px;padding:12px;border:1px solid var(--acc);border-radius:8px}
 </style></head><body><main>
 <h1>Estados de cuenta unificados</h1>
 <p class="sub">Un solo formato para Banamex y BBVA. Tus datos se quedan en este navegador.</p>
@@ -271,26 +277,47 @@ return J}
 function aplicarAjustes(T){let n=0;(T.ajustes||[]).forEach(r=>{if(!r.clave)return;if(r.grupo=="categoria"){S.k[r.clave]=String(r.valor);n++}else if(r.grupo=="config"){S.cfg[r.clave]=String(r.valor);n++}});if(T.planes_msi&&T.planes_msi.length)S.pl=T.planes_msi;if(n)applyCfg();return n}
 function importarTablas(T){if(!T.movimientos&&!T.cuentas&&!T.estados){const k=Object.keys(T)[0];T={movimientos:T[k]||[]}}
 const a=aplicarAjustes(T);return doImport(JSON.stringify(deTablas(T)))+(a?" Ajustes aplicados: "+a+".":"")}
-async function importarArchivo(f){const n=f.name.toLowerCase();try{
-if(/\.xlsx$/.test(n))return importarTablas(await leerXLSX(await f.arrayBuffer()));if(/\.xls$/.test(n))return"Ese es un Excel antiguo (.xls). Guárdalo como .xlsx e inténtalo de nuevo.";
-let t=(await f.text()).replace(/^﻿/,"").trim();
-if(t[0]=="{"){const j=JSON.parse(t);if(Array.isArray(j.planes_msi)&&j.planes_msi.length)S.pl=j.planes_msi;return Array.isArray(j.cuentas)||Array.isArray(j.verificacion)||Array.isArray(j.ajustes)?importarTablas(j):doImport(t)}
-const p=csvParse(t),h=p[0].map(x=>x.trim().toLowerCase());if(h[0]=="tabla"){const T={};p.slice(1).forEach(c=>{if(!c[0])return;const o=Object.fromEntries(h.map((k,i)=>[k,c[i]??""]));const tb=o.tabla;delete o.tabla;(T[tb]=T[tb]||[]).push(o)});return importarTablas(T)}
-return doImport(t)}catch(e){return"No se pudo leer el archivo: "+e.message}}
-function vIO(){return`<div class="box"><b>Importar</b> <span class="mut">Un solo archivo con todo (cuentas, estados, movimientos, verificación y ajustes): Excel (.xlsx), CSV o JSON. También acepta un CSV de solo movimientos. Lo repetido se omite solo.</span>
-<div class="bar" style="margin-top:8px"><input type="file" id="jfile" accept=".xlsx,.xls,.csv,.json,.txt"></div>
-<details style="margin-top:8px"><summary class="mut">O pega el texto (CSV o JSON)</summary><textarea id="imp" placeholder="Pega aquí el CSV o JSON"></textarea><div class="bar" style="margin-top:8px"><button class="btn g" id="go">Importar texto</button></div></details>
-<div class="msg" id="jmsg">${esc(msg)}</div></div>
-<div class="box"><b>Exportar</b> <span class="mut">${S.bk?"Último respaldo: "+S.bk.slice(0,10):"Sin respaldo todavía"}. Los tres formatos llevan lo mismo y se pueden volver a importar.</span>
-<div class="bar" style="margin-top:8px"><button class="btn" id="xx">Excel (.xlsx)</button><button class="btn g" id="xc">CSV</button><button class="btn g" id="xj">JSON</button></div></div>
+let PEND=null;
+async function leerArchivo(f){const n=f.name.toLowerCase();
+if(/\.xlsx$/.test(n)){const T=await leerXLSX(await f.arrayBuffer());return{nombre:f.name,T}}
+if(/\.xls$/.test(n))throw new Error("Ese es un Excel antiguo (.xls). Guárdalo como .xlsx e inténtalo de nuevo.");
+const t=(await f.text()).replace(/^﻿/,"").trim();if(!t)throw new Error("El archivo está vacío.");
+if(t[0]=="{"||t[0]=="["){const j=JSON.parse(t);if(Array.isArray(j.cuentas)||Array.isArray(j.verificacion)||Array.isArray(j.ajustes))return{nombre:f.name,T:j};return{nombre:f.name,txt:t,pl:Array.isArray(j.planes_msi)?j.planes_msi:null,leg:{cuentas:Object.keys(j.cuentas||{}).length,estados:(j.estados||[]).length,movimientos:(Array.isArray(j)?j:j.movimientos||[]).length}}}
+const p=csvParse(t),h=p[0].map(x=>x.trim().toLowerCase());
+if(h[0]=="tabla"){const T={};p.slice(1).forEach(c=>{if(!c[0])return;const o=Object.fromEntries(h.map((k,i)=>[k,c[i]??""]));const tb=o.tabla;delete o.tabla;(T[tb]=T[tb]||[]).push(o)});return{nombre:f.name,T}}
+return{nombre:f.name,txt:t,leg:{cuentas:0,estados:0,movimientos:Math.max(0,p.length-1)}}}
+const resumenP=p=>{if(p.leg)return p.leg;const T=p.T;return{cuentas:(T.cuentas||[]).length,estados:(T.estados||[]).length,movimientos:(T.movimientos||[]).length,ajustes:(T.ajustes||[]).length,verif:(T.verificacion||[]).length}};
+function aplicarP(p){if(p.T)return importarTablas(p.T);if(p.pl&&p.pl.length)S.pl=p.pl;return doImport(p.txt)}
+function simularP(p){const S0=S;S=structuredClone(S0);let r;try{r=aplicarP(p)}catch(e){r="Error: "+e.message}const o={m:S.m.length-S0.m.length,e:S.e.length-S0.e.length,msg:r};S=S0;applyCfg();save();return o}
+const nmx=n=>Number(n).toLocaleString("es-MX");
+function previewP(){if(!PEND)return"";const p=PEND,r=resumenP(p),s=p.sim,ok=/^Nuevos:/.test(s.msg),rep=r.movimientos-s.m;
+return`<div class="prev"><b>${esc(p.nombre)}</b> trae: <b>${nmx(r.cuentas)}</b> cuentas · <b>${nmx(r.estados)}</b> estados · <b>${nmx(r.movimientos)}</b> movimientos${r.ajustes?` · <b>${nmx(r.ajustes)}</b> ajustes`:""}.
+${ok?`<div class="mut" style="margin-top:4px">Si combinas: <b>${nmx(s.m)}</b> movimientos nuevos, ${nmx(Math.max(0,rep))} ya existentes y ${nmx(s.e)} estados nuevos. Hoy tienes ${nmx(S.m.length)} movimientos y ${nmx(S.e.length)} estados.</div>
+<div class="bar" style="margin:10px 0 0"><button class="btn" id="pc">Combinar</button><button class="btn g" id="pr">Reemplazar todo</button><button class="btn g" id="px">Cancelar</button></div>`:`<div class="msg">${esc(s.msg)}</div><div class="bar" style="margin:10px 0 0"><button class="btn g" id="px">Cancelar</button></div>`}</div>`}
+function vIO(){const T=tablas(),c=T.cuentas.length,e=T.estados.length,m=T.movimientos.length,aj=T.ajustes.length+T.verificacion.length;
+const tile=(id,a,b)=>`<button class="tile" id="${id}"><b>${a}</b><span>${b}</span></button>`,
+itile=(a,b,acc)=>`<label class="tile"><b>${a}</b><span>${b}</span><input type="file" data-imp accept="${acc}" hidden></label>`;
+return`<div class="io2"><section class="box iocard"><h3><i>1</i>Exportar todo</h3>
+<p class="mut">Descarga <b>todos los datos de la app</b>. Los tres formatos contienen exactamente lo mismo; elige según dónde lo vayas a usar:</p>
+<ul class="mut"><li><b>${nmx(m)} movimientos</b> con categorías, tipos y referencias</li><li><b>${nmx(e)} estados de cuenta</b> con saldos, fechas de corte, pagos y límites</li><li><b>${nmx(c)} cuentas</b> (banco, producto, tipo y últimos 4 dígitos)</li><li><b>Verificación y ajustes</b> (${nmx(aj)} registros): lo que marcaste en cada estado, categorías y configuración</li></ul>
+<div class="tiles">${tile("xj","JSON","Respaldo exacto y ligero")}${tile("xx","Excel","Una hoja por tabla, legible")}${tile("xc","CSV","Un archivo, una fila por registro")}</div>
+<p class="mut" style="margin:10px 0 0">${S.bk?"Último respaldo: "+S.bk.slice(0,10):"Sin respaldo todavía"}. Los PDF de respaldo se quedan en cada dispositivo.</p></section>
+<section class="box iocard"><h3><i>2</i>Importar todo</h3>
+<p class="mut">Carga un archivo exportado aquí, en <b>cualquiera de los tres formatos</b>, y recupera lo mismo que se exportó:</p>
+<ul class="mut"><li>Antes de aplicar, te muestra cuántas cuentas, estados y movimientos trae</li><li>Se restauran también la verificación de cada estado, las categorías y la configuración</li><li><b>Reemplazar todo</b> deja la app igual que el respaldo; <b>Combinar</b> agrega lo nuevo y omite lo repetido</li><li>Un CSV de solo movimientos (cuenta, fecha_operacion, descripcion, monto) también se puede leer</li></ul>
+<div class="tiles">${itile("JSON","Archivo .json",".json,.txt")}${itile("Excel","Archivo .xlsx",".xlsx,.xls")}${itile("CSV","Archivo .csv",".csv,.txt")}</div>
+${previewP()}<div class="msg" id="jmsg">${esc(msg)}</div>
+<details style="margin-top:6px"><summary class="mut">O pega el texto (CSV o JSON)</summary><textarea id="imp" placeholder="Pega aquí el CSV o JSON"></textarea><div class="bar" style="margin-top:8px"><button class="btn g" id="go">Revisar texto</button></div></details></section></div>
 <div class="box"><button class="btn g" id="rs">Borrar datos locales</button> <span class="mut">Borra lo que está en este dispositivo (no toca la nube).</span></div>`}
-function bindIO(){const run=async f=>{msg="Importando…";$("#jmsg").textContent=msg;msg=await f();draw()};
-$("#jfile").onchange=e=>{const f=e.target.files[0];if(f)run(()=>importarArchivo(f).then(r=>f.name+": "+r))};
-$("#go").onclick=()=>run(async()=>{const t=$("#imp").value.trim();if(!t)return"No hay nada que importar.";return importarArchivo(new File([t],t[0]=="{"?"texto.json":"texto.csv"))});
-const ex=async(ext,get)=>{const d=new Date().toISOString().slice(0,10);const r=await saveFile(`estados_de_cuenta_${d}.${ext}`,get());if(r=="ok"){S.bk=new Date().toISOString();save();msg="Exportado: estados_de_cuenta_"+d+"."+ext}else msg=r=="declined"?"Descarga cancelada.":"No se pudo exportar.";draw()};
-$("#xx").onclick=()=>ex("xlsx",xXLSX);
-$("#xc").onclick=()=>ex("csv",()=>new Blob([xCSV()],{type:"text/csv;charset=utf-8"}));$("#xj").onclick=()=>ex("json",()=>new Blob([xJSON()],{type:"application/json"}));
-$("#rs").onclick=()=>{reset();msg="Datos locales borrados.";draw()}}
+function bindIO(){const stage=async f=>{msg="Leyendo archivo…";$("#jmsg").textContent=msg;try{const p=await leerArchivo(f);p.sim=simularP(p);PEND=p;msg=""}catch(e){PEND=null;msg=e.message||String(e)}draw()};
+document.querySelectorAll("input[data-imp]").forEach(i=>i.onchange=()=>{const f=i.files[0];if(f)stage(f)});
+$("#go").onclick=()=>{const t=$("#imp").value.trim();if(!t){msg="No hay nada que importar.";draw();return}stage(new File([t],t[0]=="{"||t[0]=="["?"texto.json":"texto.csv"))};
+const pc=$("#pc");if(pc)pc.onclick=()=>{const p=PEND;msg=p.nombre+": "+aplicarP(p);PEND=null;draw()};
+const pr=$("#pr");if(pr)pr.onclick=()=>{const p=PEND,pd=S.pdfs;reset();S.v={};S.cfg={};S.pdfs=pd;msg=p.nombre+" (reemplazo total): "+aplicarP(p);PEND=null;draw()};
+const px=$("#px");if(px)px.onclick=()=>{PEND=null;msg="";draw()};
+const ex=async(ext,get)=>{const d=new Date().toISOString().slice(0,10),r=await saveFile(`estados_de_cuenta_${d}.${ext}`,get());if(r=="ok"){S.bk=new Date().toISOString();save();msg="Exportado: estados_de_cuenta_"+d+"."+ext}else msg=r=="declined"?"Descarga cancelada.":"No se pudo exportar.";draw()};
+$("#xx").onclick=()=>ex("xlsx",xXLSX);$("#xc").onclick=()=>ex("csv",()=>new Blob([xCSV()],{type:"text/csv;charset=utf-8"}));$("#xj").onclick=()=>ex("json",()=>new Blob([xJSON()],{type:"application/json"}));
+$("#rs").onclick=()=>{reset();PEND=null;msg="Datos locales borrados.";draw()}}
 /* ===== Excel (.xlsx) sin librerías: escribe y lee el formato directamente ===== */
 const CRCT=(()=>{const t=[];for(let n=0;n<256;n++){let c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;t[n]=c>>>0}return t})();
 const crc32=b=>{let c=-1;for(let i=0;i<b.length;i++)c=CRCT[(c^b[i])&255]^(c>>>8);return(c^-1)>>>0};
