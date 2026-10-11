@@ -205,6 +205,20 @@
   </div>
 </div>
 
+<div class="modal" id="sbModal">
+  <div class="modalbox">
+    <h2>☁ Entrar a Supabase</h2>
+    <p class="sub" style="margin:0 0 4px;">Usa la misma cuenta que en tus otras apps.</p>
+    <input type="email" id="sbEmail" placeholder="Correo" autocomplete="username">
+    <input type="password" id="sbPass" placeholder="Contraseña de Supabase" autocomplete="current-password">
+    <div class="err" id="sbErr"></div>
+    <div class="actions" style="margin-top:8px;">
+      <button class="btn-primary" id="sbOk">Entrar</button>
+      <button class="btn-secondary" id="sbCancel">Cancelar</button>
+    </div>
+  </div>
+</div>
+
 <div class="tabs" id="tabbar">
   <div class="tabs-main" id="tabsMain"></div>
   <div><button class="tabbtn" id="tabCfg" data-tab="config" title="Nombre, tema, orden de pestañas y preferencias">⚙ Configuración</button></div>
@@ -280,6 +294,16 @@
     </div>
   </div>
   <div class="panel">
+    <h2 class="secttitle">☁ Supabase (copia cifrada) <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Sube una copia cifrada con tu clave maestra (AES-256) a tu Supabase personal. Supabase solo guarda texto cifrado: sin la clave nadie puede leerla. Usa internet solo cuando pulsas estos botones; el resto de la app funciona sin conexión. Se conserva también la copia anterior.">i</i></h2>
+    <div class="actions" style="margin-top:0;">
+      <button class="btn-primary" id="btnCloudUp">⬆ Subir copia cifrada</button>
+      <button class="btn-secondary" id="btnCloudDown">⬇ Restaurar desde Supabase</button>
+      <button class="btn-secondary" id="btnCloudPrev">Restaurar copia anterior</button>
+      <button class="btn-secondary" id="btnCloudOut">Cerrar sesión</button>
+    </div>
+    <div id="cloudInfo" class="sub" style="margin:8px 0 0;"></div>
+  </div>
+  <div class="panel">
     <h2 class="secttitle">Zona de riesgo</h2>
     <button class="btn-danger" id="btnClearAll">Borrar todas las cuentas</button>
   </div>
@@ -333,7 +357,7 @@
 </div>
 
 <script>
-const APP_VERSION = "15";
+const APP_VERSION = "16";
 const $ = id => document.getElementById(id);
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 const esc = escapeHtml;
@@ -906,7 +930,7 @@ function applyAppName(){
 }
 function downloadAppCopy(){
   const clone = document.documentElement.cloneNode(true);
-  ["tabsMain","formGrid","results","statsRoot","dbPanels","dbCheck","tbody","theadRow","themeCards","orderList","notesList","toast","tip","storageWarn","trackBanner","backupInfo","tableHint","qCount","count"].forEach(id => { const e = clone.querySelector("#"+id); if(e){ e.innerHTML = ""; e.removeAttribute("style"); } });
+  ["tabsMain","formGrid","results","statsRoot","dbPanels","dbCheck","tbody","theadRow","themeCards","orderList","notesList","toast","tip","storageWarn","trackBanner","backupInfo","cloudInfo","tableHint","qCount","count"].forEach(id => { const e = clone.querySelector("#"+id); if(e){ e.innerHTML = ""; e.removeAttribute("style"); } });
   clone.querySelectorAll(".open,.show").forEach(e => e.classList.remove("open","show"));
   const pc = clone.querySelector("#pwConfirm"); if(pc) pc.setAttribute("style","display:none;");
   clone.setAttribute("data-appname", appName());
@@ -1759,6 +1783,90 @@ $("statsRoot").addEventListener("click", e => {
   const i = rows.findIndex(r => r.id === rv.dataset.sreview); if(i >= 0) requestReview(i);
 });
 
+
+/* ---------- Supabase personal (solo copia cifrada) ---------- */
+const SUPA = { url:"https://gosfucaweteaqrvftgfq.supabase.co", key:"sb_publishable_ooOdrO4PNPyeOUdxqEB4pQ_xuYIo59d", app:"llavero", table:"registros" };
+const CLOUD_KEY = "llavero_nube_v1";
+let sbClient = null;
+function loadScript(src){
+  return new Promise((res, rej) => {
+    const el = document.createElement("script"); el.src = src; el.onload = res;
+    el.onerror = () => rej(new Error("No se pudo cargar Supabase (¿sin internet?)."));
+    document.head.appendChild(el);
+  });
+}
+async function getSb(){
+  if(sbClient) return sbClient;
+  if(!(window.supabase && window.supabase.createClient)) await loadScript("https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js");
+  sbClient = window.supabase.createClient(SUPA.url, SUPA.key, {auth:{persistSession:true, autoRefreshToken:true, storageKey:"llavero-auth"}});
+  return sbClient;
+}
+function askLogin(){
+  return new Promise(resolve => {
+    const m = $("sbModal"), e = $("sbEmail"), p = $("sbPass"), err = $("sbErr"), ok = $("sbOk"), cancel = $("sbCancel");
+    p.value = ""; err.textContent = ""; m.classList.add("open"); (e.value ? p : e).focus();
+    const done = v => { m.classList.remove("open"); p.value = ""; ok.onclick = cancel.onclick = null; m.onkeydown = null; resolve(v); };
+    ok.onclick = () => { if(!e.value.trim() || !p.value){ err.textContent = "Escribe correo y contraseña."; return; } done({email:e.value.trim().toLowerCase(), password:p.value}); };
+    cancel.onclick = () => done(null);
+    m.onkeydown = ev => { if(ev.key === "Enter") ok.onclick(); if(ev.key === "Escape") cancel.onclick(); };
+  });
+}
+async function cloudUser(){
+  const c = await getSb();
+  const { data:{ session } } = await c.auth.getSession();
+  if(session) return session.user;
+  const cred = await askLogin(); if(!cred) return null;
+  const { data, error } = await c.auth.signInWithPassword(cred);
+  if(error) throw new Error(/invalid/i.test(error.message) ? "Correo o contraseña de Supabase incorrectos." : /confirm/i.test(error.message) ? "La cuenta no está confirmada en Supabase." : error.message);
+  return data.user;
+}
+function showCloudInfo(msg){
+  let i = null; try{ i = JSON.parse(lsGet(CLOUD_KEY) || "null"); }catch(e){}
+  $("cloudInfo").innerHTML = msg ? esc(msg) : (i ? "Última copia subida: <b>" + esc(i.d.slice(0,10)) + "</b> (" + esc(i.email || "") + ")." : "Aún no has subido ninguna copia desde este navegador.");
+}
+async function cloudUpload(){
+  if(!cryptoOk()) return;
+  try{
+    const user = await cloudUser(); if(!user) return;
+    const pass = await askPassword({title:"☁ Clave maestra de la copia", msg:"Cifra la copia antes de subirla. Si la olvidas no hay forma de recuperarla. Puede ser la misma de tus backups.", confirmField:true});
+    if(pass === null) return;
+    showCloudInfo("Subiendo…");
+    const file = await encryptBackup(pass, backupPayload());
+    const c = await getSb();
+    const prev = await c.from(SUPA.table).select("data").eq("app", SUPA.app).eq("id", "respaldo").maybeSingle();
+    if(prev.error) throw prev.error;
+    if(prev.data && prev.data.data){
+      const r0 = await c.from(SUPA.table).upsert({app:SUPA.app, id:"respaldo-anterior", data:prev.data.data, owner:user.id});
+      if(r0.error) throw r0.error;
+    }
+    const { error } = await c.from(SUPA.table).upsert({app:SUPA.app, id:"respaldo", data:file, owner:user.id});
+    if(error) throw error;
+    lsSet(CLOUD_KEY, JSON.stringify({d:new Date().toISOString(), email:user.email}));
+    showCloudInfo(); showToast("Copia cifrada subida a Supabase.");
+  }catch(e){ showCloudInfo(); alert("No se pudo subir: " + (e.message || e)); }
+}
+async function cloudRestore(id){
+  if(!cryptoOk()) return;
+  try{
+    const user = await cloudUser(); if(!user) return;
+    const c = await getSb();
+    const { data, error } = await c.from(SUPA.table).select("data").eq("app", SUPA.app).eq("id", id).maybeSingle();
+    if(error) throw error;
+    if(!data || !data.data){ alert("No hay " + (id === "respaldo" ? "ninguna copia" : "copia anterior") + " en Supabase."); return; }
+    const pass = await askPassword({title:"🔓 Copia de Supabase", msg:"Escribe la clave maestra con la que se cifró esta copia.", confirmField:false});
+    if(pass === null) return;
+    let plain;
+    try{ plain = await decryptBackup(pass, data.data); }catch(e){ alert("Clave incorrecta o la copia está dañada. No se importó nada."); return; }
+    applyBackupData(plain);
+  }catch(e){ alert("No se pudo restaurar: " + (e.message || e)); }
+}
+$("btnCloudUp").addEventListener("click", cloudUpload);
+$("btnCloudDown").addEventListener("click", () => cloudRestore("respaldo"));
+$("btnCloudPrev").addEventListener("click", () => cloudRestore("respaldo-anterior"));
+$("btnCloudOut").addEventListener("click", async () => {
+  try{ const c = await getSb(); await c.auth.signOut(); showToast("Sesión de Supabase cerrada."); }catch(e){ alert("No se pudo cerrar sesión: " + (e.message || e)); }
+});
+
 /* ---------- inicio ---------- */
 loadConfig(); applyTheme();
 loadDB(); loadRows(); loadHist(); loadNotes();
@@ -1766,7 +1874,7 @@ if(!snaps.length && rows.length) takeSnapshot();
 applyAppName(); buildTabs(); buildSearchControls();
 buildForm(); buildHeader(); buildConfig();
 FIELDS.forEach(f => { if(f.type === "dbselect") rebuildDbSelect(f); });
-clearForm(); renderTable(); renderNotes(); showStorageWarn(); showBackupInfo();
+clearForm(); renderTable(); renderNotes(); showStorageWarn(); showBackupInfo(); showCloudInfo();
 goTab("buscar");
 </script>
 </body>
