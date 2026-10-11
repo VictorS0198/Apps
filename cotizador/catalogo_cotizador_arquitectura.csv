@@ -1,0 +1,87 @@
+tabla,clave,nombre,grupo,unidad,valor,minimo,c1,c2,c3,c4,semanas,orden,default,notas
+tipologia,casa_habitacion,Casa habitación,Habitacional,,6.5,,11500,17500,28000,750,1,10,1,valor=% honorarios sobre costo de obra; c1/c2/c3=costo de obra $/m² económico/medio/premium; c4=tarifa directa $/m²; semanas=factor de tiempo
+tipologia,vivienda_vertical,Departamentos / vivienda vertical,Habitacional,,5.5,,13000,19000,29000,520,1.3,20,0,
+tipologia,vivienda_serie,Vivienda en serie / fraccionamiento,Habitacional,,3.5,,9000,12500,17000,260,1.2,30,0,
+tipologia,oficinas,Oficinas corporativas,Comercial,,6,,12500,18000,27000,600,1.1,40,0,
+tipologia,local_comercial,Local comercial,Comercial,,6.5,,9500,14000,21000,550,0.8,50,0,
+tipologia,plaza_comercial,Plaza comercial,Comercial,,5,,11000,15500,23000,420,1.4,60,0,
+tipologia,restaurante,Restaurante / cafetería,Comercial,,8,,14000,21000,33000,900,0.9,70,0,
+tipologia,hotel,Hotel,Turismo,,6.5,,18000,26000,40000,700,1.5,80,0,
+tipologia,clinica,Consultorio / clínica,Salud,,7.5,,15000,22000,33000,800,1.1,90,0,
+tipologia,escuela,Escuela / educativo,Educación,,5.5,,12000,16500,23000,450,1.2,100,0,
+tipologia,nave_industrial,Nave industrial / bodega,Industrial,,3.5,,6500,9000,13500,180,0.9,110,0,
+tipologia,remodelacion,Remodelación / adecuación,Intervención,,9,,6000,10500,17000,600,0.7,120,0,
+tipologia,interiorismo,Interiorismo,Intervención,,10,,4500,8500,16000,650,0.7,130,0,
+servicio,levantamiento,Levantamiento arquitectónico del sitio,Estudios previos,m2,22,4500,,,,,1,5,0,Útil en remodelaciones
+servicio,topografia,Levantamiento topográfico (proveedor externo),Estudios previos,lote,8500,,1,,,,1,6,0,
+servicio,mecanica_suelos,Estudio de mecánica de suelos (proveedor externo),Estudios previos,lote,22000,,1,,,,2,7,0,
+servicio,programa,Programa arquitectónico y estudio de necesidades,Arquitectura,pct_hon,5,,,,,,1,10,1,Los 5 servicios de Arquitectura suman 100% del honorario base
+servicio,anteproyecto,"Anteproyecto: plantas, cortes, fachadas y volumetría",Arquitectura,pct_hon,25,,,,,,3,20,1,
+servicio,ejecutivo,Proyecto ejecutivo arquitectónico,Arquitectura,pct_hon,45,,,,,,5,30,1,
+servicio,detalles,"Planos de acabados, carpintería, herrería y cancelería",Arquitectura,pct_hon,15,,,,,,2,40,1,
+servicio,coordinacion,Coordinación de ingenierías y revisión de interferencias,Arquitectura,pct_hon,10,,,,,,0,50,1,
+servicio,estructural,Proyecto estructural y memoria de cálculo,Ingenierías,m2,70,14000,,,,,3,60,1,
+servicio,electrica,Instalación eléctrica,Ingenierías,m2,28,6500,,,,,2,70,1,
+servicio,hidrosanitaria,Instalación hidráulica y sanitaria,Ingenierías,m2,26,6500,,,,,2,80,1,
+servicio,gas,Instalación de gas,Ingenierías,m2,8,2800,,,,,1,90,0,
+servicio,hvac,Aire acondicionado y ventilación,Ingenierías,m2,24,7000,,,,,2,100,0,
+servicio,especiales,"Instalaciones especiales (voz y datos, CCTV, seguridad)",Ingenierías,m2,14,4500,,,,,1,110,0,
+servicio,iluminacion,Diseño de iluminación,Ingenierías,m2,18,5000,,,,,1,120,0,
+servicio,render_ext,Render exterior,Visualización,pieza,3800,,2,,,,1,130,0,
+servicio,render_int,Render interior,Visualización,pieza,3200,,2,,,,1,140,0,
+servicio,recorrido,Recorrido virtual animado,Visualización,lote,16000,,1,,,,2,150,0,
+servicio,modelo_bim,Modelo BIM coordinado,Visualización,m2,35,9000,,,,,2,160,0,
+servicio,uso_suelo,Gestión de dictamen de uso de suelo y alineamiento,Trámites,lote,7500,,1,,,,3,170,0,No incluye derechos municipales
+servicio,licencia,Gestión de licencia de construcción,Trámites,lote,14000,,1,,,,4,180,0,No incluye derechos municipales
+servicio,dro,Responsiva de Director Responsable de Obra,Trámites,pct_obra,0.8,9000,,,,,0,190,0,% sobre costo de obra
+servicio,presupuesto,Catálogo de conceptos y presupuesto de obra,Costos,pct_obra,0.6,8000,,,,,2,200,0,
+servicio,interiorismo_proy,Proyecto de interiorismo (concepto y selección),Interiorismo,m2,140,12000,,,,,3,210,0,
+servicio,mobiliario,Diseño de mobiliario a medida,Interiorismo,pieza,4500,,2,,,,1,220,0,
+servicio,paisajismo,Proyecto de paisajismo,Paisajismo,m2_terreno,45,8000,,,,,2,230,0,Se calcula sobre m² de terreno
+servicio,supervision,Supervisión de obra (visitas semanales),Obra,mes,16000,,6,,,,0,240,0,
+servicio,direccion_obra,Dirección arquitectónica de obra,Obra,pct_obra,3,,,,,,0,250,0,% sobre costo de obra
+servicio,asesoria,Asesoría o visita técnica,Consultoría,hora,850,,4,,,,0,260,0,
+factor,baja,Baja,complejidad,,0.85,,,,,,,10,,Programa simple y terreno regular
+factor,media,Media,complejidad,,1,,,,,,,20,1,
+factor,alta,Alta,complejidad,,1.2,,,,,,,30,,"Terreno irregular, programa complejo o normativa especial"
+factor,muy_alta,Muy alta,complejidad,,1.4,,,,,,,40,,Inmueble patrimonial o uso especializado
+factor,normal,Normal,urgencia,,1,,,1,,,,10,1,c2=factor de tiempo
+factor,prioritaria,Prioritaria,urgencia,,1.15,,,0.8,,,,20,,
+factor,urgente,Urgente,urgencia,,1.3,,,0.65,,,,30,,
+factor,esc_100,Hasta 100 m²,escala,,1.25,,100,,,,,10,,c1=hasta cuántos m² aplica
+factor,esc_250,101 a 250 m²,escala,,1,,250,,,,,20,,
+factor,esc_600,251 a 600 m²,escala,,0.92,,600,,,,,30,,
+factor,esc_1500,601 a 1500 m²,escala,,0.85,,1500,,,,,40,,
+factor,esc_5000,1501 a 5000 m²,escala,,0.78,,5000,,,,,50,,
+factor,esc_max,Más de 5000 m²,escala,,0.7,,99999999,,,,,60,,
+parametro,iva,IVA (%),,,16,,,,,,,10,,
+parametro,vigencia_dias,Vigencia de la cotización (días),,,15,,,,,,,20,,
+parametro,honorario_minimo,Honorario mínimo por proyecto ($),,,25000,,,,,,,30,,
+parametro,tarifa_km,Costo por km recorrido ($),,,7.5,,,,,,,40,,
+parametro,viatico_visita,Viático por visita ($),,,350,,,,,,,50,,Comidas y estacionamiento
+parametro,ret_isr,Retención ISR (%),,,10,,,,,,,60,,Cuando el cliente es persona moral
+parametro,ret_iva,Retención IVA (%),,,10.6667,,,,,,,70,,Dos terceras partes del IVA
+parametro,horas_m2,Horas de proyecto por m² (complejidad media),,,0.9,,,,,,,80,,Para estimar costo interno
+parametro,indirectos,Gastos de operación sobre costo de horas (%),,,25,,,,,,,90,,
+parametro,margen_objetivo,Margen objetivo (%),,,30,,,,,,,100,,Debajo de este margen la app te avisa
+rol,director,Arquitecto director,,,950,,15,,,,,10,,valor=$/hora; c1=% de las horas del proyecto
+rol,proyectista,Arquitecto proyectista,,,480,,45,,,,,20,,
+rol,dibujante,Dibujante / modelador BIM,,,300,,30,,,,,30,,
+rol,coordinador,Coordinador de ingenierías,,,550,,10,,,,,40,,
+pago,anticipo,Anticipo a la firma,,,40,,,,,,,10,,
+pago,anteproyecto,Al aprobar el anteproyecto,,,30,,,,,,,20,,
+pago,ejecutivo,A la entrega del proyecto ejecutivo,,,30,,,,,,,30,,
+paquete,basico,Básico,,,,,,,,,,10,,programa|anteproyecto|render_ext
+paquete,estandar,Estándar,,,,,,,,,,20,,programa|anteproyecto|ejecutivo|detalles|coordinacion|estructural|electrica|hidrosanitaria
+paquete,integral,Integral,,,,,,,,,,30,,programa|anteproyecto|ejecutivo|detalles|coordinacion|estructural|electrica|hidrosanitaria|gas|render_ext|render_int|licencia|presupuesto
+paquete,llave,Llave en mano,,,,,,,,,,40,,programa|anteproyecto|ejecutivo|detalles|coordinacion|estructural|electrica|hidrosanitaria|gas|render_ext|render_int|licencia|presupuesto|dro|supervision|direccion_obra
+condicion,inc1,Hasta dos rondas de cambios en el anteproyecto,incluye,,,,,,,,,10,,
+condicion,inc2,Planos en PDF y DWG,incluye,,,,,,,,,20,,
+condicion,inc3,Juntas de revisión quincenales presenciales o en línea,incluye,,,,,,,,,30,,
+condicion,exc1,"Pago de derechos, licencias e impuestos municipales",excluye,,,,,,,,,40,,
+condicion,exc2,Estudios externos no listados en esta cotización,excluye,,,,,,,,,50,,
+condicion,exc3,Impresiones y copias físicas de planos,excluye,,,,,,,,,60,,
+condicion,exc4,"Costos de construcción, materiales y mano de obra",excluye,,,,,,,,,70,,
+condicion,cond1,Precios en pesos mexicanos,condicion,,,,,,,,,80,,
+condicion,cond2,Los cambios posteriores a la aprobación del anteproyecto se cotizan por separado,condicion,,,,,,,,,90,,
+condicion,cond3,Los tiempos corren a partir del anticipo y de la entrega de información del cliente,condicion,,,,,,,,,100,,

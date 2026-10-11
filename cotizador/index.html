@@ -1,0 +1,1169 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Cotizador de proyectos de arquitectura</title>
+<meta name="theme-color" content="#20252A">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%2320252A'/%3E%3Cpath d='M14 50V22l18-10 18 10v28' fill='none' stroke='%23FBFBF8' stroke-width='4'/%3E%3Cpath d='M14 56h36' stroke='%238DB4DA' stroke-width='4'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<style>
+:root{
+  --papel:#E9ECE7; --hoja:#FBFBF8; --grafito:#20252A; --tenue:#5E666C; --linea:#BCC2BC; --linea-suave:#D9DDD7;
+  --cota:#2D5C88; --cota-suave:#DCE6EF; --ocre:#A9751C; --ocre-suave:#F3E8D2; --ok:#2E6B4A; --alerta:#9A3B2E;
+  --sombra:0 1px 0 rgba(32,37,42,.06);
+  color-scheme:light;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){
+    --papel:#15191C; --hoja:#1D2226; --grafito:#E4E7E3; --tenue:#9AA3A8; --linea:#3A4248; --linea-suave:#2A3136;
+    --cota:#8DB4DA; --cota-suave:#22313F; --ocre:#D8AA55; --ocre-suave:#3A2F1C; --ok:#7CC39A; --alerta:#E58A7B; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --papel:#15191C; --hoja:#1D2226; --grafito:#E4E7E3; --tenue:#9AA3A8; --linea:#3A4248; --linea-suave:#2A3136;
+  --cota:#8DB4DA; --cota-suave:#22313F; --ocre:#D8AA55; --ocre-suave:#3A2F1C; --ok:#7CC39A; --alerta:#E58A7B; color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--papel);color:var(--grafito);font-family:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:15px;line-height:1.45;
+  background-image:linear-gradient(var(--linea-suave) 1px,transparent 1px),linear-gradient(90deg,var(--linea-suave) 1px,transparent 1px);background-size:24px 24px;background-attachment:fixed}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--cota);outline-offset:2px}
+.num{font-variant-numeric:tabular-nums}
+
+/* barra superior */
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--grafito);color:var(--hoja)}
+.top-in{max-width:1320px;margin:0 auto;display:flex;align-items:center;gap:20px;padding:10px 20px;flex-wrap:wrap}
+.marca{display:flex;align-items:baseline;gap:10px;margin-right:auto}
+.marca b{font-stretch:125%;font-weight:750;font-size:17px;letter-spacing:.01em}
+.marca span{font-size:13px;opacity:.7;font-stretch:87%}
+.nav{display:flex;gap:2px;flex-wrap:wrap}
+.nav button{background:transparent;border:0;color:inherit;padding:7px 12px;border-radius:3px;cursor:pointer;opacity:.75;font-size:14px}
+.nav button:hover{opacity:1;background:rgba(255,255,255,.08)}
+.nav button[aria-current="page"]{opacity:1;background:var(--hoja);color:var(--grafito);font-weight:600}
+.estado-nube{font-size:12px;opacity:.75;font-stretch:87%}
+.estado-nube.on{opacity:1}
+.estado-nube.err{opacity:1;border-color:var(--alerta)!important}
+
+main{max-width:1320px;margin:0 auto;padding:22px 20px 80px}
+.vista{display:none}.vista.activa{display:block}
+h1{font-stretch:125%;font-weight:750;font-size:26px;line-height:1.15;margin:0 0 4px}
+h2{font-stretch:112%;font-weight:700;font-size:18px;margin:0}
+h3{font-size:15px;font-weight:650;margin:0 0 8px}
+.sub{color:var(--tenue);margin:0 0 18px;max-width:70ch}
+
+/* layout cotizar */
+.cotizar{display:grid;grid-template-columns:minmax(0,1fr) 380px;gap:22px;align-items:start}
+.paso{background:var(--hoja);border:1px solid var(--linea);border-radius:4px;margin-bottom:16px;box-shadow:var(--sombra)}
+.paso>header{display:flex;align-items:center;gap:12px;padding:12px 16px;border-bottom:1px solid var(--linea-suave)}
+.paso>header .n{width:28px;height:28px;border:1.5px solid var(--grafito);border-radius:50%;display:grid;place-items:center;font-weight:700;font-size:13px;flex:none}
+.paso>header p{margin:0;color:var(--tenue);font-size:13px}
+.paso .cuerpo{padding:16px}
+.rejilla{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px 14px}
+.campo{display:flex;flex-direction:column;gap:4px;min-width:0}
+.campo.ancho{grid-column:1/-1}
+.campo label,.etq{font-size:12.5px;color:var(--tenue);font-weight:500}
+input[type=text],input[type=number],input[type=email],input[type=tel],input[type=date],select,textarea{width:100%;background:var(--hoja);border:1px solid var(--linea);border-radius:3px;padding:7px 9px;min-height:36px}
+textarea{min-height:90px;resize:vertical;line-height:1.4}
+input:focus,select:focus,textarea:focus{border-color:var(--cota);outline:none;box-shadow:0 0 0 2px var(--cota-suave)}
+input[type=number]{font-variant-numeric:tabular-nums}
+.ayuda{font-size:12px;color:var(--tenue)}
+
+.seg{display:flex;border:1px solid var(--linea);border-radius:3px;overflow:hidden;flex-wrap:wrap}
+.seg button{flex:1;background:var(--hoja);border:0;border-right:1px solid var(--linea);padding:7px 10px;cursor:pointer;font-size:13.5px;min-height:36px;white-space:nowrap}
+.seg button:last-child{border-right:0}
+.seg button[aria-pressed="true"]{background:var(--grafito);color:var(--hoja);font-weight:600}
+
+.metodos{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+.metodo{border:1px solid var(--linea);border-radius:4px;padding:10px 12px;background:var(--hoja);cursor:pointer;text-align:left}
+.metodo b{display:block;font-size:14px;margin-bottom:2px}
+.metodo span{font-size:12.5px;color:var(--tenue)}
+.metodo[aria-pressed="true"]{border-color:var(--cota);box-shadow:inset 0 0 0 1px var(--cota);background:var(--cota-suave)}
+
+.paquetes{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--grafito);background:var(--hoja);color:var(--grafito);padding:7px 13px;border-radius:3px;cursor:pointer;font-size:14px;min-height:36px;text-decoration:none}
+.btn:hover{background:var(--papel)}
+.btn.prim{background:var(--grafito);color:var(--hoja)}
+.btn.prim:hover{opacity:.9}
+.btn.leve{border-color:var(--linea)}
+.btn.peligro{border-color:var(--alerta);color:var(--alerta)}
+.btn.chico{padding:4px 9px;min-height:30px;font-size:13px}
+
+.grupo-serv{margin-bottom:14px}
+.grupo-serv>h3{display:flex;justify-content:space-between;border-bottom:1px solid var(--grafito);padding-bottom:4px;margin-bottom:0;font-stretch:112%}
+.grupo-serv>h3 span{font-weight:500;color:var(--tenue);font-stretch:100%}
+.serv{display:grid;grid-template-columns:24px minmax(0,1fr) 84px 110px 110px;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--linea-suave)}
+.serv.off{opacity:.55}
+.serv input[type=checkbox]{width:18px;height:18px;accent-color:var(--cota)}
+.serv .nom{font-size:14px}
+.serv .det{font-size:12px;color:var(--tenue)}
+.serv input{min-height:32px;padding:5px 7px}
+.serv .imp{text-align:right;font-weight:600}
+.serv-cab{font-size:11.5px;color:var(--tenue);border-bottom:0;padding:6px 0 0}
+.serv-cab div:nth-child(5){text-align:right}
+
+/* pie de plano */
+.pie{position:sticky;top:76px;background:var(--hoja);border:2px solid var(--grafito);font-size:13px}
+.pie .celda{border-bottom:1px solid var(--grafito);padding:7px 10px}
+.pie .fila2{display:grid;grid-template-columns:1fr 1fr}
+.pie .fila2 .celda+.celda{border-left:1px solid var(--grafito)}
+.pie .k{font-size:11px;color:var(--tenue);display:block}
+.pie .v{font-weight:600;overflow-wrap:anywhere}
+.pie .total{padding:14px 12px 10px;border-bottom:2px solid var(--grafito)}
+.pie .total .v{font-size:32px;font-stretch:118%;font-weight:750;line-height:1.05;display:block}
+.cota-linea{display:flex;align-items:center;gap:6px;margin-top:8px;color:var(--cota);font-size:12px}
+.cota-linea::before,.cota-linea::after{content:"";flex:1;height:1px;background:var(--cota);}
+.cota-linea i{font-style:normal;white-space:nowrap}
+.cota-wrap{position:relative;padding:0 2px}
+.cota-wrap::before,.cota-wrap::after{content:"";position:absolute;top:2px;width:1px;height:12px;background:var(--cota)}
+.cota-wrap::before{left:0}.cota-wrap::after{right:0}
+.pie table{width:100%;border-collapse:collapse}
+.pie td{padding:5px 10px;border-bottom:1px solid var(--linea-suave)}
+.pie td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.pie tr.fuerte td{font-weight:700;border-bottom:1px solid var(--grafito)}
+.pie .indic{display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--grafito)}
+.pie .indic div{padding:7px 10px;border-bottom:1px solid var(--linea-suave)}
+.pie .indic div:nth-child(odd){border-right:1px solid var(--linea-suave)}
+.pie .acciones{display:flex;gap:6px;padding:10px;flex-wrap:wrap}
+.pie .acciones .btn{flex:1;justify-content:center}
+.aviso{margin:8px 10px;padding:7px 9px;font-size:12.5px;border-left:3px solid var(--ocre);background:var(--ocre-suave)}
+.aviso.ok{border-color:var(--ok);background:transparent}
+
+/* cronograma */
+.crono{margin-top:4px}
+.crono .fila{display:grid;grid-template-columns:200px 1fr 54px;gap:10px;align-items:center;padding:4px 0;font-size:13px}
+.crono .barra{position:relative;height:14px;background:repeating-linear-gradient(90deg,var(--linea-suave) 0 1px,transparent 1px 100%);background-size:calc(100%/var(--sem)) 100%}
+.crono .barra i{position:absolute;top:2px;bottom:2px;background:var(--cota);border-radius:1px}
+.crono .barra i.alt{background:var(--ocre)}
+.crono .eje{display:grid;grid-template-columns:200px 1fr 54px;gap:10px;font-size:11px;color:var(--tenue)}
+
+.pagos-ed .fila{display:grid;grid-template-columns:minmax(0,1fr) 90px 120px 36px;gap:8px;align-items:center;margin-bottom:6px}
+.icono{border:1px solid var(--linea);background:var(--hoja);border-radius:3px;width:34px;height:34px;cursor:pointer;color:var(--tenue)}
+.icono:hover{color:var(--alerta);border-color:var(--alerta)}
+
+/* tablas generales */
+.tabla-wrap{overflow-x:auto;background:var(--hoja);border:1px solid var(--linea);border-radius:4px}
+table.dat{border-collapse:collapse;width:100%;font-size:13.5px}
+table.dat th{text-align:left;font-weight:600;font-size:12px;color:var(--tenue);padding:8px 10px;border-bottom:1px solid var(--grafito);white-space:nowrap;background:var(--hoja);position:sticky;top:0}
+table.dat td{padding:6px 10px;border-bottom:1px solid var(--linea-suave);vertical-align:middle}
+table.dat td.r,table.dat th.r{text-align:right}
+table.dat tr:hover td{background:var(--papel)}
+table.dat input,table.dat select{min-height:30px;padding:4px 6px;font-size:13px;min-width:70px}
+table.dat input.largo{min-width:240px}
+.barra-herr{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.barra-herr .esp{flex:1}
+.pestanas{display:flex;gap:0;border-bottom:1px solid var(--grafito);margin-bottom:12px;overflow-x:auto}
+.pestanas button{background:transparent;border:1px solid transparent;border-bottom:0;padding:8px 12px;cursor:pointer;white-space:nowrap;color:var(--tenue);border-radius:3px 3px 0 0}
+.pestanas button[aria-selected="true"]{border-color:var(--grafito);background:var(--hoja);color:var(--grafito);font-weight:600;margin-bottom:-1px}
+.estado-chip{display:inline-block;font-size:12px;padding:1px 8px;border-radius:10px;border:1px solid var(--linea)}
+.estado-chip.aceptada{border-color:var(--ok);color:var(--ok)}
+.estado-chip.rechazada{border-color:var(--alerta);color:var(--alerta)}
+.estado-chip.enviada{border-color:var(--cota);color:var(--cota)}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:0;border:1px solid var(--grafito);background:var(--hoja);margin-bottom:16px}
+.stats div{padding:10px 14px;border-right:1px solid var(--linea)}
+.stats div:last-child{border-right:0}
+.stats b{display:block;font-size:22px;font-stretch:115%;font-variant-numeric:tabular-nums}
+.stats span{font-size:12px;color:var(--tenue)}
+.vacio{padding:40px 20px;text-align:center;color:var(--tenue)}
+
+/* documento */
+.doc-herr{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.doc{background:#fff;color:#1d2125;max-width:860px;margin:0 auto;padding:48px 52px;border:1px solid var(--linea);box-shadow:0 2px 12px rgba(0,0,0,.08);font-size:13.5px}
+.doc .enc{display:flex;justify-content:space-between;gap:20px;border-bottom:2px solid #1d2125;padding-bottom:14px;margin-bottom:18px}
+.doc .desp{font-stretch:120%;font-weight:750;font-size:20px;line-height:1.1}
+.doc .desp small{display:block;font-stretch:100%;font-weight:400;font-size:12px;color:#555;margin-top:4px}
+.doc .folio{text-align:right;font-size:12.5px}
+.doc .folio b{font-size:16px;display:block}
+.doc h2{font-size:15px;font-stretch:112%;border-bottom:1px solid #1d2125;padding-bottom:3px;margin:22px 0 8px}
+.doc .datos{display:grid;grid-template-columns:1fr 1fr;gap:4px 24px}
+.doc .datos div span{color:#666}
+.doc table{width:100%;border-collapse:collapse}
+.doc th{text-align:left;font-size:11.5px;color:#555;border-bottom:1px solid #1d2125;padding:5px 6px}
+.doc td{padding:6px;border-bottom:1px solid #e3e3e3;vertical-align:top}
+.doc td.r,.doc th.r{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+.doc .grp td{font-weight:650;background:#f3f4f2;border-bottom:1px solid #ccc}
+.doc .tot{margin-left:auto;width:320px;margin-top:10px}
+.doc .tot td{border:0;padding:3px 6px}
+.doc .tot tr.g td{border-top:2px solid #1d2125;font-weight:750;font-size:16px;padding-top:7px}
+.doc .letra{text-align:right;font-size:12px;color:#444;margin-top:4px}
+.doc ul{margin:4px 0 0;padding-left:18px}
+.doc .dos{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.doc .firmas{display:grid;grid-template-columns:1fr 1fr;gap:60px;margin-top:56px;text-align:center;font-size:12.5px}
+.doc .firmas div{border-top:1px solid #1d2125;padding-top:6px}
+.doc .crono .barra i{background:#2D5C88}
+.doc .crono .barra{background:repeating-linear-gradient(90deg,#e6e6e6 0 1px,transparent 1px 100%);background-size:calc(100%/var(--sem)) 100%}
+.doc .pie-doc{margin-top:28px;font-size:11px;color:#777;border-top:1px solid #ddd;padding-top:8px}
+
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);background:var(--grafito);color:var(--hoja);padding:9px 16px;border-radius:3px;opacity:0;transition:.25s;z-index:50;font-size:14px;pointer-events:none}
+.toast.ver{opacity:1;transform:translateX(-50%) translateY(0)}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center;z-index:40;padding:20px}
+.modal.ver{display:flex}
+.modal .caja{background:var(--hoja);border:2px solid var(--grafito);max-width:640px;width:100%;padding:18px;max-height:85vh;overflow:auto}
+.modal textarea{min-height:260px;font-size:13px}
+.guia{max-width:78ch;background:var(--hoja);border:1px solid var(--linea);padding:22px 26px;border-radius:4px}
+.guia h2{margin:22px 0 6px}.guia h2:first-child{margin-top:0}
+.guia p,.guia li{line-height:1.6}
+.guia code{background:var(--papel);padding:1px 5px;border-radius:2px;font-size:13px}
+.barra-movil{display:none}
+
+@media (max-width:1020px){
+  .cotizar{grid-template-columns:1fr}
+  .pie{position:static}
+  .barra-movil{display:flex;position:fixed;left:0;right:0;bottom:0;z-index:25;background:var(--grafito);color:var(--hoja);padding:10px 16px calc(10px + env(safe-area-inset-bottom,0px));align-items:center;justify-content:space-between;gap:10px}
+  .barra-movil b{font-size:20px;font-stretch:115%}
+  .barra-movil button{background:var(--hoja);color:var(--grafito);border:0;padding:7px 12px;border-radius:3px;font-weight:600}
+}
+@media (max-width:680px){
+  main{padding:16px 12px 90px}
+  .metodos{grid-template-columns:1fr}
+  .serv{grid-template-columns:24px minmax(0,1fr) 96px;row-gap:6px}
+  .serv .q,.serv .ov{grid-column:2/3}
+  .serv .imp{grid-column:3/4;grid-row:1}
+  .serv-cab{display:none}
+  .crono .fila,.crono .eje{grid-template-columns:110px 1fr 40px}
+  .doc{padding:24px 18px}
+  .doc .datos,.doc .dos{grid-template-columns:1fr}
+  .pagos-ed .fila{grid-template-columns:1fr 70px 36px}
+  .pagos-ed .fila .mto{display:none}
+  .marca span{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+@media print{
+  body{background:#fff}
+  .top,.doc-herr,.vista:not(#v-doc),.barra-movil,.toast{display:none!important}
+  #v-doc{display:block!important}
+  main{padding:0;max-width:none}
+  .doc{border:0;box-shadow:none;padding:0;max-width:none}
+  .doc h2{break-after:avoid}
+  .doc table tr{break-inside:avoid}
+  @page{margin:16mm 14mm}
+}
+</style>
+</head>
+<body>
+<header class="top"><div class="top-in">
+  <div class="marca"><b>Cotizador</b><span>Honorarios de proyectos de arquitectura</span></div>
+  <nav class="nav" aria-label="Secciones">
+    <button data-vista="cotizar" aria-current="page">Cotizar</button>
+    <button data-vista="doc">Documento</button>
+    <button data-vista="hist">Historial</button>
+    <button data-vista="cat">Catálogo de precios</button>
+    <button data-vista="despacho">Mi despacho</button>
+    <button data-vista="guia">Cómo calcula</button>
+  </nav>
+  <a class="estado-nube" href="../" style="color:inherit">Mis apps</a>
+  <button class="estado-nube" id="estadoNube" type="button" style="background:transparent;border:1px solid rgba(255,255,255,.25);color:inherit;border-radius:3px;padding:4px 9px;cursor:pointer">Solo en este dispositivo</button>
+</div></header>
+
+<main>
+<!-- ============ COTIZAR ============ -->
+<section class="vista activa" id="v-cotizar">
+  <div class="cotizar">
+    <div>
+      <div class="paso">
+        <header><span class="n">1</span><div><h2>Proyecto y cliente</h2><p>Con tipología, m² y acabado ya tienes un precio estimado.</p></div></header>
+        <div class="cuerpo">
+          <div class="rejilla">
+            <div class="campo"><label for="f-tip">Tipología</label><select id="f-tip" data-k="proyecto.tipologia"></select></div>
+            <div class="campo"><label for="f-m2">m² de construcción</label><input id="f-m2" type="number" min="0" step="1" data-k="proyecto.m2" data-n></div>
+            <div class="campo"><label for="f-ter">m² de terreno</label><input id="f-ter" type="number" min="0" step="1" data-k="proyecto.m2_terreno" data-n></div>
+            <div class="campo"><label for="f-niv">Niveles</label><input id="f-niv" type="number" min="1" step="1" data-k="proyecto.niveles" data-n></div>
+          </div>
+          <div class="rejilla" style="margin-top:14px">
+            <div class="campo"><span class="etq">Nivel de acabados</span><div class="seg" data-seg="proyecto.acabado"><button data-v="c1">Económico</button><button data-v="c2">Medio</button><button data-v="c3">Premium</button></div></div>
+            <div class="campo"><span class="etq">Complejidad</span><div class="seg" data-seg="proyecto.complejidad" id="segComp"></div></div>
+            <div class="campo"><span class="etq">Urgencia</span><div class="seg" data-seg="proyecto.urgencia" id="segUrg"></div></div>
+          </div>
+          <div class="rejilla" style="margin-top:14px">
+            <div class="campo"><label for="f-pnom">Nombre del proyecto</label><input id="f-pnom" type="text" data-k="proyecto.nombre" placeholder="Casa Valle Real"></div>
+            <div class="campo"><label for="f-ubi">Ubicación</label><input id="f-ubi" type="text" data-k="proyecto.ubicacion" placeholder="Zapopan, Jalisco"></div>
+            <div class="campo"><label for="f-cli">Cliente</label><input id="f-cli" type="text" data-k="cliente.nombre" placeholder="Nombre completo"></div>
+            <div class="campo"><label for="f-emp">Empresa (opcional)</label><input id="f-emp" type="text" data-k="cliente.empresa"></div>
+            <div class="campo"><label for="f-tel">Teléfono</label><input id="f-tel" type="tel" data-k="cliente.tel"></div>
+            <div class="campo"><label for="f-cor">Correo</label><input id="f-cor" type="email" data-k="cliente.correo"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="paso">
+        <header><span class="n">2</span><div><h2>Cómo calcular el honorario de arquitectura</h2><p>Elige el método; los demás servicios se suman aparte.</p></div></header>
+        <div class="cuerpo">
+          <div class="metodos" data-seg="proyecto.metodo">
+            <button class="metodo" data-v="pct"><b>% del costo de obra</b><span>Estándar de aranceles. Escala con tamaño y acabados.</span></button>
+            <button class="metodo" data-v="m2"><b>Tarifa por m²</b><span>Rápido y fácil de explicar al cliente.</span></button>
+            <button class="metodo" data-v="manual"><b>Monto fijo</b><span>Cuando ya negociaste una cifra.</span></button>
+          </div>
+          <div class="rejilla">
+            <div class="campo"><label for="f-cobra">Costo de obra estimado</label><input id="f-cobra" type="number" min="0" step="1000" data-k="proyecto.costo_obra_manual" data-n><span class="ayuda" id="ayCobra"></span></div>
+            <div class="campo" id="c-pct"><label for="f-pct">% de honorarios</label><input id="f-pct" type="number" min="0" step="0.1" data-k="proyecto.pct_manual" data-n><span class="ayuda" id="ayPct"></span></div>
+            <div class="campo" id="c-m2"><label for="f-tm2">Tarifa $/m²</label><input id="f-tm2" type="number" min="0" step="10" data-k="proyecto.tarifa_m2" data-n><span class="ayuda" id="ayTm2"></span></div>
+            <div class="campo" id="c-man"><label for="f-hman">Honorario de arquitectura</label><input id="f-hman" type="number" min="0" step="1000" data-k="proyecto.honorario_manual" data-n></div>
+          </div>
+          <p class="ayuda" style="margin:10px 0 0" id="ayFactores"></p>
+        </div>
+      </div>
+
+      <div class="paso">
+        <header><span class="n">3</span><div><h2>Alcance</h2><p>Parte de un paquete y ajusta servicio por servicio. Deja el precio en blanco para usar el del catálogo.</p></div></header>
+        <div class="cuerpo">
+          <div class="paquetes" id="paquetes"></div>
+          <div id="servicios"></div>
+        </div>
+      </div>
+
+      <div class="paso">
+        <header><span class="n">4</span><div><h2>Ajustes, viáticos e impuestos</h2><p>Descuentos, traslados al sitio y cómo se factura.</p></div></header>
+        <div class="cuerpo">
+          <div class="rejilla">
+            <div class="campo"><label for="f-desc">Descuento (%)</label><input id="f-desc" type="number" min="0" max="100" step="0.5" data-k="ajustes.descuento" data-n></div>
+            <div class="campo"><label for="f-km">Distancia al sitio (km, un sentido)</label><input id="f-km" type="number" min="0" step="1" data-k="ajustes.km" data-n></div>
+            <div class="campo"><label for="f-vis">Visitas al sitio</label><input id="f-vis" type="number" min="0" step="1" data-k="ajustes.visitas" data-n></div>
+            <div class="campo"><label for="f-cas">Casetas y otros gastos ($)</label><input id="f-cas" type="number" min="0" step="50" data-k="ajustes.casetas" data-n></div>
+          </div>
+          <div class="rejilla" style="margin-top:14px">
+            <div class="campo"><span class="etq">IVA</span><div class="seg" data-seg="ajustes.iva"><button data-v="1">Agregar IVA</button><button data-v="0">Sin IVA</button></div></div>
+            <div class="campo"><span class="etq">Cliente</span><div class="seg" data-seg="ajustes.retenciones"><button data-v="0">Persona física</button><button data-v="1">Persona moral (retiene)</button></div></div>
+            <div class="campo"><span class="etq">En el documento</span><div class="seg" data-seg="ajustes.desglose"><button data-v="1">Precio por servicio</button><button data-v="0">Solo totales por grupo</button></div></div>
+          </div>
+          <div class="campo ancho" style="margin-top:14px"><label for="f-notas">Notas para el cliente</label><textarea id="f-notas" data-k="ajustes.notas" placeholder="Ej. La propuesta considera el reglamento de construcción de Zapopan vigente."></textarea></div>
+        </div>
+      </div>
+
+      <div class="paso">
+        <header><span class="n">5</span><div><h2>Pagos, tiempos y condiciones</h2><p>Los porcentajes de pago deben sumar 100%.</p></div></header>
+        <div class="cuerpo">
+          <h3>Esquema de pagos</h3>
+          <div class="pagos-ed" id="pagosEd"></div>
+          <button class="btn chico leve" id="addPago" type="button">Agregar pago</button>
+          <h3 style="margin-top:20px">Cronograma estimado</h3>
+          <div class="crono" id="cronoForm"></div>
+          <div class="rejilla" style="margin-top:20px;grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+            <div class="campo"><label for="f-inc">Incluye (una por línea)</label><textarea id="f-inc" data-k="incluye" data-lines></textarea></div>
+            <div class="campo"><label for="f-exc">No incluye</label><textarea id="f-exc" data-k="excluye" data-lines></textarea></div>
+            <div class="campo"><label for="f-con">Condiciones</label><textarea id="f-con" data-k="condiciones" data-lines></textarea></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <aside class="pie" id="pie" aria-label="Resumen de la cotización"></aside>
+  </div>
+  <div class="barra-movil"><div><small style="opacity:.7;display:block;font-size:11px">Total</small><b id="totMovil">$0</b></div><button type="button" id="irPie">Ver resumen</button></div>
+</section>
+
+<!-- ============ DOCUMENTO ============ -->
+<section class="vista" id="v-doc">
+  <div class="doc-herr">
+    <button class="btn prim" id="btnPrint" type="button">Imprimir o guardar PDF</button>
+    <button class="btn" id="btnDocHtml" type="button">Descargar documento HTML</button>
+    <button class="btn" id="btnWhats" type="button">Texto para WhatsApp</button>
+    <button class="btn leve" data-ir="cotizar" type="button">Volver a editar</button>
+  </div>
+  <div class="doc" id="doc"></div>
+</section>
+
+<!-- ============ HISTORIAL ============ -->
+<section class="vista" id="v-hist">
+  <h1>Historial de cotizaciones</h1>
+  <p class="sub">Marca el estado de cada cotización para saber cuánto cierras y a qué precio.</p>
+  <div class="stats" id="stats"></div>
+  <div class="barra-herr">
+    <input type="text" id="busca" placeholder="Buscar por cliente, proyecto o folio" style="max-width:320px">
+    <select id="filtroEstado" style="max-width:180px"><option value="">Todos los estados</option><option>borrador</option><option>enviada</option><option>aceptada</option><option>rechazada</option></select>
+    <span class="esp"></span>
+    <button class="btn leve" id="expHistCsv" type="button">Exportar historial CSV</button>
+    <button class="btn leve" id="expRespaldo" type="button">Respaldo completo</button>
+    <label class="btn leve" style="cursor:pointer">Restaurar respaldo<input type="file" id="impRespaldo" accept=".json" hidden></label>
+  </div>
+  <div class="tabla-wrap"><table class="dat" id="tablaHist"></table></div>
+</section>
+
+<!-- ============ CATÁLOGO ============ -->
+<section class="vista" id="v-cat">
+  <h1>Catálogo de precios</h1>
+  <p class="sub">Aquí viven tus tarifas. Cualquier cambio se refleja al instante en la cotización abierta. Puedes editarlo aquí o en Excel con el CSV.</p>
+  <div class="barra-herr">
+    <button class="btn" id="expCat" type="button">Exportar CSV</button>
+    <label class="btn" style="cursor:pointer">Importar CSV<input type="file" id="impCat" accept=".csv,text/csv" hidden></label>
+    <span class="esp"></span>
+    <button class="btn leve" id="addFila" type="button">Agregar fila</button>
+    <button class="btn peligro" id="resetCat" type="button">Restaurar valores originales</button>
+  </div>
+  <div class="pestanas" id="catTabs" role="tablist"></div>
+  <p class="ayuda" id="catAyuda" style="margin:-4px 0 10px"></p>
+  <div class="tabla-wrap"><table class="dat" id="tablaCat"></table></div>
+</section>
+
+<!-- ============ DESPACHO ============ -->
+<section class="vista" id="v-despacho">
+  <h1>Mi despacho</h1>
+  <p class="sub">Estos datos aparecen en el encabezado y las firmas de cada cotización.</p>
+  <div class="paso"><div class="cuerpo">
+    <div class="rejilla" id="despForm"></div>
+  </div></div>
+</section>
+
+<!-- ============ GUÍA ============ -->
+<section class="vista" id="v-guia">
+  <div class="guia">
+    <h2>El flujo rápido</h2>
+    <ol>
+      <li>Elige tipología, escribe los m² y el nivel de acabados.</li>
+      <li>Toca un paquete (Básico, Estándar, Integral o Llave en mano).</li>
+      <li>Revisa el pie de plano: total, $/m², % sobre obra, semanas y margen.</li>
+      <li>Guarda y abre <b>Documento</b> para imprimir, guardar PDF o mandar el resumen por WhatsApp.</li>
+    </ol>
+    <h2>Honorario de arquitectura</h2>
+    <p><b>% del costo de obra:</b> costo de obra = m² × costo paramétrico de la tipología según acabado. Honorario = costo de obra × % de la tipología × factor de complejidad × factor de escala.</p>
+    <p><b>Tarifa por m²:</b> m² × tarifa × complejidad × escala. <b>Monto fijo:</b> el que escribas.</p>
+    <p>El honorario de arquitectura se reparte entre los servicios del grupo Arquitectura (programa 5%, anteproyecto 25%, ejecutivo 45%, detalles 15%, coordinación 10%). Si quitas uno, ese porcentaje no se cobra.</p>
+    <h2>Otros servicios</h2>
+    <ul>
+      <li><code>m2</code>: m² × precio × complejidad, nunca menos del mínimo.</li>
+      <li><code>m2_terreno</code>: igual, sobre m² de terreno.</li>
+      <li><code>pct_obra</code>: % del costo de obra, con mínimo.</li>
+      <li><code>lote</code>, <code>pieza</code>, <code>mes</code>, <code>hora</code>: precio × cantidad.</li>
+    </ul>
+    <p>La urgencia multiplica todos los servicios excepto los del grupo Obra y acorta el cronograma. Si el total de servicios queda por debajo del honorario mínimo, se agrega un ajuste.</p>
+    <h2>Margen estimado</h2>
+    <p>Horas = m² × horas por m² × complejidad × (porción de arquitectura contratada). Costo interno = horas × costo promedio por hora de tu equipo × (1 + gastos de operación). El margen compara eso contra lo que cobras de arquitectura. Si baja del margen objetivo, el pie de plano te avisa.</p>
+    <h2>Impuestos</h2>
+    <p>IVA sobre el subtotal con descuento. Si el cliente es persona moral se restan las retenciones de ISR e IVA configuradas en Parámetros.</p>
+    <h2>Calibra antes de usarlo con clientes</h2>
+    <p>Los precios del catálogo son un punto de partida de referencia para la zona metropolitana de Guadalajara, no aranceles oficiales. Revisa sobre todo los costos paramétricos de obra, el % por tipología y las tarifas de ingenierías con tus proveedores.</p>
+  </div>
+</section>
+</main>
+
+<div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTit"><div class="caja">
+  <h2 id="modalTit" style="margin-bottom:10px">Texto</h2>
+  <textarea id="modalTxt" readonly></textarea>
+  <div style="display:flex;gap:8px;margin-top:10px;justify-content:flex-end"><button class="btn" id="modalCopiar" type="button">Copiar</button><button class="btn prim" id="modalCerrar" type="button">Cerrar</button></div>
+</div></div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+const DEFAULT_CSV = "tabla,clave,nombre,grupo,unidad,valor,minimo,c1,c2,c3,c4,semanas,orden,default,notas\ntipologia,casa_habitacion,Casa habitación,Habitacional,,6.5,,11500,17500,28000,750,1,10,1,valor=% honorarios sobre costo de obra; c1/c2/c3=costo de obra $/m² económico/medio/premium; c4=tarifa directa $/m²; semanas=factor de tiempo\ntipologia,vivienda_vertical,Departamentos / vivienda vertical,Habitacional,,5.5,,13000,19000,29000,520,1.3,20,0,\ntipologia,vivienda_serie,Vivienda en serie / fraccionamiento,Habitacional,,3.5,,9000,12500,17000,260,1.2,30,0,\ntipologia,oficinas,Oficinas corporativas,Comercial,,6,,12500,18000,27000,600,1.1,40,0,\ntipologia,local_comercial,Local comercial,Comercial,,6.5,,9500,14000,21000,550,0.8,50,0,\ntipologia,plaza_comercial,Plaza comercial,Comercial,,5,,11000,15500,23000,420,1.4,60,0,\ntipologia,restaurante,Restaurante / cafetería,Comercial,,8,,14000,21000,33000,900,0.9,70,0,\ntipologia,hotel,Hotel,Turismo,,6.5,,18000,26000,40000,700,1.5,80,0,\ntipologia,clinica,Consultorio / clínica,Salud,,7.5,,15000,22000,33000,800,1.1,90,0,\ntipologia,escuela,Escuela / educativo,Educación,,5.5,,12000,16500,23000,450,1.2,100,0,\ntipologia,nave_industrial,Nave industrial / bodega,Industrial,,3.5,,6500,9000,13500,180,0.9,110,0,\ntipologia,remodelacion,Remodelación / adecuación,Intervención,,9,,6000,10500,17000,600,0.7,120,0,\ntipologia,interiorismo,Interiorismo,Intervención,,10,,4500,8500,16000,650,0.7,130,0,\nservicio,levantamiento,Levantamiento arquitectónico del sitio,Estudios previos,m2,22,4500,,,,,1,5,0,Útil en remodelaciones\nservicio,topografia,Levantamiento topográfico (proveedor externo),Estudios previos,lote,8500,,1,,,,1,6,0,\nservicio,mecanica_suelos,Estudio de mecánica de suelos (proveedor externo),Estudios previos,lote,22000,,1,,,,2,7,0,\nservicio,programa,Programa arquitectónico y estudio de necesidades,Arquitectura,pct_hon,5,,,,,,1,10,1,Los 5 servicios de Arquitectura suman 100% del honorario base\nservicio,anteproyecto,\"Anteproyecto: plantas, cortes, fachadas y volumetría\",Arquitectura,pct_hon,25,,,,,,3,20,1,\nservicio,ejecutivo,Proyecto ejecutivo arquitectónico,Arquitectura,pct_hon,45,,,,,,5,30,1,\nservicio,detalles,\"Planos de acabados, carpintería, herrería y cancelería\",Arquitectura,pct_hon,15,,,,,,2,40,1,\nservicio,coordinacion,Coordinación de ingenierías y revisión de interferencias,Arquitectura,pct_hon,10,,,,,,0,50,1,\nservicio,estructural,Proyecto estructural y memoria de cálculo,Ingenierías,m2,70,14000,,,,,3,60,1,\nservicio,electrica,Instalación eléctrica,Ingenierías,m2,28,6500,,,,,2,70,1,\nservicio,hidrosanitaria,Instalación hidráulica y sanitaria,Ingenierías,m2,26,6500,,,,,2,80,1,\nservicio,gas,Instalación de gas,Ingenierías,m2,8,2800,,,,,1,90,0,\nservicio,hvac,Aire acondicionado y ventilación,Ingenierías,m2,24,7000,,,,,2,100,0,\nservicio,especiales,\"Instalaciones especiales (voz y datos, CCTV, seguridad)\",Ingenierías,m2,14,4500,,,,,1,110,0,\nservicio,iluminacion,Diseño de iluminación,Ingenierías,m2,18,5000,,,,,1,120,0,\nservicio,render_ext,Render exterior,Visualización,pieza,3800,,2,,,,1,130,0,\nservicio,render_int,Render interior,Visualización,pieza,3200,,2,,,,1,140,0,\nservicio,recorrido,Recorrido virtual animado,Visualización,lote,16000,,1,,,,2,150,0,\nservicio,modelo_bim,Modelo BIM coordinado,Visualización,m2,35,9000,,,,,2,160,0,\nservicio,uso_suelo,Gestión de dictamen de uso de suelo y alineamiento,Trámites,lote,7500,,1,,,,3,170,0,No incluye derechos municipales\nservicio,licencia,Gestión de licencia de construcción,Trámites,lote,14000,,1,,,,4,180,0,No incluye derechos municipales\nservicio,dro,Responsiva de Director Responsable de Obra,Trámites,pct_obra,0.8,9000,,,,,0,190,0,% sobre costo de obra\nservicio,presupuesto,Catálogo de conceptos y presupuesto de obra,Costos,pct_obra,0.6,8000,,,,,2,200,0,\nservicio,interiorismo_proy,Proyecto de interiorismo (concepto y selección),Interiorismo,m2,140,12000,,,,,3,210,0,\nservicio,mobiliario,Diseño de mobiliario a medida,Interiorismo,pieza,4500,,2,,,,1,220,0,\nservicio,paisajismo,Proyecto de paisajismo,Paisajismo,m2_terreno,45,8000,,,,,2,230,0,Se calcula sobre m² de terreno\nservicio,supervision,Supervisión de obra (visitas semanales),Obra,mes,16000,,6,,,,0,240,0,\nservicio,direccion_obra,Dirección arquitectónica de obra,Obra,pct_obra,3,,,,,,0,250,0,% sobre costo de obra\nservicio,asesoria,Asesoría o visita técnica,Consultoría,hora,850,,4,,,,0,260,0,\nfactor,baja,Baja,complejidad,,0.85,,,,,,,10,,Programa simple y terreno regular\nfactor,media,Media,complejidad,,1,,,,,,,20,1,\nfactor,alta,Alta,complejidad,,1.2,,,,,,,30,,\"Terreno irregular, programa complejo o normativa especial\"\nfactor,muy_alta,Muy alta,complejidad,,1.4,,,,,,,40,,Inmueble patrimonial o uso especializado\nfactor,normal,Normal,urgencia,,1,,,1,,,,10,1,c2=factor de tiempo\nfactor,prioritaria,Prioritaria,urgencia,,1.15,,,0.8,,,,20,,\nfactor,urgente,Urgente,urgencia,,1.3,,,0.65,,,,30,,\nfactor,esc_100,Hasta 100 m²,escala,,1.25,,100,,,,,10,,c1=hasta cuántos m² aplica\nfactor,esc_250,101 a 250 m²,escala,,1,,250,,,,,20,,\nfactor,esc_600,251 a 600 m²,escala,,0.92,,600,,,,,30,,\nfactor,esc_1500,601 a 1500 m²,escala,,0.85,,1500,,,,,40,,\nfactor,esc_5000,1501 a 5000 m²,escala,,0.78,,5000,,,,,50,,\nfactor,esc_max,Más de 5000 m²,escala,,0.7,,99999999,,,,,60,,\nparametro,iva,IVA (%),,,16,,,,,,,10,,\nparametro,vigencia_dias,Vigencia de la cotización (días),,,15,,,,,,,20,,\nparametro,honorario_minimo,Honorario mínimo por proyecto ($),,,25000,,,,,,,30,,\nparametro,tarifa_km,Costo por km recorrido ($),,,7.5,,,,,,,40,,\nparametro,viatico_visita,Viático por visita ($),,,350,,,,,,,50,,Comidas y estacionamiento\nparametro,ret_isr,Retención ISR (%),,,10,,,,,,,60,,Cuando el cliente es persona moral\nparametro,ret_iva,Retención IVA (%),,,10.6667,,,,,,,70,,Dos terceras partes del IVA\nparametro,horas_m2,Horas de proyecto por m² (complejidad media),,,0.9,,,,,,,80,,Para estimar costo interno\nparametro,indirectos,Gastos de operación sobre costo de horas (%),,,25,,,,,,,90,,\nparametro,margen_objetivo,Margen objetivo (%),,,30,,,,,,,100,,Debajo de este margen la app te avisa\nrol,director,Arquitecto director,,,950,,15,,,,,10,,valor=$/hora; c1=% de las horas del proyecto\nrol,proyectista,Arquitecto proyectista,,,480,,45,,,,,20,,\nrol,dibujante,Dibujante / modelador BIM,,,300,,30,,,,,30,,\nrol,coordinador,Coordinador de ingenierías,,,550,,10,,,,,40,,\npago,anticipo,Anticipo a la firma,,,40,,,,,,,10,,\npago,anteproyecto,Al aprobar el anteproyecto,,,30,,,,,,,20,,\npago,ejecutivo,A la entrega del proyecto ejecutivo,,,30,,,,,,,30,,\npaquete,basico,Básico,,,,,,,,,,10,,programa|anteproyecto|render_ext\npaquete,estandar,Estándar,,,,,,,,,,20,,programa|anteproyecto|ejecutivo|detalles|coordinacion|estructural|electrica|hidrosanitaria\npaquete,integral,Integral,,,,,,,,,,30,,programa|anteproyecto|ejecutivo|detalles|coordinacion|estructural|electrica|hidrosanitaria|gas|render_ext|render_int|licencia|presupuesto\npaquete,llave,Llave en mano,,,,,,,,,,40,,programa|anteproyecto|ejecutivo|detalles|coordinacion|estructural|electrica|hidrosanitaria|gas|render_ext|render_int|licencia|presupuesto|dro|supervision|direccion_obra\ncondicion,inc1,Hasta dos rondas de cambios en el anteproyecto,incluye,,,,,,,,,10,,\ncondicion,inc2,Planos en PDF y DWG,incluye,,,,,,,,,20,,\ncondicion,inc3,Juntas de revisión quincenales presenciales o en línea,incluye,,,,,,,,,30,,\ncondicion,exc1,\"Pago de derechos, licencias e impuestos municipales\",excluye,,,,,,,,,40,,\ncondicion,exc2,Estudios externos no listados en esta cotización,excluye,,,,,,,,,50,,\ncondicion,exc3,Impresiones y copias físicas de planos,excluye,,,,,,,,,60,,\ncondicion,exc4,\"Costos de construcción, materiales y mano de obra\",excluye,,,,,,,,,70,,\ncondicion,cond1,Precios en pesos mexicanos,condicion,,,,,,,,,80,,\ncondicion,cond2,Los cambios posteriores a la aprobación del anteproyecto se cotizan por separado,condicion,,,,,,,,,90,,\ncondicion,cond3,Los tiempos corren a partir del anticipo y de la entrega de información del cliente,condicion,,,,,,,,,100,,\n";
+const COLS = ["tabla","clave","nombre","grupo","unidad","valor","minimo","c1","c2","c3","c4","semanas","orden","default","notas"];
+
+/* ---------- utilidades ---------- */
+const $ = s => document.querySelector(s);
+const $$ = s => Array.from(document.querySelectorAll(s));
+const num = v => { const n = parseFloat(String(v ?? "").replace(/[$,\s]/g,"")); return isFinite(n) ? n : 0; };
+const fmt = n => "$" + Math.round(n).toLocaleString("es-MX");
+const fmt2 = n => "$" + (Math.round(n*100)/100).toLocaleString("es-MX",{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtN = (n,d=0) => (Math.round(n*10**d)/10**d).toLocaleString("es-MX",{maximumFractionDigits:d});
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const hoy = () => { const d=new Date(); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+const clone = o => JSON.parse(JSON.stringify(o));
+function toast(t){ const el=$("#toast"); el.textContent=t; el.classList.add("ver"); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove("ver"),2200); }
+function getPath(o,p){ return p.split(".").reduce((a,k)=>a==null?undefined:a[k],o); }
+function setPath(o,p,v){ const ks=p.split("."); let a=o; ks.slice(0,-1).forEach(k=>{ if(a[k]==null||typeof a[k]!=="object") a[k]={}; a=a[k]; }); a[ks[ks.length-1]]=v; }
+
+function parseCSV(text){
+  const rows=[]; let row=[], f="", q=false;
+  text = text.replace(/^\uFEFF/,"");
+  for(let i=0;i<text.length;i++){
+    const c=text[i];
+    if(q){ if(c==='"'){ if(text[i+1]==='"'){ f+='"'; i++; } else q=false; } else f+=c; }
+    else if(c==='"') q=true;
+    else if(c===','){ row.push(f); f=""; }
+    else if(c==='\n'||c==='\r'){ if(c==='\r'&&text[i+1]==='\n') i++; row.push(f); f=""; if(row.some(x=>x!=="")) rows.push(row); row=[]; }
+    else f+=c;
+  }
+  row.push(f); if(row.some(x=>x!=="")) rows.push(row);
+  return rows;
+}
+function csvCell(v){ v = v==null ? "" : String(v); return /[",\n\r]/.test(v) ? '"' + v.replace(/"/g,'""') + '"' : v; }
+function toCSV(rows, cols){ return [cols.join(",")].concat(rows.map(r=>cols.map(c=>csvCell(r[c])).join(","))).join("\n"); }
+
+/* ---------- número a letras ---------- */
+function numLetras(n){
+  const U=["","uno","dos","tres","cuatro","cinco","seis","siete","ocho","nueve","diez","once","doce","trece","catorce","quince","dieciséis","diecisiete","dieciocho","diecinueve","veinte","veintiuno","veintidós","veintitrés","veinticuatro","veinticinco","veintiséis","veintisiete","veintiocho","veintinueve"];
+  const D=["","","","treinta","cuarenta","cincuenta","sesenta","setenta","ochenta","noventa"];
+  const C=["","ciento","doscientos","trescientos","cuatrocientos","quinientos","seiscientos","setecientos","ochocientos","novecientos"];
+  function cien(x){ if(x===100) return "cien"; const c=Math.floor(x/100), r=x%100; let s=C[c]; if(r){ s+=(s?" ":""); s+= r<30 ? U[r] : D[Math.floor(r/10)] + (r%10 ? " y " + U[r%10] : ""); } return s; }
+  function mil(x){ const m=Math.floor(x/1000), r=x%1000; let s=""; if(m) s = m===1 ? "mil" : cien(m) + " mil"; if(r) s += (s?" ":"") + cien(r); return s; }
+  const ent=Math.floor(n), cent=Math.round((n-ent)*100);
+  let s;
+  if(ent===0) s="cero";
+  else { const mm=Math.floor(ent/1e6), r=ent%1e6; s=""; if(mm) s = mm===1 ? "un millón" : mil(mm) + " millones"; if(r) s += (s?" ":"") + mil(r); if(mm && !r) s += " de"; }
+  s = s.replace(/veintiuno (mil|millones)/g,"veintiún $1").replace(/uno (mil|millones)/g,"un $1").replace(/veintiuno$/,"veintiún").replace(/uno$/,"un");
+  return (s.charAt(0).toUpperCase()+s.slice(1)) + " pesos " + String(cent).padStart(2,"0") + "/100 M.N.";
+}
+
+/* ---------- almacenamiento: este navegador + Supabase personal (tabla registros) ---------- */
+const SUPA = { url:"https://gosfucaweteaqrvftgfq.supabase.co", key:"sb_publishable_ooOdrO4PNPyeOUdxqEB4pQ_xuYIo59d", app:"cotizador", table:"registros" };
+const Store = {
+  sb:null, uid:null, email:"", state:"off", queue:Promise.resolve(), pending:0,
+  lget(k){ try{ const r=localStorage.getItem("cotarq_"+k); return r?JSON.parse(r):null; }catch(e){ return null; } },
+  lset(k,v){ try{ localStorage.setItem("cotarq_"+k, JSON.stringify(v)); }catch(e){ toast("No se pudo guardar en el navegador; haz un respaldo"); } },
+  ldel(k){ try{ localStorage.removeItem("cotarq_"+k); }catch(e){} },
+  ts(k){ return num(this.lget("ts_"+k)); },
+  estado(s,txt){
+    this.state=s; const el=$("#estadoNube"); if(!el) return;
+    el.className="estado-nube "+(s==="on"?"on":s==="err"?"err":"");
+    el.textContent = txt || ({on:"Sincronizado"+(this.email?" · "+this.email:""), busy:"Guardando en la nube…", err:"Sin conexión con la nube", off:"Solo en este dispositivo · Entrar"})[s];
+  },
+  write(id,data){
+    if(!this.sb) return;
+    this.pending++; this.estado("busy");
+    this.queue=this.queue.then(async()=>{
+      const run=async()=>{ const {error}=await this.sb.from(SUPA.table).upsert({app:SUPA.app,id,data,owner:this.uid}); if(error) throw error; };
+      try{ await run(); }
+      catch(e){ await new Promise(r=>setTimeout(r,1500+Math.random()*1000)); try{ await run(); }catch(e2){ this.estado("err", /quota|exceed|size/i.test(String(e2&&e2.message))?"Nube llena":"Sin conexión con la nube"); } }
+      finally{ this.pending--; if(!this.pending && this.state==="busy") this.estado("on"); }
+    });
+  },
+  /* guarda local y en la nube; ts = marca de tiempo para decidir qué versión gana */
+  async set(k,v,ts){
+    ts=ts||Date.now(); this.lset(k,v); this.lset("ts_"+k,ts);
+    this.write(k,{v,updatedAt:ts});
+  },
+  async del(k){
+    const ts=Date.now(); this.ldel(k); this.lset("ts_"+k,ts);
+    this.write(k,{v:null,deleted:true,updatedAt:ts});
+  },
+  localQuotes(){
+    const out=[];
+    try{ for(let i=0;i<localStorage.length;i++){ const k=localStorage.key(i); if(k&&k.startsWith("cotarq_q_")){ const v=JSON.parse(localStorage.getItem(k)); if(v&&v.folio) out.push(v); } } }catch(e){}
+    return out;
+  },
+  async pullAll(){
+    const out=[]; let from=0;
+    for(;;){
+      const {data,error}=await this.sb.from(SUPA.table).select("id,data").eq("app",SUPA.app).range(from,from+999);
+      if(error) throw error; out.push(...data); if(data.length<1000) break; from+=1000;
+    }
+    return out;
+  }
+};
+function loginScreen(msg){
+  return new Promise(res=>{
+    const ov=document.createElement("div"); ov.className="modal ver"; ov.setAttribute("role","dialog"); ov.setAttribute("aria-modal","true");
+    ov.innerHTML=`<form class="caja" style="max-width:380px;display:grid;gap:12px">
+      <h2>Entrar al cotizador</h2>
+      <p class="ayuda" style="margin:0">Con tu cuenta de Supabase tus cotizaciones, catálogo y datos del despacho se sincronizan entre el celular y la computadora.</p>
+      <p class="ayuda" id="lgMsg" style="margin:0;color:var(--alerta)">${esc(msg||"")}</p>
+      <div class="campo"><label for="lgE">Correo</label><input type="email" id="lgE" autocomplete="username" required></div>
+      <div class="campo"><label for="lgP">Contraseña</label><input type="password" id="lgP" autocomplete="current-password" required style="width:100%;background:var(--hoja);border:1px solid var(--linea);border-radius:3px;padding:7px 9px;min-height:36px"></div>
+      <button class="btn prim" type="submit" id="lgB" style="justify-content:center">Entrar</button>
+      <button class="btn leve" type="button" id="lgL" style="justify-content:center">Usar sin cuenta (solo en este dispositivo)</button></form>`;
+    document.body.appendChild(ov);
+    setTimeout(()=>{ const e=ov.querySelector("#lgE"); if(e) e.focus(); },50);
+    ov.querySelector("#lgL").onclick=()=>{ ov.remove(); res(null); };
+    ov.querySelector("form").onsubmit=async e=>{
+      e.preventDefault(); const b=ov.querySelector("#lgB"); b.disabled=true; b.textContent="Entrando…";
+      const {data,error}=await Store.sb.auth.signInWithPassword({email:ov.querySelector("#lgE").value.trim().toLowerCase(), password:ov.querySelector("#lgP").value});
+      if(error){ b.disabled=false; b.textContent="Entrar"; ov.querySelector("#lgMsg").textContent=/invalid/i.test(error.message)?"Correo o contraseña incorrectos":/confirm/i.test(error.message)?"La cuenta no está confirmada; márcala como confirmada en Supabase":"No se pudo entrar: "+error.message; return; }
+      ov.remove(); res(data.session);
+    };
+  });
+}
+/* mezcla filas de la nube con lo local; full=true sube lo que la nube no tiene */
+function mezclarNube(rows, full){
+  let cambioCat=false, cambioDesp=false, cambioHist=false;
+  const remotos=new Set();
+  for(const r of rows){
+    const d=r.data; if(!d) continue;
+    const rts=num(d.updatedAt);
+    if(r.id==="catalogo"){
+      remotos.add(r.id);
+      if(rts>Store.ts("catalogo") && typeof d.v==="string"){ try{ cargarCSV(d.v); Store.lset("catalogo",d.v); Store.lset("ts_catalogo",rts); cambioCat=true; }catch(e){} }
+      else if(full && Store.ts("catalogo")>rts) Store.write("catalogo",{v:toCSV(RAW,COLS),updatedAt:Store.ts("catalogo")});
+    } else if(r.id==="despacho"){
+      remotos.add(r.id);
+      if(rts>Store.ts("despacho") && d.v){ DESP={...DESP,...d.v}; Store.lset("despacho",DESP); Store.lset("ts_despacho",rts); cambioDesp=true; }
+      else if(full && Store.ts("despacho")>rts) Store.write("despacho",{v:DESP,updatedAt:Store.ts("despacho")});
+    } else if(r.id.startsWith("q_")){
+      remotos.add(r.id);
+      const folio=r.id.slice(2), i=HIST.findIndex(h=>h.folio===folio), loc=i>=0?HIST[i]:null;
+      const lts=loc?num(loc.actualizada||loc.creada):Store.ts(r.id);
+      if(d.deleted){ if(loc && rts>=lts){ HIST.splice(i,1); Store.ldel(r.id); Store.lset("ts_"+r.id,rts); cambioHist=true; } else if(loc && full) Store.write(r.id,{v:loc,updatedAt:lts}); continue; }
+      if(!d.v) continue;
+      if(!loc){ if(rts>Store.ts(r.id)){ HIST.push(d.v); Store.lset(r.id,d.v); cambioHist=true; } }
+      else if(rts>lts){ HIST[i]=d.v; Store.lset(r.id,d.v); cambioHist=true; }
+      else if(full && lts>rts) Store.write(r.id,{v:loc,updatedAt:lts});
+    }
+  }
+  if(full){
+    if(!remotos.has("catalogo") && Store.lget("catalogo")) Store.write("catalogo",{v:toCSV(RAW,COLS),updatedAt:Store.ts("catalogo")||Date.now()});
+    if(!remotos.has("despacho") && Store.lget("despacho")) Store.write("despacho",{v:DESP,updatedAt:Store.ts("despacho")||Date.now()});
+    HIST.forEach(h=>{ if(!remotos.has("q_"+h.folio)) Store.write("q_"+h.folio,{v:h,updatedAt:num(h.actualizada||h.creada)||Date.now()}); });
+  }
+  if(cambioCat){ llenarSelects(); pintarForm(); recalc(); if($("#v-cat").classList.contains("activa")) pintarCat(); }
+  if(cambioDesp && $("#v-despacho").classList.contains("activa") && !document.activeElement?.dataset?.desp) pintarDesp();
+  if(cambioHist && $("#v-hist").classList.contains("activa")) pintarHist();
+}
+async function iniciarNube(){
+  if(!window.supabase || !window.supabase.createClient){ Store.estado("off","Sin conexión: solo en este dispositivo"); return; }
+  Store.sb=window.supabase.createClient(SUPA.url, SUPA.key, {auth:{persistSession:true, autoRefreshToken:true, storageKey:"cotizador-auth"}});
+  let {data:{session}}=await Store.sb.auth.getSession();
+  if(!session){
+    if(Store.lget("solo_local")===1){ Store.sb=null; Store.estado("off"); return; }
+    session=await loginScreen();
+    if(!session){ Store.lset("solo_local",1); Store.sb=null; Store.estado("off"); return; }
+  }
+  Store.ldel("solo_local");
+  Store.uid=session.user.id; Store.email=session.user.email||"";
+  Store.estado("busy","Revisando la nube…");
+  try{ mezclarNube(await Store.pullAll(), true); if(!Store.pending) Store.estado("on"); }
+  catch(e){ Store.estado("err"); toast("No se pudo leer la nube; se reintentará"); }
+  Store.sb.channel("rt-cotizador").on("postgres_changes",{event:"*",schema:"public",table:SUPA.table,filter:"app=eq."+SUPA.app},p=>{
+    if(p.new && p.new.id && p.new.data) mezclarNube([{id:p.new.id,data:p.new.data}], false);
+  }).subscribe();
+  document.addEventListener("visibilitychange",()=>{ if(document.visibilityState==="visible" && Store.sb) Store.pullAll().then(r=>mezclarNube(r,false)).catch(()=>{}); });
+  Store.sb.auth.onAuthStateChange(ev=>{ if(ev==="SIGNED_OUT") location.reload(); });
+}
+document.addEventListener("click",async e=>{
+  if(!e.target.closest("#estadoNube")) return;
+  if(Store.sb && Store.uid){ if(confirm("¿Cerrar sesión"+(Store.email?" de "+Store.email:"")+"? Tus datos se quedan en la nube y en este navegador.")){ await Store.sb.auth.signOut(); location.reload(); } }
+  else { Store.ldel("solo_local"); location.reload(); }
+});
+
+async function saveFile(name, text){
+  const blob=new Blob([text],{type:/\.csv$/.test(name)?"text/csv;charset=utf-8":/\.json$/.test(name)?"application/json":"text/html;charset=utf-8"});
+  try{
+    const a=document.createElement("a"); a.href=URL.createObjectURL(blob); a.download=name; document.body.appendChild(a); a.click();
+    setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },1500);
+    toast("Archivo descargado: "+name);
+  }catch(e){ mostrarTexto("Copia el contenido", text); }
+}
+function mostrarTexto(tit, txt){ $("#modalTit").textContent=tit; $("#modalTxt").value=txt; $("#modal").classList.add("ver"); }
+$("#modalCerrar").onclick=()=>$("#modal").classList.remove("ver");
+$("#modal").addEventListener("click",e=>{ if(e.target.id==="modal") $("#modal").classList.remove("ver"); });
+$("#modalCopiar").onclick=async()=>{ const t=$("#modalTxt"); t.select(); try{ await navigator.clipboard.writeText(t.value); toast("Copiado"); }catch(e){ try{ document.execCommand("copy"); toast("Copiado"); }catch(_){ toast("Selecciona el texto y cópialo"); } } };
+
+/* ---------- catálogo ---------- */
+let RAW=[], CAT={};
+function cargarCSV(text){
+  const rows=parseCSV(text); if(!rows.length) throw new Error("CSV vacío");
+  const head=rows[0].map(h=>h.trim().toLowerCase());
+  if(!head.includes("tabla")||!head.includes("clave")) throw new Error("Falta la columna tabla o clave");
+  RAW = rows.slice(1).map(r=>{ const o={}; COLS.forEach(c=>{ const i=head.indexOf(c); o[c]= i>=0 ? (r[i]??"").trim() : ""; }); return o; }).filter(o=>o.tabla && o.clave);
+  armarCat();
+}
+function armarCat(){
+  const by=t=>RAW.filter(r=>r.tabla===t).sort((a,b)=>num(a.orden)-num(b.orden));
+  const nums=r=>({...r, valor:num(r.valor), minimo:num(r.minimo), c1:num(r.c1), c2:num(r.c2), c3:num(r.c3), c4:num(r.c4), semanas:num(r.semanas), orden:num(r.orden), def:r.default==="1"});
+  CAT.tipologia=by("tipologia").map(nums);
+  CAT.servicio=by("servicio").map(nums);
+  CAT.factor=by("factor").map(nums);
+  CAT.rol=by("rol").map(nums);
+  CAT.pago=by("pago").map(nums);
+  CAT.paquete=by("paquete").map(r=>({...r, lista:(r.notas||"").split("|").map(s=>s.trim()).filter(Boolean)}));
+  CAT.condicion=by("condicion");
+  CAT.param={}; by("parametro").forEach(r=>CAT.param[r.clave]=num(r.valor));
+}
+const P = k => CAT.param[k] ?? 0;
+const factores = g => CAT.factor.filter(f=>f.grupo===g);
+function factor(g,clave){ const l=factores(g); return l.find(f=>f.clave===clave) || l.find(f=>f.def) || l[0] || {valor:1,c2:1,nombre:"—"}; }
+function escala(m2){ const l=factores("escala").slice().sort((a,b)=>a.c1-b.c1); return l.find(f=>m2<=f.c1) || l[l.length-1] || {valor:1,nombre:"—"}; }
+async function guardarCat(){ await Store.set("catalogo", toCSV(RAW,COLS)); }
+
+/* ---------- despacho ---------- */
+let DESP = {nombre:"", arquitecto:"", cedula:"", tel:"", correo:"", direccion:"", ciudad:"Guadalajara, Jalisco", prefijo:"COT", web:""};
+const DESP_CAMPOS=[["nombre","Nombre del despacho"],["arquitecto","Arquitecto responsable"],["cedula","Cédula profesional"],["tel","Teléfono"],["correo","Correo"],["web","Sitio web o Instagram"],["direccion","Dirección"],["ciudad","Ciudad para el documento"],["prefijo","Prefijo de folio"]];
+
+/* ---------- cotización ---------- */
+let Q=null, HIST=[];
+function nuevoFolio(){
+  const y=new Date().getFullYear(), pre=(DESP.prefijo||"COT").trim();
+  const usados=HIST.map(h=>h.folio).filter(f=>f&&f.startsWith(pre+"-"+y+"-")).map(f=>parseInt(f.split("-").pop(),10)||0);
+  return pre+"-"+y+"-"+String((usados.length?Math.max(...usados):0)+1).padStart(3,"0");
+}
+function cotNueva(){
+  const tip=CAT.tipologia.find(t=>t.def)||CAT.tipologia[0];
+  const q={ folio:nuevoFolio(), fecha:hoy(), estado:"borrador", creada:Date.now(),
+    cliente:{nombre:"",empresa:"",tel:"",correo:""},
+    proyecto:{nombre:"",ubicacion:"",tipologia:tip?tip.clave:"",m2:180,m2_terreno:250,niveles:2,acabado:"c2",
+      complejidad:(factores("complejidad").find(f=>f.def)||{}).clave||"media",
+      urgencia:(factores("urgencia").find(f=>f.def)||{}).clave||"normal",
+      metodo:"pct",costo_obra_manual:"",pct_manual:"",tarifa_m2:"",honorario_manual:""},
+    servicios:{}, ajustes:{descuento:0,km:0,visitas:0,casetas:0,iva:"1",retenciones:"0",desglose:"1",notas:""},
+    pagos:CAT.pago.map(p=>({nombre:p.nombre,pct:p.valor})),
+    incluye:CAT.condicion.filter(c=>c.grupo==="incluye").map(c=>c.nombre),
+    excluye:CAT.condicion.filter(c=>c.grupo==="excluye").map(c=>c.nombre),
+    condiciones:CAT.condicion.filter(c=>c.grupo==="condicion").map(c=>c.nombre)
+  };
+  CAT.servicio.forEach(s=>q.servicios[s.clave]={on:s.def, qty:s.c1||1, precio:""});
+  return q;
+}
+function srv(q,clave){ if(!q.servicios[clave]){ const s=CAT.servicio.find(x=>x.clave===clave); q.servicios[clave]={on:false,qty:(s&&s.c1)||1,precio:""}; } return q.servicios[clave]; }
+
+/* ---------- motor de cálculo ---------- */
+function calc(q){
+  const p=q.proyecto;
+  const t=CAT.tipologia.find(x=>x.clave===p.tipologia)||CAT.tipologia[0]||{valor:0,c1:0,c2:0,c3:0,c4:0,semanas:1,nombre:"—"};
+  const m2=num(p.m2), ter=num(p.m2_terreno);
+  const costoM2=t[p.acabado]||t.c2;
+  const costoObraAuto=m2*costoM2;
+  const costoObra=num(p.costo_obra_manual)>0?num(p.costo_obra_manual):costoObraAuto;
+  const fc=factor("complejidad",p.complejidad), fu=factor("urgencia",p.urgencia), fe=escala(m2);
+  const pctHon=num(p.pct_manual)>0?num(p.pct_manual):t.valor;
+  const tarifa=num(p.tarifa_m2)>0?num(p.tarifa_m2):t.c4;
+  let base=0;
+  if(p.metodo==="pct") base=costoObra*pctHon/100*fc.valor*fe.valor;
+  else if(p.metodo==="m2") base=m2*tarifa*fc.valor*fe.valor;
+  else base=num(p.honorario_manual);
+
+  const lineas=[];
+  let pctArq=0;
+  CAT.servicio.forEach(s=>{
+    const st=srv(q,s.clave); if(!st.on) return;
+    const qty=num(st.qty)||1; let imp=0, det="";
+    switch(s.unidad){
+      case "pct_hon": imp=base*s.valor/100; det=fmtN(s.valor,1)+"% del honorario de arquitectura"; pctArq+=s.valor; break;
+      case "m2": imp=Math.max(m2*s.valor*fc.valor, s.minimo); det=fmtN(m2)+" m² × "+fmt(s.valor)+(m2*s.valor*fc.valor<s.minimo?" (mínimo)":""); break;
+      case "m2_terreno": imp=Math.max(ter*s.valor*fc.valor, s.minimo); det=fmtN(ter)+" m² de terreno × "+fmt(s.valor)+(ter*s.valor*fc.valor<s.minimo?" (mínimo)":""); break;
+      case "pct_obra": imp=Math.max(costoObra*s.valor/100, s.minimo); det=fmtN(s.valor,2)+"% del costo de obra"+(costoObra*s.valor/100<s.minimo?" (mínimo)":""); break;
+      case "pieza": imp=s.valor*qty; det=fmtN(qty)+" pza × "+fmt(s.valor); break;
+      case "mes": imp=s.valor*qty; det=fmtN(qty)+" meses × "+fmt(s.valor); break;
+      case "hora": imp=s.valor*qty; det=fmtN(qty)+" h × "+fmt(s.valor); break;
+      default: imp=s.valor*qty; det=qty>1?fmtN(qty)+" × "+fmt(s.valor):"Precio fijo";
+    }
+    if(s.grupo!=="Obra") imp*=fu.valor;
+    let manual=false;
+    if(String(st.precio).trim()!=="" && num(st.precio)>=0){ imp=num(st.precio); manual=true; det="Precio ajustado a mano"; }
+    lineas.push({clave:s.clave,nombre:s.nombre,grupo:s.grupo,unidad:s.unidad,det,imp,qty,manual,semanas:s.semanas});
+  });
+  let subHon=lineas.reduce((a,l)=>a+l.imp,0);
+  let ajusteMin=0;
+  if(subHon>0 && subHon<P("honorario_minimo")){ ajusteMin=P("honorario_minimo")-subHon; lineas.push({clave:"_minimo",nombre:"Ajuste a honorario mínimo",grupo:"Ajustes",det:"Honorario mínimo por proyecto "+fmt(P("honorario_minimo")),imp:ajusteMin,semanas:0}); subHon+=ajusteMin; }
+  const a=q.ajustes;
+  const visitas=num(a.visitas), km=num(a.km);
+  const viaticos=km*2*visitas*P("tarifa_km")+visitas*P("viatico_visita")+num(a.casetas);
+  const subtotal=subHon+viaticos;
+  const descuento=subtotal*num(a.descuento)/100;
+  const baseImp=subtotal-descuento;
+  const iva=a.iva==="1"?baseImp*P("iva")/100:0;
+  const retIsr=a.retenciones==="1"?baseImp*P("ret_isr")/100:0;
+  const retIva=(a.retenciones==="1"&&a.iva==="1")?baseImp*P("ret_iva")/100:0;
+  const total=baseImp+iva-retIsr-retIva;
+
+  const honArq=lineas.filter(l=>l.unidad==="pct_hon").reduce((s,l)=>s+l.imp,0);
+  const otros=subHon-honArq;
+  const sumMix=CAT.rol.reduce((s,r)=>s+r.c1,0)||1;
+  const costoHora=CAT.rol.reduce((s,r)=>s+r.valor*r.c1,0)/sumMix;
+  const horas=m2*P("horas_m2")*fc.valor*(pctArq/100);
+  const costoInterno=horas*costoHora*(1+P("indirectos")/100);
+  const honArqNeto=honArq*(1-num(a.descuento)/100);
+  const margen=honArqNeto>0?(honArqNeto-costoInterno)/honArqNeto*100:null;
+
+  // cronograma
+  const escT=Math.pow(Math.max(m2,30)/150,0.35)*(t.semanas||1)*(fu.c2||1);
+  const dur=l=>l.semanas>0?Math.max(1,Math.round(l.semanas*escT*2)/2):0;
+  const fases=[]; let cur=0; const marks={};
+  const pre=lineas.filter(l=>l.grupo==="Estudios previos"&&dur(l));
+  let preEnd=0; pre.forEach(l=>{ fases.push({n:l.nombre,s:0,d:dur(l),alt:true}); preEnd=Math.max(preEnd,dur(l)); });
+  lineas.filter(l=>l.grupo==="Arquitectura"&&dur(l)).forEach(l=>{ const st=(l.clave==="programa")?0:Math.max(cur,l.clave==="anteproyecto"?preEnd:0); marks[l.clave]=st; fases.push({n:l.nombre,s:st,d:dur(l)}); cur=st+dur(l); marks[l.clave+"_fin"]=cur; });
+  const ejeIni=marks.ejecutivo ?? marks.anteproyecto ?? preEnd, ejeFin=marks.ejecutivo_fin ?? cur;
+  const anteIni=marks.anteproyecto ?? preEnd;
+  lineas.forEach(l=>{ const d=dur(l); if(!d) return;
+    if(l.grupo==="Visualización") fases.push({n:l.nombre,s:anteIni,d,alt:true});
+    else if(l.grupo==="Ingenierías"||l.grupo==="Interiorismo"||l.grupo==="Paisajismo") fases.push({n:l.nombre,s:ejeIni,d,alt:true});
+    else if(l.grupo==="Trámites"||l.grupo==="Costos") fases.push({n:l.nombre,s:ejeFin,d,alt:true});
+  });
+  const semanas=fases.reduce((m,f)=>Math.max(m,f.s+f.d),0);
+  const sumPagos=q.pagos.reduce((s,x)=>s+num(x.pct),0);
+  return {t,m2,ter,costoM2,costoObra,costoObraAuto,fc,fu,fe,pctHon,tarifa,base,lineas,subHon,ajusteMin,viaticos,subtotal,descuento,baseImp,iva,retIsr,retIva,total,honArq,otros,horas,costoHora,costoInterno,margen,fases,semanas,sumPagos,pctArq};
+}
+
+/* ---------- render del formulario ---------- */
+function llenarSelects(){
+  const tip=$("#f-tip"); const grupos={};
+  CAT.tipologia.forEach(t=>{ (grupos[t.grupo||"Otros"]=grupos[t.grupo||"Otros"]||[]).push(t); });
+  tip.innerHTML=Object.entries(grupos).map(([g,l])=>`<optgroup label="${esc(g)}">${l.map(t=>`<option value="${esc(t.clave)}">${esc(t.nombre)}</option>`).join("")}</optgroup>`).join("");
+  $("#segComp").innerHTML=factores("complejidad").map(f=>`<button data-v="${esc(f.clave)}" title="${esc(f.notas||"")}">${esc(f.nombre)}</button>`).join("");
+  $("#segUrg").innerHTML=factores("urgencia").map(f=>`<button data-v="${esc(f.clave)}">${esc(f.nombre)}</button>`).join("");
+  $("#paquetes").innerHTML='<span class="etq" style="margin-right:4px">Paquetes:</span>'+CAT.paquete.map(p=>`<button class="btn chico leve" data-paq="${esc(p.clave)}" type="button" title="${esc(p.lista.length)} servicios">${esc(p.nombre)}</button>`).join("")+'<button class="btn chico leve" data-paq="_ninguno" type="button">Quitar todo</button>';
+}
+function pintarForm(){
+  $$("[data-k]").forEach(el=>{ const v=getPath(Q,el.dataset.k); if(el.hasAttribute("data-lines")) el.value=(v||[]).join("\n"); else el.value=v??""; });
+  $$("[data-seg]").forEach(seg=>{ const v=String(getPath(Q,seg.dataset.seg)); seg.querySelectorAll("[data-v]").forEach(b=>b.setAttribute("aria-pressed", b.dataset.v===v ? "true":"false")); });
+  pintarServicios(); pintarPagos();
+}
+function pintarServicios(){
+  const grupos={};
+  CAT.servicio.forEach(s=>{ (grupos[s.grupo]=grupos[s.grupo]||[]).push(s); });
+  const needQty=u=>["pieza","mes","hora","lote"].includes(u);
+  const uLab={pct_hon:"% hon.",m2:"$/m²",m2_terreno:"$/m² ter.",pct_obra:"% obra",pieza:"pza",mes:"meses",hora:"horas",lote:"lote"};
+  $("#servicios").innerHTML=Object.entries(grupos).map(([g,l])=>`
+    <div class="grupo-serv"><h3>${esc(g)} <span class="num" data-gtot="${esc(g)}"></span></h3>
+    <div class="serv serv-cab"><div></div><div>Servicio</div><div>Cantidad</div><div>Precio a mano</div><div>Importe</div></div>
+    ${l.map(s=>{ const st=srv(Q,s.clave); return `
+      <div class="serv ${st.on?"":"off"}" data-row="${esc(s.clave)}">
+        <input type="checkbox" data-srv-on="${esc(s.clave)}" ${st.on?"checked":""} aria-label="Incluir ${esc(s.nombre)}">
+        <div><div class="nom">${esc(s.nombre)}</div><div class="det" data-det="${esc(s.clave)}"></div></div>
+        <div class="q">${needQty(s.unidad)?`<input type="number" min="0" step="1" value="${esc(st.qty)}" data-srv-qty="${esc(s.clave)}" aria-label="Cantidad (${uLab[s.unidad]})" title="${uLab[s.unidad]}">`:`<span class="ayuda">${uLab[s.unidad]||""}</span>`}</div>
+        <div class="ov"><input type="number" min="0" step="100" placeholder="Catálogo" value="${esc(st.precio)}" data-srv-precio="${esc(s.clave)}" aria-label="Precio a mano"></div>
+        <div class="imp num" data-imp="${esc(s.clave)}">—</div>
+      </div>`; }).join("")}
+    </div>`).join("");
+}
+function pintarPagos(){
+  $("#pagosEd").innerHTML=Q.pagos.map((p,i)=>`<div class="fila">
+    <input type="text" value="${esc(p.nombre)}" data-pago-n="${i}" aria-label="Concepto del pago ${i+1}">
+    <input type="number" min="0" max="100" step="1" value="${esc(p.pct)}" data-pago-p="${i}" aria-label="Porcentaje">
+    <span class="num mto ayuda" data-pago-m="${i}" style="text-align:right"></span>
+    <button class="icono" data-pago-x="${i}" type="button" aria-label="Quitar pago">✕</button></div>`).join("");
+}
+function cronoHTML(r){
+  if(!r.fases.length) return '<p class="ayuda">Activa servicios de arquitectura para ver el cronograma.</p>';
+  const S=Math.max(1,Math.ceil(r.semanas));
+  const ticks=[0,Math.round(S/4),Math.round(S/2),Math.round(3*S/4),S];
+  return `<div class="eje"><span></span><div style="display:flex;justify-content:space-between">${ticks.map(t=>`<span>sem ${t}</span>`).join("")}</div><span></span></div>`+
+    r.fases.map(f=>`<div class="fila"><span>${esc(f.n)}</span><div class="barra" style="--sem:${S}"><i class="${f.alt?"alt":""}" style="left:${f.s/S*100}%;width:${f.d/S*100}%"></i></div><span class="num ayuda">${fmtN(f.d,1)} sem</span></div>`).join("");
+}
+
+/* ---------- recalcular y pintar resumen ---------- */
+let R=null;
+function recalc(){
+  R=calc(Q);
+  const r=R;
+  // ayudas
+  $("#ayCobra").textContent = num(Q.proyecto.costo_obra_manual)>0 ? "Calculado sería "+fmt(r.costoObraAuto) : fmtN(r.m2)+" m² × "+fmt(r.costoM2)+"/m² = "+fmt(r.costoObraAuto);
+  $("#f-cobra").placeholder = fmt(r.costoObraAuto);
+  $("#f-pct").placeholder = fmtN(r.t.valor,2)+"%";
+  $("#ayPct").textContent = "Catálogo: "+fmtN(r.t.valor,2)+"% para "+r.t.nombre.toLowerCase();
+  $("#f-tm2").placeholder = fmt(r.t.c4);
+  $("#ayTm2").textContent = "Catálogo: "+fmt(r.t.c4)+"/m²";
+  const m=Q.proyecto.metodo;
+  $("#c-pct").style.display = m==="pct"?"":"none";
+  $("#c-m2").style.display = m==="m2"?"":"none";
+  $("#c-man").style.display = m==="manual"?"":"none";
+  $("#ayFactores").textContent = m==="manual" ? "Monto fijo: no se aplican factores al honorario de arquitectura." :
+    "Factores aplicados: complejidad "+r.fc.nombre.toLowerCase()+" ×"+fmtN(r.fc.valor,2)+", escala "+r.fe.nombre+" ×"+fmtN(r.fe.valor,2)+". Honorario de arquitectura completo: "+fmt(r.base)+".";
+  // líneas de servicio
+  CAT.servicio.forEach(s=>{
+    const l=r.lineas.find(x=>x.clave===s.clave), imp=$(`[data-imp="${CSS.escape(s.clave)}"]`), det=$(`[data-det="${CSS.escape(s.clave)}"]`);
+    if(imp) imp.textContent = l ? fmt(l.imp) : "—";
+    if(det) det.textContent = l ? l.det : (s.unidad==="pct_hon"?fmtN(s.valor,1)+"% del honorario":fmt(s.valor)+(s.minimo?" · mín. "+fmt(s.minimo):""));
+  });
+  $$("[data-gtot]").forEach(el=>{ const g=el.dataset.gtot; const t=r.lineas.filter(l=>l.grupo===g).reduce((a,l)=>a+l.imp,0); el.textContent=t?fmt(t):""; });
+  Q.pagos.forEach((p,i)=>{ const el=$(`[data-pago-m="${i}"]`); if(el) el.textContent=fmt(r.total*num(p.pct)/100); });
+  $("#cronoForm").innerHTML=cronoHTML(r);
+  pintarPie(r);
+  $("#totMovil").textContent=fmt(r.total);
+  autosave();
+}
+function pintarPie(r){
+  const est=["borrador","enviada","aceptada","rechazada"];
+  const avisos=[];
+  if(Math.abs(r.sumPagos-100)>0.01) avisos.push(`Los pagos suman ${fmtN(r.sumPagos,1)}%, deben sumar 100%.`);
+  if(r.margen!==null && r.margen<P("margen_objetivo")) avisos.push(`Margen estimado de ${fmtN(r.margen,0)}% en arquitectura, debajo de tu objetivo de ${fmtN(P("margen_objetivo"))}%.`);
+  if(r.pctArq>0 && Math.abs(r.pctArq-100)>0.01) avisos.push(`Se cobra ${fmtN(r.pctArq)}% del honorario de arquitectura porque hay fases desactivadas.`);
+  if(!r.m2) avisos.push("Escribe los m² de construcción.");
+  $("#pie").innerHTML=`
+    <div class="fila2"><div class="celda"><span class="k">Proyecto</span><span class="v">${esc(Q.proyecto.nombre||r.t.nombre)}</span></div><div class="celda"><span class="k">Cliente</span><span class="v">${esc(Q.cliente.nombre||"Sin nombre")}</span></div></div>
+    <div class="fila2"><div class="celda"><span class="k">Folio</span><span class="v num">${esc(Q.folio)}</span></div><div class="celda"><span class="k">Estado</span>
+      <select id="pieEstado" style="min-height:28px;padding:2px 6px;margin-top:2px">${est.map(e=>`<option ${Q.estado===e?"selected":""}>${e}</option>`).join("")}</select></div></div>
+    <div class="total"><span class="k">Total de la cotización${Q.ajustes.iva==="1"?" con IVA":""}</span><span class="v num">${fmt(r.total)}</span>
+      <div class="cota-wrap"><div class="cota-linea"><i>${fmtN(r.m2)} m² · ${fmt(r.m2?r.subHon/r.m2:0)} por m² en honorarios</i></div></div></div>
+    <table>
+      <tr><td>Costo de obra estimado</td><td>${fmt(r.costoObra)}</td></tr>
+      <tr><td>Honorario de arquitectura</td><td>${fmt(r.honArq)}</td></tr>
+      <tr><td>Ingenierías y otros servicios</td><td>${fmt(r.otros)}</td></tr>
+      ${r.viaticos?`<tr><td>Viáticos</td><td>${fmt(r.viaticos)}</td></tr>`:""}
+      ${r.descuento?`<tr><td>Descuento ${fmtN(num(Q.ajustes.descuento),1)}%</td><td>−${fmt(r.descuento)}</td></tr>`:""}
+      <tr class="fuerte"><td>Subtotal</td><td>${fmt(r.baseImp)}</td></tr>
+      ${r.iva?`<tr><td>IVA ${fmtN(P("iva"))}%</td><td>${fmt(r.iva)}</td></tr>`:""}
+      ${r.retIsr?`<tr><td>Retención ISR</td><td>−${fmt(r.retIsr)}</td></tr>`:""}
+      ${r.retIva?`<tr><td>Retención IVA</td><td>−${fmt(r.retIva)}</td></tr>`:""}
+    </table>
+    <div class="indic">
+      <div><span class="k">Honorarios sobre obra</span><b class="num">${r.costoObra?fmtN(r.subHon/r.costoObra*100,1):0}%</b></div>
+      <div><span class="k">Tiempo de proyecto</span><b class="num">${fmtN(r.semanas,1)} semanas</b></div>
+      <div><span class="k">Horas estimadas</span><b class="num">${fmtN(r.horas)} h</b></div>
+      <div><span class="k">Margen en arquitectura</span><b class="num" style="color:${r.margen!==null&&r.margen<P("margen_objetivo")?"var(--alerta)":"var(--ok)"}">${r.margen===null?"—":fmtN(r.margen)+"%"}</b></div>
+    </div>
+    ${avisos.map(a=>`<div class="aviso">${esc(a)}</div>`).join("")}
+    <div class="acciones">
+      <button class="btn prim" id="pieGuardar" type="button">Guardar</button>
+      <button class="btn" data-ir="doc" type="button">Ver documento</button>
+      <button class="btn leve" id="pieNueva" type="button">Nueva</button>
+      <button class="btn leve" id="pieDup" type="button">Duplicar</button>
+    </div>`;
+}
+
+/* ---------- eventos del formulario ---------- */
+document.addEventListener("input", e=>{
+  const el=e.target;
+  if(el.closest("#v-cotizar")){
+    if(el.dataset.k){
+      let v = el.hasAttribute("data-lines") ? el.value.split("\n").map(s=>s.trim()).filter(Boolean) : el.value;
+      setPath(Q, el.dataset.k, v);
+      if(el.dataset.k==="proyecto.tipologia"){ recalc(); return; }
+      recalc(); return;
+    }
+    if(el.dataset.srvQty){ srv(Q,el.dataset.srvQty).qty=el.value; recalc(); return; }
+    if(el.dataset.srvPrecio){ srv(Q,el.dataset.srvPrecio).precio=el.value; recalc(); return; }
+    if(el.dataset.pagoN!==undefined){ Q.pagos[+el.dataset.pagoN].nombre=el.value; autosave(); return; }
+    if(el.dataset.pagoP!==undefined){ Q.pagos[+el.dataset.pagoP].pct=el.value; recalc(); return; }
+  }
+});
+document.addEventListener("change", e=>{
+  const el=e.target;
+  if(el.dataset.srvOn){ const st=srv(Q,el.dataset.srvOn); st.on=el.checked; el.closest(".serv").classList.toggle("off",!el.checked); recalc(); }
+  if(el.id==="pieEstado"){ Q.estado=el.value; guardarCot(true); }
+});
+document.addEventListener("click", async e=>{
+  const b=e.target.closest("button,[data-ir]"); if(!b) return;
+  const seg=b.closest("[data-seg]");
+  if(seg && b.dataset.v!==undefined){ setPath(Q,seg.dataset.seg,b.dataset.v); seg.querySelectorAll("[data-v]").forEach(x=>x.setAttribute("aria-pressed",x===b?"true":"false")); recalc(); return; }
+  if(b.dataset.paq){ aplicarPaquete(b.dataset.paq); return; }
+  if(b.dataset.pagoX!==undefined){ Q.pagos.splice(+b.dataset.pagoX,1); pintarPagos(); recalc(); return; }
+  if(b.dataset.ir){ ir(b.dataset.ir); return; }
+  if(b.dataset.vista){ ir(b.dataset.vista); return; }
+  switch(b.id){
+    case "addPago": Q.pagos.push({nombre:"Nuevo pago",pct:0}); pintarPagos(); recalc(); break;
+    case "pieGuardar": await guardarCot(); break;
+    case "pieNueva": await guardarCot(true); Q=cotNueva(); pintarForm(); recalc(); toast("Nueva cotización "+Q.folio); window.scrollTo({top:0}); break;
+    case "pieDup": await guardarCot(true); duplicar(Q); break;
+    case "irPie": $("#pie").scrollIntoView({behavior:"smooth"}); break;
+  }
+});
+function aplicarPaquete(clave){
+  if(clave==="_ninguno"){ Object.values(Q.servicios).forEach(s=>s.on=false); }
+  else { const p=CAT.paquete.find(x=>x.clave===clave); if(!p) return; Object.keys(Q.servicios).forEach(k=>Q.servicios[k].on=false); p.lista.forEach(k=>srv(Q,k).on=true); toast("Paquete "+p.nombre+" aplicado"); }
+  pintarServicios(); recalc();
+}
+function duplicar(src){
+  const c=clone(src); c.folio=nuevoFolio(); c.fecha=hoy(); c.estado="borrador"; c.creada=Date.now();
+  Q=c; pintarForm(); recalc(); toast("Copia creada como "+Q.folio);
+}
+
+/* ---------- guardar / historial ---------- */
+let _as;
+function autosave(){ clearTimeout(_as); _as=setTimeout(()=>{ Store.lset("actual",Q); },400); }
+async function guardarCot(silencioso){
+  if(!R) R=calc(Q);
+  Q.resumen={total:R.total,subtotal:R.baseImp,m2:R.m2,tipologia:R.t.nombre,semanas:R.semanas};
+  Q.actualizada=Date.now();
+  await Store.set("q_"+Q.folio, Q, Q.actualizada);
+  const i=HIST.findIndex(h=>h.folio===Q.folio); if(i>=0) HIST[i]=clone(Q); else HIST.push(clone(Q));
+  Store.lset("actual",Q);
+  if(!silencioso) toast("Cotización "+Q.folio+" guardada");
+}
+function pintarHist(){
+  const b=$("#busca").value.trim().toLowerCase(), fe=$("#filtroEstado").value;
+  const lista=HIST.slice().sort((a,b)=>(b.actualizada||b.creada||0)-(a.actualizada||a.creada||0))
+    .filter(h=>(!fe||h.estado===fe) && (!b || [h.folio,h.cliente?.nombre,h.cliente?.empresa,h.proyecto?.nombre].join(" ").toLowerCase().includes(b)));
+  const acept=HIST.filter(h=>h.estado==="aceptada"), decid=HIST.filter(h=>h.estado==="aceptada"||h.estado==="rechazada");
+  const montoAcept=acept.reduce((s,h)=>s+(h.resumen?.total||0),0);
+  const m2Acept=acept.reduce((s,h)=>s+(h.resumen?.m2||0),0);
+  $("#stats").innerHTML=`
+    <div><b>${HIST.length}</b><span>Cotizaciones</span></div>
+    <div><b>${decid.length?fmtN(acept.length/decid.length*100):0}%</b><span>Tasa de cierre (aceptadas vs decididas)</span></div>
+    <div><b>${fmt(montoAcept)}</b><span>Monto aceptado</span></div>
+    <div><b>${m2Acept?fmt(acept.reduce((s,h)=>s+(h.resumen?.subtotal||0),0)/m2Acept):"—"}</b><span>Precio promedio cerrado por m²</span></div>`;
+  if(!lista.length){ $("#tablaHist").innerHTML=`<tr><td class="vacio">${HIST.length?"Ninguna cotización coincide con el filtro.":"Aún no guardas cotizaciones. Arma una en Cotizar y presiona Guardar."}</td></tr>`; return; }
+  $("#tablaHist").innerHTML=`<thead><tr><th>Folio</th><th>Fecha</th><th>Cliente</th><th>Proyecto</th><th class="r">m²</th><th class="r">Total</th><th>Estado</th><th></th></tr></thead><tbody>`+
+    lista.map(h=>`<tr><td class="num">${esc(h.folio)}</td><td class="num">${esc(h.fecha)}</td><td>${esc(h.cliente?.nombre||"—")}</td><td>${esc(h.proyecto?.nombre||h.resumen?.tipologia||"—")}</td><td class="r num">${fmtN(h.resumen?.m2||0)}</td><td class="r num">${fmt(h.resumen?.total||0)}</td>
+      <td><select data-h-est="${esc(h.folio)}" aria-label="Estado">${["borrador","enviada","aceptada","rechazada"].map(e=>`<option ${h.estado===e?"selected":""}>${e}</option>`).join("")}</select></td>
+      <td style="white-space:nowrap"><button class="btn chico" data-h-abrir="${esc(h.folio)}" type="button">Abrir</button> <button class="btn chico leve" data-h-dup="${esc(h.folio)}" type="button">Duplicar</button> <button class="icono" data-h-del="${esc(h.folio)}" type="button" aria-label="Eliminar">✕</button></td></tr>`).join("")+"</tbody>";
+}
+$("#busca").addEventListener("input",pintarHist);
+$("#filtroEstado").addEventListener("change",pintarHist);
+$("#tablaHist").addEventListener("change",async e=>{ const f=e.target.dataset.hEst; if(!f) return; const h=HIST.find(x=>x.folio===f); h.estado=e.target.value; h.actualizada=Date.now(); await Store.set("q_"+f,h,h.actualizada); if(Q.folio===f){ Q.estado=h.estado; } pintarHist(); toast(f+" marcada como "+h.estado); });
+$("#tablaHist").addEventListener("click",async e=>{
+  const b=e.target.closest("button"); if(!b) return;
+  if(b.dataset.hAbrir){ Q=clone(HIST.find(h=>h.folio===b.dataset.hAbrir)); pintarForm(); recalc(); ir("cotizar"); }
+  if(b.dataset.hDup){ duplicar(HIST.find(h=>h.folio===b.dataset.hDup)); ir("cotizar"); }
+  if(b.dataset.hDel){ const f=b.dataset.hDel; if(!confirm("¿Eliminar la cotización "+f+"? No se puede deshacer.")) return; await Store.del("q_"+f); HIST=HIST.filter(h=>h.folio!==f); pintarHist(); toast(f+" eliminada"); }
+});
+$("#expHistCsv").onclick=()=>{
+  const cols=["folio","fecha","estado","cliente","empresa","telefono","correo","proyecto","ubicacion","tipologia","m2","subtotal","total","semanas"];
+  const rows=HIST.map(h=>({folio:h.folio,fecha:h.fecha,estado:h.estado,cliente:h.cliente?.nombre,empresa:h.cliente?.empresa,telefono:h.cliente?.tel,correo:h.cliente?.correo,proyecto:h.proyecto?.nombre,ubicacion:h.proyecto?.ubicacion,tipologia:h.resumen?.tipologia,m2:h.resumen?.m2,subtotal:Math.round(h.resumen?.subtotal||0),total:Math.round(h.resumen?.total||0),semanas:h.resumen?.semanas}));
+  saveFile("historial_cotizaciones_"+hoy()+".csv","\uFEFF"+toCSV(rows,cols));
+};
+$("#expRespaldo").onclick=()=>saveFile("respaldo_cotizador_"+hoy()+".json", JSON.stringify({version:1,fecha:hoy(),despacho:DESP,catalogo:toCSV(RAW,COLS),cotizaciones:HIST},null,1));
+$("#impRespaldo").onchange=async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  try{
+    const d=JSON.parse(await f.text());
+    if(!d.cotizaciones) throw new Error("No es un respaldo del cotizador");
+    if(d.catalogo){ cargarCSV(d.catalogo); await guardarCat(); }
+    if(d.despacho){ DESP={...DESP,...d.despacho}; await Store.set("despacho",DESP); }
+    for(const q of d.cotizaciones){ q.actualizada=Date.now(); await Store.set("q_"+q.folio,q,q.actualizada); const i=HIST.findIndex(h=>h.folio===q.folio); if(i>=0) HIST[i]=q; else HIST.push(q); }
+    llenarSelects(); pintarForm(); recalc(); pintarHist(); pintarDesp();
+    toast(d.cotizaciones.length+" cotizaciones restauradas");
+  }catch(err){ toast("No se pudo leer el archivo: "+err.message); }
+  e.target.value="";
+};
+
+/* ---------- documento ---------- */
+function docHTML(){
+  const r=calc(Q), d=DESP, desg=Q.ajustes.desglose==="1";
+  const venc=new Date(Q.fecha+"T12:00:00"); venc.setDate(venc.getDate()+P("vigencia_dias"));
+  const fechaL=s=>new Date(s+"T12:00:00").toLocaleDateString("es-MX",{day:"numeric",month:"long",year:"numeric"});
+  const grupos={}; r.lineas.forEach(l=>{ (grupos[l.grupo]=grupos[l.grupo]||[]).push(l); });
+  const filas=Object.entries(grupos).map(([g,l])=>{
+    const tg=l.reduce((s,x)=>s+x.imp,0);
+    if(!desg) return `<tr><td>${esc(g)}<div style="color:#666;font-size:12px">${l.map(x=>esc(x.nombre)).join("; ")}</div></td><td class="r">${fmt2(tg)}</td></tr>`;
+    return `<tr class="grp"><td>${esc(g)}</td><td class="r">${fmt2(tg)}</td></tr>`+l.map(x=>`<tr><td>${esc(x.nombre)}${x.unidad&&x.unidad!=="pct_hon"&&!x.manual?`<div style="color:#777;font-size:12px">${esc(x.det)}</div>`:""}</td><td class="r">${fmt2(x.imp)}</td></tr>`).join("");
+  }).join("") + (r.viaticos?`<tr class="grp"><td>Viáticos (${fmtN(num(Q.ajustes.visitas))} visitas)</td><td class="r">${fmt2(r.viaticos)}</td></tr>`:"");
+  const contacto=[d.tel,d.correo,d.web].filter(Boolean).map(esc).join(" &nbsp;|&nbsp; ");
+  return `
+  <div class="enc">
+    <div class="desp">${esc(d.nombre||"Tu despacho de arquitectura")}<small>${esc(d.arquitecto||"")}${d.cedula?" &nbsp;|&nbsp; Céd. prof. "+esc(d.cedula):""}${contacto?"<br>"+contacto:""}${d.direccion?"<br>"+esc(d.direccion):""}</small></div>
+    <div class="folio">Cotización<b>${esc(Q.folio)}</b>${esc(d.ciudad||"")}, ${fechaL(Q.fecha)}<br>Vigente hasta ${fechaL(venc.getFullYear()+"-"+String(venc.getMonth()+1).padStart(2,"0")+"-"+String(venc.getDate()).padStart(2,"0"))}</div>
+  </div>
+  <div class="datos">
+    <div><span>Cliente:</span> ${esc(Q.cliente.nombre||"—")}${Q.cliente.empresa?" ("+esc(Q.cliente.empresa)+")":""}</div>
+    <div><span>Proyecto:</span> ${esc(Q.proyecto.nombre||r.t.nombre)}</div>
+    <div><span>Contacto:</span> ${esc([Q.cliente.tel,Q.cliente.correo].filter(Boolean).join(" / ")||"—")}</div>
+    <div><span>Ubicación:</span> ${esc(Q.proyecto.ubicacion||"—")}</div>
+    <div><span>Tipología:</span> ${esc(r.t.nombre)}, acabado ${({c1:"económico",c2:"medio",c3:"premium"})[Q.proyecto.acabado]}</div>
+    <div><span>Superficie:</span> ${fmtN(r.m2)} m² de construcción${r.ter?", "+fmtN(r.ter)+" m² de terreno":""}${num(Q.proyecto.niveles)?", "+fmtN(num(Q.proyecto.niveles))+" niveles":""}</div>
+  </div>
+  <h2>Servicios y honorarios</h2>
+  <table><thead><tr><th>Concepto</th><th class="r">Importe</th></tr></thead><tbody>${filas||'<tr><td colspan="2">Sin servicios seleccionados</td></tr>'}</tbody></table>
+  <table class="tot">
+    ${r.descuento?`<tr><td>Subtotal</td><td class="r">${fmt2(r.subtotal)}</td></tr><tr><td>Descuento ${fmtN(num(Q.ajustes.descuento),1)}%</td><td class="r">−${fmt2(r.descuento)}</td></tr>`:""}
+    <tr><td>${r.descuento?"Subtotal con descuento":"Subtotal"}</td><td class="r">${fmt2(r.baseImp)}</td></tr>
+    ${r.iva?`<tr><td>IVA ${fmtN(P("iva"))}%</td><td class="r">${fmt2(r.iva)}</td></tr>`:""}
+    ${r.retIsr?`<tr><td>Retención ISR ${fmtN(P("ret_isr"),2)}%</td><td class="r">−${fmt2(r.retIsr)}</td></tr>`:""}
+    ${r.retIva?`<tr><td>Retención IVA</td><td class="r">−${fmt2(r.retIva)}</td></tr>`:""}
+    <tr class="g"><td>Total</td><td class="r">${fmt2(r.total)}</td></tr>
+  </table>
+  <div class="letra">(${numLetras(Math.round(r.total*100)/100)})</div>
+  <p style="font-size:12px;color:#555">Costo de obra estimado como referencia: ${fmt(r.costoObra)} (${fmt(r.costoObra/(r.m2||1))}/m²). No forma parte de esta cotización.</p>
+  <h2>Forma de pago</h2>
+  <table><thead><tr><th>Concepto</th><th class="r">%</th><th class="r">Importe</th></tr></thead><tbody>
+    ${Q.pagos.map(p=>`<tr><td>${esc(p.nombre)}</td><td class="r">${fmtN(num(p.pct),1)}%</td><td class="r">${fmt2(r.total*num(p.pct)/100)}</td></tr>`).join("")}
+  </tbody></table>
+  <h2>Cronograma estimado: ${fmtN(r.semanas,1)} semanas</h2>
+  <div class="crono">${cronoHTML(r)}</div>
+  <div class="dos">
+    <div><h2>Incluye</h2><ul>${(Q.incluye||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+    <div><h2>No incluye</h2><ul>${(Q.excluye||[]).map(x=>`<li>${esc(x)}</li>`).join("")}</ul></div>
+  </div>
+  <h2>Condiciones</h2>
+  <ul>${(Q.condiciones||[]).map(x=>`<li>${esc(x)}</li>`).join("")}<li>Esta cotización tiene una vigencia de ${fmtN(P("vigencia_dias"))} días naturales.</li></ul>
+  ${Q.ajustes.notas?`<h2>Notas</h2><p>${esc(Q.ajustes.notas).replace(/\n/g,"<br>")}</p>`:""}
+  <div class="firmas"><div>${esc(d.arquitecto||"Arquitecto responsable")}<br><span style="color:#666">${esc(d.nombre||"")}</span></div><div>${esc(Q.cliente.nombre||"Cliente")}<br><span style="color:#666">Acepto la propuesta</span></div></div>
+  <div class="pie-doc">Folio ${esc(Q.folio)}. Los tiempos son estimados y dependen de la entrega oportuna de información y aprobaciones por parte del cliente.</div>`;
+}
+function pintarDoc(){ $("#doc").innerHTML=docHTML(); }
+$("#btnPrint").onclick=()=>window.print();
+$("#btnDocHtml").onclick=()=>{
+  const css=[...document.querySelectorAll("style")].map(s=>s.textContent).join("\n");
+  const html=`<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Cotización ${esc(Q.folio)}</title><link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&display=swap" rel="stylesheet"><style>${css} body{background:#fff} .doc{border:0;box-shadow:none}</style></head><body><div class="doc">${docHTML()}</div></body></html>`;
+  saveFile("Cotizacion_"+Q.folio+".html", html);
+};
+$("#btnWhats").onclick=()=>{
+  const r=calc(Q), d=DESP;
+  const lineasG={}; r.lineas.forEach(l=>lineasG[l.grupo]=(lineasG[l.grupo]||0)+l.imp);
+  const t=[`*Cotización ${Q.folio}*`, `${Q.proyecto.nombre||r.t.nombre}${Q.proyecto.ubicacion?" ("+Q.proyecto.ubicacion+")":""}`, `${fmtN(r.m2)} m² de construcción`, "",
+    ...Object.entries(lineasG).map(([g,v])=>`• ${g}: ${fmt(v)}`),
+    r.viaticos?`• Viáticos: ${fmt(r.viaticos)}`:"", r.descuento?`• Descuento: −${fmt(r.descuento)}`:"", "",
+    `Subtotal: ${fmt(r.baseImp)}`, r.iva?`IVA: ${fmt(r.iva)}`:"", `*Total: ${fmt(r.total)}*`, "",
+    `Tiempo estimado: ${fmtN(r.semanas,1)} semanas`, `Pagos: ${Q.pagos.map(p=>fmtN(num(p.pct))+"% "+p.nombre.toLowerCase()).join(", ")}`, "",
+    `Vigencia: ${fmtN(P("vigencia_dias"))} días.`, d.arquitecto||d.nombre?`${d.arquitecto||""}${d.nombre?" | "+d.nombre:""}`:""].filter((x,i,a)=>!(x===""&&a[i-1]===""));
+  mostrarTexto("Texto para WhatsApp", t.join("\n").trim());
+};
+
+/* ---------- catálogo editable ---------- */
+const CAT_TABS=[
+  {t:"tipologia",n:"Tipologías",a:"% de honorarios sobre obra, costo paramétrico de obra por acabado y tarifa directa por m². El factor de tiempo alarga o acorta el cronograma.",
+    c:[["clave","Clave"],["nombre","Nombre","largo"],["grupo","Grupo"],["valor","% honorarios","n"],["c1","Obra económico $/m²","n"],["c2","Obra medio $/m²","n"],["c3","Obra premium $/m²","n"],["c4","Tarifa directa $/m²","n"],["semanas","Factor de tiempo","n"],["default","Por defecto (1)"]]},
+  {t:"servicio",n:"Servicios",a:"Unidad: pct_hon (% del honorario de arquitectura), m2, m2_terreno, pct_obra, lote, pieza, mes, hora. Cantidad sugerida aplica a lote, pieza, mes y hora.",
+    c:[["clave","Clave"],["nombre","Servicio","largo"],["grupo","Grupo"],["unidad","Unidad","sel:pct_hon,m2,m2_terreno,pct_obra,lote,pieza,mes,hora"],["valor","Precio o %","n"],["minimo","Mínimo $","n"],["c1","Cantidad sugerida","n"],["semanas","Semanas base","n"],["orden","Orden","n"],["default","Incluido por defecto (1)"]]},
+  {t:"factor",n:"Factores",a:"Complejidad y urgencia multiplican precios. En escala, el factor aplica hasta los m² indicados. En urgencia, el factor de tiempo acorta el cronograma.",
+    c:[["grupo","Grupo","sel:complejidad,urgencia,escala"],["clave","Clave"],["nombre","Nombre"],["valor","Multiplicador","n"],["c1","Hasta m² (escala)","n"],["c2","Factor de tiempo (urgencia)","n"],["default","Por defecto (1)"],["notas","Descripción","largo"]]},
+  {t:"parametro",n:"Parámetros",a:"Valores generales: impuestos, mínimos, viáticos y supuestos para estimar tu costo interno.",
+    c:[["clave","Clave"],["nombre","Parámetro","largo"],["valor","Valor","n"],["notas","Notas","largo"]]},
+  {t:"rol",n:"Equipo",a:"Costo por hora de cada rol y qué porcentaje de las horas del proyecto hace. Se usa para estimar el margen.",
+    c:[["clave","Clave"],["nombre","Rol","largo"],["valor","Costo $/hora","n"],["c1","% de horas","n"]]},
+  {t:"pago",n:"Pagos",a:"Esquema de pagos que se carga en cada cotización nueva. Deben sumar 100%.",
+    c:[["clave","Clave"],["nombre","Concepto","largo"],["valor","%","n"],["orden","Orden","n"]]},
+  {t:"paquete",n:"Paquetes",a:"Claves de servicio separadas por | que activa cada paquete.",
+    c:[["clave","Clave"],["nombre","Nombre"],["notas","Servicios (claves separadas por |)","largo"],["orden","Orden","n"]]},
+  {t:"condicion",n:"Condiciones",a:"Textos que se cargan en cada cotización nueva: incluye, no incluye y condiciones generales.",
+    c:[["clave","Clave"],["grupo","Tipo","sel:incluye,excluye,condicion"],["nombre","Texto","largo"],["orden","Orden","n"]]}
+];
+let catTab="tipologia";
+function pintarCat(){
+  $("#catTabs").innerHTML=CAT_TABS.map(x=>`<button role="tab" aria-selected="${x.t===catTab}" data-cat="${x.t}" type="button">${x.n} <span class="ayuda">${RAW.filter(r=>r.tabla===x.t).length}</span></button>`).join("");
+  const def=CAT_TABS.find(x=>x.t===catTab);
+  $("#catAyuda").textContent=def.a;
+  const filas=RAW.map((r,i)=>({r,i})).filter(o=>o.r.tabla===catTab).sort((a,b)=>num(a.r.orden)-num(b.r.orden));
+  $("#tablaCat").innerHTML=`<thead><tr>${def.c.map(c=>`<th>${esc(c[1])}</th>`).join("")}<th></th></tr></thead><tbody>`+
+    filas.map(({r,i})=>`<tr>${def.c.map(([k,_,tipo])=>{
+      if(tipo&&tipo.startsWith("sel:")) return `<td><select data-ci="${i}" data-ck="${k}">${tipo.slice(4).split(",").map(o=>`<option ${r[k]===o?"selected":""}>${o}</option>`).join("")}</select></td>`;
+      return `<td><input type="${tipo==="n"?"number":"text"}" ${tipo==="n"?'step="any"':""} class="${tipo==="largo"?"largo":""}" value="${esc(r[k])}" data-ci="${i}" data-ck="${k}" aria-label="${esc(_)}"></td>`;
+    }).join("")}<td><button class="icono" data-cdel="${i}" type="button" aria-label="Eliminar fila">✕</button></td></tr>`).join("")+"</tbody>";
+}
+let _cs;
+$("#tablaCat").addEventListener("input",e=>{
+  const el=e.target; if(el.dataset.ci===undefined) return;
+  RAW[+el.dataset.ci][el.dataset.ck]=el.value;
+  clearTimeout(_cs); _cs=setTimeout(async()=>{ armarCat(); llenarSelects(); pintarForm(); recalc(); await guardarCat(); },500);
+});
+$("#tablaCat").addEventListener("change",e=>{ if(e.target.tagName==="SELECT") e.target.dispatchEvent(new Event("input",{bubbles:true})); });
+$("#tablaCat").addEventListener("click",async e=>{
+  const b=e.target.closest("[data-cdel]"); if(!b) return;
+  const r=RAW[+b.dataset.cdel]; if(!confirm("¿Eliminar "+(r.nombre||r.clave)+" del catálogo?")) return;
+  RAW.splice(+b.dataset.cdel,1); armarCat(); llenarSelects(); pintarForm(); recalc(); pintarCat(); await guardarCat();
+});
+$("#catTabs").addEventListener("click",e=>{ const b=e.target.closest("[data-cat]"); if(!b) return; catTab=b.dataset.cat; pintarCat(); });
+$("#addFila").onclick=async()=>{
+  const n=RAW.filter(r=>r.tabla===catTab).length+1;
+  const o={}; COLS.forEach(c=>o[c]=""); o.tabla=catTab; o.clave=catTab+"_"+Date.now().toString(36); o.nombre="Nuevo"; o.orden=String(n*10+1000);
+  if(catTab==="servicio"){ o.grupo="Otros"; o.unidad="lote"; o.valor="0"; o.c1="1"; }
+  if(catTab==="factor"){ o.grupo="complejidad"; o.valor="1"; }
+  if(catTab==="condicion"){ o.grupo="condicion"; }
+  RAW.push(o); armarCat(); llenarSelects(); pintarServicios(); recalc(); pintarCat(); await guardarCat();
+  const ins=$$("#tablaCat tbody tr"); const last=ins[ins.length-1]; if(last){ last.scrollIntoView({block:"center"}); const inp=last.querySelector('input[data-ck="nombre"]'); if(inp){ inp.focus(); inp.select(); } }
+};
+$("#expCat").onclick=()=>saveFile("catalogo_cotizador_arquitectura.csv","\uFEFF"+toCSV(RAW,COLS));
+$("#impCat").onchange=async e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const backup=RAW.slice();
+  try{ cargarCSV(await f.text()); if(!CAT.tipologia.length||!CAT.servicio.length) throw new Error("El CSV no trae tipologías o servicios"); await guardarCat(); llenarSelects(); pintarForm(); recalc(); pintarCat(); toast("Catálogo importado: "+RAW.length+" filas"); }
+  catch(err){ RAW=backup; armarCat(); toast("No se importó: "+err.message); }
+  e.target.value="";
+};
+$("#resetCat").onclick=async()=>{ if(!confirm("¿Regresar el catálogo a los valores originales? Perderás tus cambios de precios.")) return; cargarCSV(DEFAULT_CSV); await guardarCat(); llenarSelects(); pintarForm(); recalc(); pintarCat(); toast("Catálogo restaurado"); };
+
+/* ---------- despacho ---------- */
+function pintarDesp(){
+  $("#despForm").innerHTML=DESP_CAMPOS.map(([k,l])=>`<div class="campo ${k==="direccion"?"ancho":""}"><label for="d-${k}">${l}</label><input id="d-${k}" type="text" value="${esc(DESP[k]||"")}" data-desp="${k}"></div>`).join("");
+}
+let _ds;
+$("#despForm").addEventListener("input",e=>{ const k=e.target.dataset.desp; if(!k) return; DESP[k]=e.target.value; clearTimeout(_ds); _ds=setTimeout(()=>Store.set("despacho",DESP),500); });
+
+/* ---------- navegación ---------- */
+function ir(v){
+  $$(".vista").forEach(s=>s.classList.toggle("activa", s.id==="v-"+v));
+  $$(".nav button").forEach(b=>b.setAttribute("aria-current", b.dataset.vista===v?"page":"false"));
+  if(v==="doc") pintarDoc();
+  if(v==="hist") pintarHist();
+  if(v==="cat") pintarCat();
+  if(v==="despacho") pintarDesp();
+  window.scrollTo({top:0});
+}
+
+/* ---------- arranque ---------- */
+async function arrancar(){
+  // 1) arranque inmediato con lo guardado en este navegador
+  try{ cargarCSV(Store.lget("catalogo") || DEFAULT_CSV); }catch(e){ cargarCSV(DEFAULT_CSV); }
+  DESP={...DESP, ...(Store.lget("despacho")||{})};
+  HIST=Store.localQuotes();
+  llenarSelects();
+  Q=Store.lget("actual") || cotNueva();
+  pintarForm(); recalc();
+  // 2) sesión de Supabase y sincronización
+  await iniciarNube();
+}
+window.addEventListener("beforeprint",pintarDoc);
+arrancar();
+</script>
+</body>
+</html>
