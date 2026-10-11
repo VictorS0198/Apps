@@ -13,7 +13,7 @@
 :root[data-theme="dark"]{--bg:#0F1720;--sf:#18232F;--ink:#E6EDF3;--mu:#93A3B3;--ln:#2C3B4A;--sell:#F0808C;--buy:#5CC7BF;--amb:#E5B45A;--sell-bg:#3A2226;--buy-bg:#17322F;--amb-bg:#372D18}
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 "IBM Plex Sans",system-ui,Arial,sans-serif;position:relative}
-main{max-width:1040px;margin:0 auto;padding:20px 14px 60px;position:relative;z-index:1}
+main{max-width:none;margin:0;padding:20px clamp(14px,2vw,32px) 60px;position:relative;z-index:1}
 h1{font-size:26px;margin:0 0 4px;font-weight:600}
 h2{font-size:16px;margin:0 0 10px;font-weight:600}
 .sub{color:var(--mu);margin:0 0 10px}
@@ -366,7 +366,7 @@ svg.chart2 [data-cvk]:focus{outline:none}
 .t-comp .cv-bar{margin-top:0}
 /* menú lateral */
 @media(min-width:900px){
- body.nav-side main{padding-left:236px}
+ body.nav-side main{padding-left:calc(216px + clamp(14px,2vw,32px))}
  body.nav-side .tabs{position:fixed;left:0;top:0;bottom:0;width:216px;flex-direction:column;align-items:stretch;gap:4px;padding:92px 14px 16px;background:var(--sf);border-right:1px solid var(--ln);z-index:50;overflow:auto}
  body.nav-side .tabs button{text-align:left;border-radius:10px;padding:10px 12px;justify-content:flex-start}
  body.nav-side .tabs::before{content:"Registro de actividad";position:absolute;top:28px;left:18px;right:12px;font-weight:700;font-size:16px;color:var(--ink)}
@@ -385,6 +385,8 @@ body.nav-side .filters{display:none}
 .wtools{flex-wrap:wrap}
 .wtools select{width:auto!important;max-width:92px;flex:none}
 @container (max-width:300px){.wtools .wname{display:none}}
+@media(min-width:1600px){.dash-grid{gap:16px}.dw{padding:16px 20px}}
+.cv-pie{grid-template-columns:minmax(170px,260px) minmax(0,560px)}
 </style>
 </head>
 <body>
@@ -2419,7 +2421,7 @@ function lastMonths(keys,max){keys=keys.filter(Boolean).sort();if(!keys.length)r
 /* --- gráficas genéricas: columnas agrupadas y línea --- */
 function colsSvg(labels,series,o){
  o=o||{};var t=th(o);if(!labels.length)return emptyChart();
- var W=620,H=290,lm=58,bm=36,tm=series.length>1||o.legend?40:20,rm=8,pw=W-lm-rm,ph=H-tm-bm,all=[];
+ var W=o.w||620,H=o.h||290,lm=58,bm=36,tm=series.length>1||o.legend?40:20,rm=8,pw=W-lm-rm,ph=H-tm-bm,all=[];
  series.forEach(function(s){s.vals.forEach(function(v){all.push(v||0)})});
  var tk=niceTicks(Math.min(0,Math.min.apply(null,all)),Math.max(0,Math.max.apply(null,all)),5),lo=tk[0],hi=tk[tk.length-1];
  var Y=function(v){return tm+(hi-v)/(hi-lo)*ph},z=Y(0),out='';
@@ -2436,7 +2438,7 @@ function colsSvg(labels,series,o){
 }
 function lineSvg(labels,series,o){
  o=o||{};var t=th(o);if(!labels.length)return emptyChart();
- var W=620,H=o.h||280,lm=58,bm=36,tm=series.length>1?40:20,rm=14,pw=W-lm-rm,ph=H-tm-bm,all=[];
+ var W=o.w||620,H=o.h||280,lm=58,bm=36,tm=series.length>1?40:20,rm=14,pw=W-lm-rm,ph=H-tm-bm,all=[];
  series.forEach(function(s){s.vals.forEach(function(v){if(v!=null)all.push(v)})});if(!all.length)return emptyChart();
  var mn=Math.min.apply(null,all),mx=Math.max.apply(null,all);if(o.zero)mn=Math.min(0,mn);
  var tk=niceTicks(mn,mx,5),lo=tk[0],hi=tk[tk.length-1],Y=function(v){return tm+(hi-v)/(hi-lo||1)*ph},X=function(i){return lm+(labels.length==1?pw/2:i*pw/(labels.length-1))},out='';
@@ -2455,6 +2457,7 @@ function lineSvg(labels,series,o){
 var BRK={plat:'',coin:'',months:24,sec:{orders:false,xfers:false,files:false}};
 try{var _b=JSON.parse(localStorage.getItem('registro-cripto.brk')||'null');if(_b){BRK.plat=_b.plat||'';BRK.months=_b.months||24}}catch(e){}
 function ledPlats(){var s={};['trades','xfers','income','snaps'].forEach(function(k){LED[k].forEach(function(r){s[r.p]=1})});return Object.keys(s).sort()}
+function brkW(){var el=$('#v9');return Math.max(620,Math.min(2000,((el&&el.clientWidth)||window.innerWidth)-60))}
 function renderBrokers(){
  var el=$('#v9');if(!el)return;
  var plats=ledPlats(),P=BRK.plat&&plats.indexOf(BRK.plat)>-1?BRK.plat:'';BRK.plat=P;
@@ -2484,9 +2487,9 @@ function renderBrokers(){
  var snapM={},snapPlat={};sn.forEach(function(r){var k=monthKey(r.t);snapM[k]=snapM[k]||{};snapM[k][r.p]=(snapM[k][r.p]||0)+r.v;snapPlat[r.p]=1});
  var sk=Object.keys(snapM).sort();
  if(sk.length){var sp=Object.keys(snapPlat).sort();
-  charts+=box('Valor de la cuenta según los estados mensuales (USDT)','Saldo total el día 1 de cada mes'+(P?'':' ('+sp.join(', ')+')'),lineSvg(sk.map(monthLbl),sp.map(function(p,i){return{name:p,color:PAL[i%PAL.length],area:sp.length==1,vals:sk.map(function(k){return snapM[k][p]!=null?snapM[k][p]:null})}}),{unit:'USDT'}),true);
+  charts+=box('Valor de la cuenta según los estados mensuales (USDT)','Saldo total el día 1 de cada mes'+(P?'':' ('+sp.join(', ')+')'),lineSvg(sk.map(monthLbl),sp.map(function(p,i){return{name:p,color:PAL[i%PAL.length],area:sp.length==1,vals:sk.map(function(k){return snapM[k][p]!=null?snapM[k][p]:null})}}),{unit:'USDT',w:brkW(),h:300}),true);
  }
- if(ords.length)charts+=box('Compras y ventas por mes (USD)','Valor operado en spot',colsSvg(lbls,[{name:'Compras',color:'#1F8A7E',vals:buy},{name:'Ventas',color:'#C8553D',vals:sell}],{unit:'USD'}),true);
+ if(ords.length)charts+=box('Compras y ventas por mes (USD)','Valor operado en spot',colsSvg(lbls,[{name:'Compras',color:'#1F8A7E',vals:buy},{name:'Ventas',color:'#C8553D',vals:sell}],{unit:'USD',w:brkW(),h:310}),true);
  if(fut.length&&futM.some(function(v){return v})){var acc=0,cum=futM.map(function(v){acc+=v;return +acc.toFixed(2)});
   charts+=box('Futuros: resultado neto por mes (USDT)','Incluye comisiones y funding · acumulado en el periodo: '+(acc>=0?'+':'')+n(acc,2)+' USDT',colsSvg(lbls,[{name:'Neto',signed:true,color:'#1F8A7E',vals:futM}],{unit:'USDT'}));
   charts+=box('Futuros: resultado acumulado (USDT)','',lineSvg(lbls,[{name:'Acumulado',color:'#4472D8',area:true,vals:cum}],{unit:'USDT',zero:true}));
@@ -2632,12 +2635,13 @@ function histSeries(){
 }
 function histLabel(ms){var d=new Date(ms),M=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
  return HRANGE=='1D'?String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0'):d.getDate()+' '+M[d.getMonth()]+(HRANGE=='1A'||HRANGE=='Todo'?' '+String(d.getFullYear()).slice(2):'')}
-function histChart(h){
+function gridPx(frac){var g=$('#posList'),w=(g&&g.clientWidth)||Math.max(320,window.innerWidth-(document.body.classList.contains('nav-side')?260:40));return Math.max(560,Math.min(2000,Math.round(w*frac)))}
+function histChart(h,wpx){
  var pts=histSeries();
  var rng='<div class="seg hr-seg" role="group" aria-label="Periodo">'+Object.keys(HR).map(function(k){return '<button type="button" data-hr="'+k+'" aria-pressed="'+(k==HRANGE)+'">'+k+'</button>'}).join('')+'</div>';
  if(pts.length<2)return{rng:rng,svg:'<div class="hist-empty mu">La gráfica se irá llenando sola: guardo el valor total cada vez que abres la app con precios actualizados (como mucho cada 30 minutos). '+(HIST.length?'Por ahora hay '+HIST.length+' registro(s).':'Aún no hay registros.')+'</div>'};
  var step=Math.max(1,Math.ceil(pts.length/160)),sp=pts.filter(function(p,i){return i%step==0||i==pts.length-1});
- return{rng:rng,svg:lineSvg(sp.map(function(p){return histLabel(p[0])}),[{name:'Valor total',color:'#2E93BE',area:true,vals:sp.map(function(p){return p[1]})}],{unit:'USD',h:h})};
+ return{rng:rng,svg:lineSvg(sp.map(function(p){return histLabel(p[0])}),[{name:'Valor total',color:'#2E93BE',area:true,vals:sp.map(function(p){return p[1]})}],{unit:'USD',h:h||300,w:wpx||620})};
 }
 function sparkSvg(){
  var pts=HIST.slice(-60);if(pts.length<2)return '';
@@ -2687,7 +2691,7 @@ function wKpi(it,c){
   (d.spark?sparkSvg():'')+'</div>';
 }
 function wHero(it,c){
- var at=c.at,h=histChart(220);
+ var at=c.at,h=histChart(240,Math.round(gridPx((it.w||12)/12)*0.6));
  return '<div class="hero"><div class="hero-l"><div class="mu">Valor total de las cuentas</div><div class="hero-v num">'+n(at.total,2)+' <small>USD</small></div><div class="mu num">≈ '+n(at.total*FX,2)+' MXN</div>'+
   (FLW.length?'<div class="num hero-f" style="color:'+col(c.fav)+'">'+(c.fav>=0?'▲ +':'▼ ')+n(c.fav,1)+' MXN'+(c.ft.net>0?' ('+(c.fav>=0?'+':'')+n(c.fav/c.ft.net*100,1)+'%)':'')+' <span class="mu">vs. lo aportado</span></div>':'')+'</div>'+
   '<div class="hero-r">'+h.rng+h.svg+'</div></div>';
@@ -2700,7 +2704,7 @@ function wDetail(it,c){
   row('Entradas en ganancia / pérdida',c.win+' / '+c.loss)+'</div></div>'+(c.missing.length?'<p class="mu" style="margin:8px 0 0;font-size:12px">Sin precio de mercado para: '+c.missing.join(', ')+'</p>':'');
 }
 function wComp(){return '<div class="wh"><h3>Gráficos del resumen</h3></div><div id="cvBox">'+cvBoxHtml()+'</div>'}
-function wHistory(it){var h=histChart();return '<div class="wh"><h3>Valor total en el tiempo (USD)</h3><span class="sp"></span>'+h.rng+'</div>'+h.svg}
+function wHistory(it){var h=histChart(300,gridPx((it.w||12)/12));return '<div class="wh"><h3>Valor total en el tiempo (USD)</h3><span class="sp"></span>'+h.rng+'</div>'+h.svg}
 function wTable(it,c){
  var mode=(it.o&&it.o.mode)||'asset',data=brokerData(),rows=[],totV=0,totC=0;
  var seg='<div class="seg" role="group"><button type="button" data-tmode="asset" data-wid="'+it.id+'" aria-pressed="'+(mode=='asset')+'">Por activo</button><button type="button" data-tmode="broker" data-wid="'+it.id+'" aria-pressed="'+(mode=='broker')+'">Por broker</button></div>';
@@ -2841,6 +2845,7 @@ $('#v7').addEventListener('input',function(e){var t=e.target;if(!t.getAttribute|
  $('#v7').addEventListener('pointerup',end);$('#v7').addEventListener('pointercancel',end);
 })();
 applyNav();
+var _rsT=null,_rsW=window.innerWidth;window.addEventListener('resize',function(){clearTimeout(_rsT);_rsT=setTimeout(function(){if(Math.abs(window.innerWidth-_rsW)<40)return;_rsW=window.innerWidth;if(tab==7&&!document.querySelector('.dw.dragging'))renderPositions();if(tab==9&&typeof renderBrokers=='function')renderBrokers()},250)});
 
 /* ================= Nube: Supabase personal (misma cuenta y tabla que tus otras apps) =================
    Cada dato guardado en este navegador (movimientos, tenencias, ingresos/retiros, estados de cuenta, reportes…)
