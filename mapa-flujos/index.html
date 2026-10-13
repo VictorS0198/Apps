@@ -1,0 +1,1380 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Mapa de Flujos Cripto</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Sora:wght@500;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: barra con pestañas (Mapa · Catálogo · Gráficas · Configuración); el Mapa es lienzo completo + panel lateral.
+   Los colores se escriben desde JS según el tema elegido; estos son los valores por defecto (tema Claro, acento dorado). */
+:root{
+  --bg:#eef1f6; --paper:#f8f9fc; --panel:#ffffff; --fg:#17202e; --muted:#5d6a7e; --line:#d5dbe6; --grid:#d3d9e4;
+  --accent:#c9962b; --accent-soft:#f3e6c6; --on-accent:#14110a;
+  --in:#1f8a5b; --out:#c2563b; --bad:#c23b3b;
+  --f-display:"Sora","Segoe UI",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Consolas,monospace;
+  color-scheme:light;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font:14px/1.45 var(--f-body);display:flex;flex-direction:column;overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+header{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:10px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+.brand{display:flex;align-items:baseline;gap:8px;margin-right:auto}
+.brand h1{font:700 18px/1 var(--f-display);margin:0;letter-spacing:-.01em}
+.brand span{font:500 11px var(--f-mono);color:var(--muted);text-transform:uppercase;letter-spacing:.08em}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:8px;overflow:hidden;flex-wrap:wrap}
+.seg button{border:0;background:transparent;padding:6px 12px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent-soft);color:var(--fg);font-weight:600}
+.btn{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:6px 11px;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--on-accent);font-weight:600}
+.btn.active{background:var(--accent-soft);border-color:var(--accent);font-weight:600}
+.btn.danger{color:var(--bad)}
+.btn.sm{padding:3px 8px;font-size:12px}
+.toolbar{display:flex;flex-wrap:wrap;gap:6px;align-items:center;padding:8px 16px;border-bottom:1px solid var(--line);background:var(--panel)}
+.toolbar .sep{width:1px;height:22px;background:var(--line);margin:0 4px}
+.search{border:1px solid var(--line);background:var(--paper);border-radius:8px;padding:6px 10px;width:170px}
+select.btn{padding-right:6px}
+
+main{flex:1;display:flex;min-height:0;position:relative}
+#mapView{flex:1;position:relative;min-width:0}
+svg#canvas{width:100%;height:100%;display:block;background:var(--paper);touch-action:none;user-select:none}
+.overlay{position:absolute;left:16px;right:16px;top:14px;display:flex;flex-direction:column;gap:8px;pointer-events:none;align-items:flex-start}
+.overlay>*{pointer-events:auto}
+.banner{max-width:560px;background:var(--accent-soft);border:1px solid var(--accent);border-radius:10px;padding:10px 12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;font-size:13px}
+.connbar{background:var(--panel);border:1.5px solid var(--accent);border-radius:12px;padding:10px 12px;display:flex;gap:8px 12px;align-items:center;flex-wrap:wrap;box-shadow:0 6px 24px rgba(0,0,0,.12);max-width:100%}
+.connbar .t{font-weight:600}
+.connbar select{border:1px solid var(--line);background:var(--paper);border-radius:7px;padding:5px 8px}
+.count{display:inline-grid;place-items:center;min-width:22px;height:22px;border-radius:11px;background:var(--accent);color:var(--on-accent);font:600 12px var(--f-mono);padding:0 6px}
+.hint{position:absolute;left:16px;bottom:14px;font-size:12px;color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;max-width:calc(100% - 80px)}
+.zoom{position:absolute;right:16px;bottom:14px;display:flex;flex-direction:column;gap:4px}
+.zoom button{width:34px;height:34px;border:1px solid var(--line);background:var(--panel);border-radius:8px;font-size:16px}
+.legend{position:absolute;right:62px;bottom:14px;display:flex;gap:6px 12px;flex-wrap:wrap;justify-content:flex-end;font:500 11px var(--f-mono);color:var(--muted);background:var(--panel);border:1px solid var(--line);border-radius:8px;padding:6px 10px;max-width:min(560px,calc(100% - 420px))}
+.legend i{display:inline-block;width:14px;height:3px;border-radius:2px;margin-right:5px;vertical-align:3px}
+
+.node rect.body{fill:var(--panel);stroke:var(--line);stroke-width:1.2}
+.node text.name{font:600 13px var(--f-body);fill:var(--fg)}
+.node text.kind{font:500 9.5px var(--f-mono);letter-spacing:.08em;text-transform:uppercase}
+.node text.coins{font:400 10px var(--f-mono);fill:var(--muted)}
+.node{cursor:grab}
+.node.locked{cursor:pointer}
+.node.sel rect.body{stroke:var(--accent);stroke-width:2.4}
+.node.src rect.body{stroke:var(--accent);stroke-width:2.6;stroke-dasharray:6 3}
+.node.tgt rect.body{stroke:var(--accent);stroke-width:2.6;fill:var(--accent-soft)}
+.node.pick{cursor:copy}
+.node .plus{opacity:0;transition:opacity .15s;cursor:crosshair}
+.node:hover .plus,.node.sel .plus{opacity:1}
+.node .plus circle{fill:var(--accent)}
+.node .plus path{stroke:var(--on-accent);stroke-width:2;stroke-linecap:round}
+.edge path.hit{stroke:transparent;stroke-width:16;fill:none;cursor:pointer}
+.edge path.line{fill:none;stroke-width:1.8}
+.edge path.flow{fill:none;stroke-width:2.6;stroke-dasharray:2 14;stroke-linecap:round;animation:flow 1.1s linear infinite;pointer-events:none}
+@keyframes flow{to{stroke-dashoffset:-16}}
+.edge.sel path.line{stroke-width:3.4}
+.edge .lbl rect{fill:var(--panel);stroke-width:1}
+.edge .lbl text{font:500 10.5px var(--f-mono);fill:var(--fg)}
+.edge.bi .lbl rect{stroke-width:2}
+.dim{opacity:.14}
+
+aside{width:350px;max-width:100%;border-left:1px solid var(--line);background:var(--panel);overflow:auto;padding:16px;display:flex;flex-direction:column;gap:14px}
+aside h2{font:700 15px var(--f-display);margin:0;text-wrap:balance}
+.eyebrow{font:500 10.5px var(--f-mono);text-transform:uppercase;letter-spacing:.1em;color:var(--muted)}
+.field{display:flex;flex-direction:column;gap:4px;min-width:0}
+.field>label{font-size:12px;color:var(--muted);font-weight:500}
+.field input,.field select,.field textarea{border:1px solid var(--line);background:var(--paper);border-radius:7px;padding:7px 9px;width:100%;min-width:0}
+.field textarea{min-height:60px;resize:vertical}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.row3{display:grid;grid-template-columns:1.3fr .8fr 1fr;gap:8px}
+.dirpick{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.dirpick button{border:1px solid var(--line);background:var(--paper);border-radius:7px;padding:7px 4px;font-size:12px}
+.dirpick button[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft);font-weight:600}
+.flows{display:flex;flex-direction:column;gap:6px}
+.flow{border:1px solid var(--line);border-radius:8px;padding:7px 9px;font-size:12.5px;cursor:pointer;background:var(--paper)}
+.flow:hover{border-color:var(--accent)}
+.flow .m{font:500 11px var(--f-mono);color:var(--muted)}
+.empty{color:var(--muted);font-size:13px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.chip{display:inline-block;font:500 10.5px var(--f-mono);padding:2px 7px;border-radius:999px;border:1px solid var(--line);color:var(--muted)}
+.dot{width:9px;height:9px;border-radius:2px;display:inline-block;flex:none}
+.subhead{font:600 12px var(--f-body);color:var(--fg);margin-top:2px}
+
+.page{flex:1;overflow:auto;padding:20px 16px 48px}
+.page-in{max-width:1180px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+.page h2{font:700 18px var(--f-display);margin:0}
+.page p.sub{margin:2px 0 0;color:var(--muted)}
+.headrow{display:flex;gap:10px;align-items:flex-end;justify-content:space-between;flex-wrap:wrap}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--panel)}
+table{border-collapse:collapse;width:100%;font-size:13px}
+#flowTable{min-width:1600px}
+th,td{padding:5px 6px;border-bottom:1px solid var(--line);text-align:left;vertical-align:middle}
+th{font:500 10.5px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);background:var(--paper);position:sticky;top:0;z-index:1;padding:8px 6px}
+tr:last-child td{border-bottom:0}
+td .cell{width:100%;border:1px solid transparent;background:transparent;border-radius:6px;padding:5px 6px;min-width:0}
+td .cell:hover{border-color:var(--line)}
+td .cell:focus{border-color:var(--accent);background:var(--paper);outline:none}
+td input.cell.mono{font:500 12px var(--f-mono);font-variant-numeric:tabular-nums;text-transform:uppercase}
+td input.num{text-align:right;font-variant-numeric:tabular-nums;font-family:var(--f-mono);font-size:12px}
+td.ix{font:500 11px var(--f-mono);color:var(--muted);text-align:center;width:34px}
+td.act{white-space:nowrap}
+tr.hl td{background:var(--accent-soft)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:12px}
+.card{border:1px solid var(--line);border-radius:10px;background:var(--panel);padding:12px 14px;min-width:0;cursor:pointer}
+.card:hover{border-color:var(--accent)}
+.card h3{margin:0 0 2px;font:600 14px var(--f-body);display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.card h4{margin:10px 0 4px;font:500 10.5px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.card ul{margin:0;padding-left:16px;font-size:12.5px}
+
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.kpi .l{font:500 10.5px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted)}
+.kpi .v{font:700 26px/1.2 var(--f-display);font-variant-numeric:tabular-nums;margin-top:4px}
+.kpi .s{font-size:12px;color:var(--muted)}
+.charts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,460px),1fr));gap:14px}
+.chart{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;min-width:0}
+.chart h3{margin:0;font:600 14px var(--f-body)}
+.chart .cs{margin:2px 0 12px;font-size:12px;color:var(--muted)}
+.bars{display:grid;grid-template-columns:minmax(70px,150px) 1fr auto;gap:7px 10px;align-items:center}
+.bl{font-size:12.5px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.track{height:14px;position:relative;border-left:1px solid var(--line)}
+.bar{height:100%;border-radius:0 4px 4px 0;min-width:2px}
+.bv{font:500 12px var(--f-mono);font-variant-numeric:tabular-nums;color:var(--fg);text-align:right;min-width:42px}
+.bars>div[title]:hover,.track:hover .bar{filter:brightness(1.08)}
+.div{display:grid;grid-template-columns:minmax(70px,140px) 1fr 1fr;gap:7px 0;align-items:center}
+.div .side{display:flex;align-items:center;gap:6px;height:16px}
+.div .side.l{flex-direction:row-reverse;border-right:1px solid var(--muted);padding-right:1px}
+.div .side.r{padding-left:1px}
+.div .side.l .bar{border-radius:4px 0 0 4px}
+.div .side .bv{min-width:0;text-align:left;font-size:11px;color:var(--muted)}
+.leg{display:flex;gap:14px;font-size:12px;color:var(--muted);margin:-4px 0 10px}
+.leg i{display:inline-block;width:10px;height:10px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+.settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,420px),1fr));gap:14px;align-items:start}
+.sbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.sbox h3{margin:0;font:600 14px var(--f-body)}
+.themes{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:10px}
+.theme{border:1.5px solid var(--line);border-radius:10px;padding:6px;background:transparent;text-align:left;display:flex;flex-direction:column;gap:6px}
+.theme[aria-pressed="true"]{border-color:var(--accent);box-shadow:0 0 0 2px var(--accent-soft)}
+.theme .pv{height:52px;border-radius:6px;position:relative;overflow:hidden;border:1px solid rgba(127,127,127,.25)}
+.theme .pv b{position:absolute;left:8px;top:9px;width:44px;height:16px;border-radius:4px}
+.theme .pv u{position:absolute;left:8px;top:31px;width:62px;height:6px;border-radius:3px;opacity:.6}
+.theme .pv s{position:absolute;right:8px;top:9px;width:16px;height:16px;border-radius:50%}
+.theme span{font-size:12.5px;font-weight:500;padding:0 2px}
+.swatches{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.sw{width:30px;height:30px;border-radius:50%;border:2px solid var(--panel);box-shadow:0 0 0 1px var(--line)}
+.sw[aria-pressed="true"]{box-shadow:0 0 0 2px var(--fg)}
+input[type=color]{width:42px;height:32px;border:1px solid var(--line);border-radius:8px;background:var(--paper);padding:2px}
+.opt{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.opt .d{font-size:12px;color:var(--muted)}
+.lst{display:flex;flex-direction:column;gap:6px}
+.lst .it{display:grid;grid-template-columns:auto 1fr auto auto;gap:8px;align-items:center}
+.lst .it.nc{grid-template-columns:1fr auto auto}
+.lst input[type=text]{border:1px solid var(--line);background:var(--paper);border-radius:7px;padding:6px 8px;min-width:0;width:100%}
+.lst input[type=color]{width:34px;height:30px}
+.uses{font:500 11px var(--f-mono);color:var(--muted)}
+
+.ctx{position:fixed;z-index:20;background:var(--panel);border:1px solid var(--line);border-radius:10px;box-shadow:0 10px 30px rgba(0,0,0,.18);padding:5px;min-width:210px;display:flex;flex-direction:column}
+.ctx .h{font:500 10.5px var(--f-mono);text-transform:uppercase;letter-spacing:.08em;color:var(--muted);padding:6px 10px 4px}
+.ctx button{border:0;background:transparent;text-align:left;padding:7px 10px;border-radius:6px;display:flex;gap:10px;align-items:center}
+.ctx button:hover,.ctx button:focus-visible{background:var(--accent-soft);outline:none}
+.ctx button .ic{width:18px;text-align:center;font-family:var(--f-mono)}
+.ctx button.on{font-weight:600}
+.ctx button.on::after{content:"✓";margin-left:auto;color:var(--accent)}
+.ctx button.danger{color:var(--bad)}
+.ctx hr{border:0;border-top:1px solid var(--line);margin:4px 2px}
+
+.toast{position:fixed;left:50%;bottom:22px;transform:translateX(-50%);background:var(--fg);color:var(--bg);padding:8px 14px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:30}
+.toast.show{opacity:1}
+.modal{position:fixed;inset:0;background:rgba(10,14,20,.45);display:flex;align-items:center;justify-content:center;padding:16px;z-index:25}
+.modal .box{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:18px;max-width:400px;width:100%;display:flex;flex-direction:column;gap:12px}
+.modal input{border:1px solid var(--line);background:var(--paper);border-radius:7px;padding:8px 10px}
+
+
+.group{cursor:grab}.group.locked{cursor:pointer}
+.group rect.gbody{fill:var(--panel);stroke:var(--accent);stroke-width:1.4;stroke-dasharray:6 4}
+.group.sel rect.gbody{stroke-width:2.6;stroke-dasharray:none}
+.group text.kind{font:500 9.5px var(--f-mono);letter-spacing:.08em;text-transform:uppercase;fill:var(--accent)}
+.group text.name{font:600 13px var(--f-body);fill:var(--fg)}
+.group text.coins{font:400 10px var(--f-mono);fill:var(--muted)}
+.group .chip{fill:var(--accent-soft)}
+.group .chip.bridge{fill:var(--accent)}
+.group .chipt{font:500 10.5px var(--f-mono);fill:var(--fg)}
+.group .chip.bridge + .chipt{fill:var(--on-accent)}
+.member{stroke:var(--muted);stroke-width:1.3;stroke-dasharray:2 5;fill:none;opacity:.85}
+.checks{display:flex;flex-direction:column;gap:5px}
+.ck{display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer}
+.field .ck input{width:auto;flex:none;margin:0}
+.coinset{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.cchip{display:inline-flex;align-items:center;gap:2px;font:500 11.5px var(--f-mono);background:var(--accent-soft);border-radius:999px;padding:2px 3px 2px 9px}
+.cchip.br{background:var(--accent);color:var(--on-accent)}
+.cchip button{border:0;background:transparent;color:inherit;padding:0 5px;font-size:14px;line-height:1}
+.coinset select{border:1px dashed var(--line);background:var(--paper);border-radius:999px;padding:3px 8px;font-size:12px}
+.mxwrap{overflow-x:auto;max-width:100%}
+table.mx{border-collapse:collapse;font:500 11px var(--f-mono);width:auto}
+.mx th,.mx td{padding:0;border:1px solid var(--line);text-align:center;position:static;background:transparent;letter-spacing:0;text-transform:none;height:28px;min-width:36px}
+.mx tr:last-child td{border-bottom:1px solid var(--line)}
+.mx th{color:var(--muted);font:500 10.5px var(--f-mono);padding:0 5px}
+.mx td button{width:100%;height:28px;border:0;background:transparent;font:inherit;min-width:36px;color:inherit}
+.mx td.d{background:var(--accent-soft)}.mx td.d button{font-weight:600}
+.mx td.v button,.mx td.n button{color:var(--muted)}
+.mx td.n{background:repeating-linear-gradient(45deg,transparent 0 4px,var(--line) 4px 5px)}
+.mx td.dg{color:var(--muted)}
+.mxleg{display:flex;gap:12px;font-size:11.5px;color:var(--muted);flex-wrap:wrap;margin-top:4px}
+.mxleg b{display:inline-block;min-width:24px;text-align:center;border-radius:4px;font:600 10.5px var(--f-mono);padding:1px 3px;margin-right:4px;border:1px solid var(--line)}
+.mxleg b.d{background:var(--accent-soft)}
+.rt{display:flex;gap:8px;align-items:center}
+.rt select{flex:1;min-width:0;border:1px solid var(--line);background:var(--paper);border-radius:7px;padding:6px 8px}
+.rtout{font:500 12.5px var(--f-mono);padding:4px 0}
+.rtout .bad{color:var(--bad)}.muted{color:var(--muted)}
+.note{font-size:12px;background:var(--accent-soft);border-radius:7px;padding:6px 9px}
+.gcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,420px),1fr));gap:12px}
+.gcard{background:var(--panel);border:1.5px dashed var(--accent);border-radius:12px;padding:14px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.ctx button:disabled,.dirpick button:disabled,.btn:disabled{opacity:.42;cursor:not-allowed}
+@media (max-width:760px){
+  main{flex-direction:column}
+  aside{width:100%;border-left:0;border-top:1px solid var(--line);max-height:46%}
+  .legend,.hint{display:none}
+  .search{width:130px}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}.edge path.flow{animation:none}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand"><h1>Mapa de Flujos Cripto</h1><span>lugares · medios · monedas</span></div>
+  <div class="seg" role="tablist" aria-label="Secciones">
+    <button data-view="map" aria-pressed="true">Mapa</button>
+    <button data-view="cat" aria-pressed="false">Catálogo</button>
+    <button data-view="charts" aria-pressed="false">Gráficas</button>
+    <button data-view="cfg" aria-pressed="false">Configuración</button>
+  </div>
+  <button class="btn" id="bExport">Exportar</button>
+</header>
+<div class="toolbar" id="toolbar">
+  <span class="maponly" style="display:contents">
+    <button class="btn" id="bAdd" title="También: clic derecho o doble clic en el lienzo">+ Agregar</button>
+    <button class="btn" id="bLink" title="También: el botón + de cada cuenta">↗ Conectar</button>
+    <span class="sep"></span>
+    <div class="seg" role="group" aria-label="Acomodo">
+      <button id="lyFree" aria-pressed="true" title="Las cuentas quedan donde las dejas">Libre</button>
+      <button id="lyTipo" aria-pressed="false" title="Columnas: tiendas ← tarjetas y bancos → exchanges → grupos → wallets">Por tipo</button>
+      <button id="lyCirc" aria-pressed="false" title="Todas en círculo">Circular</button>
+    </div>
+    <button class="btn" id="bAdopt" hidden title="Copia este orden a tu acomodo libre">Usar este orden en Libre</button>
+    <span class="sep"></span>
+  </span>
+  <input class="search" id="q" placeholder="Buscar…" aria-label="Buscar">
+  <select class="btn" id="fMedio" aria-label="Filtrar por medio"></select>
+</div>
+
+<main>
+  <section id="mapView">
+    <svg id="canvas" aria-label="Mapa de flujos">
+      <defs>
+        <pattern id="grid" width="24" height="24" patternUnits="userSpaceOnUse"><circle cx="1" cy="1" r="1" id="gridDot"/></pattern>
+      </defs>
+      <rect id="bgRect" x="-50000" y="-50000" width="100000" height="100000" fill="url(#grid)"/>
+      <g id="world"><g id="gEdges"></g><g id="gNodes"></g></g>
+    </svg>
+    <div class="overlay">
+      <div class="banner" id="banner" hidden>
+        <span><b>Mapa de ejemplo.</b> Cuentas, tiendas propuestas y grupos de monedas de muestra; redes, comisiones y montos ilustrativos. Importa tu respaldo JSON o empieza en blanco.</span>
+        <button class="btn" id="bKeep">Usarlo como base</button>
+        <button class="btn" id="bBlank">Empezar en blanco</button>
+      </div>
+      <div class="connbar" id="connbar" hidden></div>
+    </div>
+    <div class="legend" id="legend"></div>
+    <div class="zoom">
+      <button id="zIn" aria-label="Acercar">+</button>
+      <button id="zOut" aria-label="Alejar">−</button>
+      <button id="zFit" aria-label="Ajustar a la vista" title="Ajustar">⤢</button>
+    </div>
+    <div class="hint" id="hint">Clic derecho: menú · Doble clic en vacío: nuevo lugar · <b>+</b> en una cuenta: conectar · Rueda: zoom</div>
+  </section>
+  <section id="catView" class="page" hidden></section>
+  <section id="chartsView" class="page" hidden></section>
+  <section id="cfgView" class="page" hidden></section>
+  <aside id="side"></aside>
+</main>
+
+<input type="file" id="fileIn" accept=".json" hidden>
+<div class="toast" id="toast"></div>
+
+<script>
+(()=>{
+const KEY='mapaFlujosCripto.v1';
+const TYPES={banco:'Banco',tarjeta:'Tarjeta',exchange:'Exchange',wallet:'Wallet',tienda:'Tienda',otro:'Otro'};
+const SUBS={tarjeta:['Crédito','Débito'],wallet:['Caliente','Fría']};
+const TYPE_ORDER=['tienda','tarjeta','banco','otro','exchange','grupo','wallet'];
+const NW=160, NH=58, GW=250;
+const THEMES={
+  claro:{label:'Claro',dark:false,v:{bg:'#eef1f6',paper:'#f8f9fc',panel:'#ffffff',fg:'#17202e',muted:'#5d6a7e',line:'#d5dbe6',grid:'#d3d9e4'}},
+  arena:{label:'Arena',dark:false,v:{bg:'#ece6db',paper:'#f6f2ea',panel:'#fffcf6',fg:'#2a241e',muted:'#6e6458',line:'#dcd2c2',grid:'#d6ccbb'}},
+  oscuro:{label:'Oscuro',dark:true,v:{bg:'#0f141d',paper:'#131a25',panel:'#182131',fg:'#e6ebf3',muted:'#93a0b4',line:'#2a3548',grid:'#273145'}},
+  pizarra:{label:'Pizarra',dark:true,v:{bg:'#172024',paper:'#1c272c',panel:'#223036',fg:'#e2ebe8',muted:'#8fa39e',line:'#34464d',grid:'#2e3d43'}},
+  medianoche:{label:'Medianoche',dark:true,v:{bg:'#000000',paper:'#04060a',panel:'#0c1016',fg:'#ececec',muted:'#8b949e',line:'#222831',grid:'#171c24'}}
+};
+const ACCENTS=[['Dorado','#c9962b'],['Azul','#3b74e0'],['Verde','#1f9d74'],['Violeta','#7c5ce0'],['Coral','#e0654a'],['Cian','#1a9fb5'],['Rosa','#d6457f'],['Grafito','#6b7584']];
+const TYPE_COL={light:{banco:'#2f63c8',tarjeta:'#6250d6',exchange:'#c2620f',wallet:'#13897c',tienda:'#c2416b',otro:'#6b7584'},
+                dark:{banco:'#6e9cf5',tarjeta:'#9a95f0',exchange:'#f0954a',wallet:'#3fc4b2',tienda:'#ec7a9c',otro:'#9aa4b3'}};
+const SERIES={light:['#2a78d6','#eb6834','#1baf7a','#eda100','#e87ba4','#008300','#6250d6','#e34948'],
+              dark:['#3987e5','#d95926','#199e70','#c98500','#d55181','#2f9a2f','#9085e9','#e66767']};
+
+const uid=()=>Math.random().toString(36).slice(2,9);
+const $=s=>document.querySelector(s);
+const esc=s=>String(s??'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const NS='http://www.w3.org/2000/svg';
+function el(tag,attrs={},parent){ const e=document.createElementNS(NS,tag); for(const k in attrs) e.setAttribute(k,attrs[k]); if(parent) parent.appendChild(e); return e; }
+
+/* ---------- Ejemplo ---------- */
+function sample(){
+  const N=(id,name,type,x,y,coins='',notes='',sub='')=>({id,name,type,x,y,coins,notes,sub});
+  const OC='Envío on-chain';
+  const E=(from,to,dir,medio,sale,entra,red,comision,tiempo,monto,montoMon,veces,notas='')=>({id:uid(),from,to,dir,medio,sale,entra,red,comision,tiempo,monto,montoMon,veces,notas});
+  return {
+    version:3, example:true,
+    lists:{
+      medios:['SPEI',OC,'Transferencia interna','P2P','Tarjeta','Pago de tarjeta','Pago con cripto'],
+      redes:['—','TRC20','BEP20','ERC20','Arbitrum','Solana','Bitcoin Cash','Bitcoin','Litecoin'],
+      monedas:['MXN','USDT','USDC','BTC','ETH','BNB','BCH','CRV','LTC','XRP','LINK','AVAX','SNX','DYDX','SOL'],
+      medioColors:{}
+    },
+    nodes:[
+      N('amazon','Amazon México','tienda',-400,20,'TDC · Débito · Tarjetas de regalo','Propuesta: verifica medios de pago'),
+      N('meli','Mercado Libre','tienda',-400,160,'TDC · Débito · Mercado Pago','Propuesta'),
+      N('costco','Costco','tienda',-400,300,'TDC · Débito','Propuesta: verifica qué tarjetas acepta'),
+      N('smartfit','Gimnasio','tienda',-400,440,'TDC · Débito (cargo mensual)','Propuesta'),
+      N('super','Supermercado','tienda',-400,580,'TDC · Débito · Efectivo','Propuesta: Walmart, Soriana, etc.'),
+      N('banamex','Banco débito (ej.)','banco',0,160,'MXN','Cuenta de débito: entra y sale el dinero en pesos'),
+      N('tdcbbva','Tarjeta de crédito 1 (ej.)','tarjeta',0,20,'MXN','', 'Crédito'),
+      N('tdccostco','Tarjeta de crédito 2 (ej.)','tarjeta',0,320,'MXN','', 'Crédito'),
+      N('p2p','Contraparte P2P','otro',0,520,'Comprador / vendedor','Persona que vende USDT en Binance P2P'),
+      N('bitso','Bitso','exchange',400,20,'','Puerta de entrada y salida en pesos'),
+      N('binance','Binance','exchange',400,260,''),
+      N('bingx','BingX','exchange',400,440,'','Ciclos de BCH'),
+      N('bybit','Bybit','exchange',400,620,''),
+      N('whot','Wallet caliente (ej.)','wallet',1100,260,'ETH · USDT · Arbitrum','Cambia el nombre por tu wallet (MetaMask, etc.)','Caliente'),
+      N('wcold','Wallet fría (ej.)','wallet',1100,480,'BTC · BCH','Cambia el nombre por tu wallet fría (Ledger, etc.)','Fría'),
+      N('bitrefill','Bitrefill','tienda',1100,700,'BTC · USDT · LTC · ETH','Propuesta: tarjetas de regalo pagando con cripto')
+    ],
+    groups:[
+      {id:'gbitso',name:'Bitso · pesos',x:720,y:-40,members:['bitso'],coins:['MXN','USDT','BTC','ETH','BCH','XRP'],bridge:'MXN',pairs:{'BTC|USDT':'d','BTC|ETH':'d'},notes:'Casi todo se cotiza contra pesos'},
+      {id:'galt',name:'Altcoins compartidas',x:720,y:300,members:['binance','bybit','bingx'],coins:['USDT','BTC','ETH','BCH','CRV','LTC','XRP','LINK','AVAX'],bridge:'USDT',pairs:{'BTC|ETH':'d'},notes:'Monedas que tienen los tres exchanges'}
+    ],
+    edges:[
+      E('banamex','bitso','uni','SPEI','MXN','MXN','—','0','Minutos',5000,'MXN',2,'Fondeo principal'),
+      E('bitso','banamex','uni','SPEI','MXN','MXN','—','0','Minutos',3000,'MXN',1,'Salida a pesos'),
+      E('banamex','p2p','uni','P2P','MXN','MXN','—','0','Minutos',2000,'MXN',1,'Pago por SPEI al vendedor P2P'),
+      E('p2p','binance','uni','P2P','USDT','USDT','—','0','~15 min',110,'USD',1,'El vendedor libera los USDT en Binance'),
+      E('tdcbbva','binance','uni','Tarjeta','MXN','USDT','—','~2%','Inmediato',1000,'MXN',0.5,'Uso ocasional; cuidar intereses de la TDC'),
+      E('banamex','tdcbbva','uni','Pago de tarjeta','MXN','MXN','—','0','Mismo día',2500,'MXN',1),
+      E('banamex','tdccostco','uni','Pago de tarjeta','MXN','MXN','—','0','Mismo día',3000,'MXN',1),
+      E('bitso','bingx','uni',OC,'USDT','USDT','TRC20','1 USDT','~5 min',150,'USD',2),
+      E('bitso','binance','uni',OC,'USDT','USDT','TRC20','1 USDT','~5 min',100,'USD',1),
+      E('binance','bybit','bi',OC,'USDT','USDT','BEP20','0.29 USDT','~3 min',100,'USD',1),
+      E('bingx','bybit','bi',OC,'USDT','USDT','Arbitrum','0.8 USDT','~3 min',80,'USD',1),
+      E('bingx','bingx','uni','Transferencia interna','USDT','USDT','—','0','Inmediato',200,'USD',2,'Spot ↔ Futuros'),
+      E('bingx','bitso','uni',OC,'BCH','BCH','Bitcoin Cash','0.001 BCH','~10 min',100,'USD',1,'Para vender BCH a pesos'),
+      E('binance','whot','uni',OC,'ETH','ETH','Arbitrum','0.0001 ETH','~3 min',100,'USD',0.5),
+      E('whot','bybit','uni',OC,'USDT','USDT','Arbitrum','gas ~0.1 USD','~3 min',80,'USD',0.5),
+      E('binance','wcold','bi',OC,'BTC','BTC','Bitcoin','0.00002 BTC','~30 min',150,'USD',0.3,'Ahorro a largo plazo'),
+      E('bingx','wcold','bi',OC,'BCH','BCH','Bitcoin Cash','0.001 BCH','~10 min',200,'USD',0.5),
+      E('whot','bitrefill','uni','Pago con cripto','USDT','USDT','Arbitrum','gas','Inmediato',30,'USD',0.5,'Tarjetas de regalo'),
+      E('tdcbbva','amazon','uni','Tarjeta','MXN','MXN','—','0','Inmediato',1500,'MXN',2),
+      E('tdcbbva','meli','uni','Tarjeta','MXN','MXN','—','0','Inmediato',800,'MXN',1),
+      E('tdccostco','costco','uni','Tarjeta','MXN','MXN','—','0','Inmediato',2500,'MXN',2),
+      E('banamex','smartfit','uni','Tarjeta','MXN','MXN','—','0','Mensual',600,'MXN',1,'Cargo recurrente'),
+      E('banamex','super','uni','Tarjeta','MXN','MXN','—','0','Inmediato',1500,'MXN',4)
+    ],
+    view:{x:300,y:80,k:0.58},
+    layout:{mode:'libre'},
+    settings:{theme:'sistema',accent:'#c9962b',anim:true,labels:'compact',grid:true,fx:18.5}
+  };
+}
+
+/* ---------- Estado y migración ---------- */
+let S=null, migrated=0;
+try{ S=JSON.parse(localStorage.getItem(KEY)); }catch(e){}
+S = (!S||!S.nodes||S.example) ? sample() : migrate(S);
+function migrate(d){
+  d.lists=d.lists||{}; d.lists.medios=d.lists.medios||[]; d.lists.redes=d.lists.redes||['—']; d.lists.medioColors=d.lists.medioColors||{};
+  d.lists.monedas=d.lists.monedas||['MXN','USDT','USDC','BTC','ETH','BNB','BCH','CRV','LTC','XRP','LINK','AVAX','SNX','DYDX','SOL'];
+  d.layout=d.layout||{mode:'libre'}; d.view=d.view||{x:0,y:0,k:1}; d.groups=d.groups||[];
+  d.settings=Object.assign({theme:'sistema',accent:'#c9962b',anim:true,labels:'compact',grid:true,fx:18.5},d.settings||{});
+  // v2 → v3: las monedas dejan de ser cuadros; se vuelven lo que viaja en la flecha
+  const coinNodes=d.nodes.filter(n=>n.type==='moneda');
+  if(coinNodes.length){
+    const ids=new Set(coinNodes.map(n=>n.id));
+    d.edges.forEach(e=>{
+      if(ids.has(e.to)&&!ids.has(e.from)){ const o=d.nodes.find(n=>n.id===e.from); const c=d.nodes.find(n=>n.id===e.to).name; if(o&&!(o.coins||'').includes(c)) o.coins=(o.coins?o.coins+' · ':'')+c; }
+      if(ids.has(e.from)&&!ids.has(e.to)){ const o=d.nodes.find(n=>n.id===e.to); const c=d.nodes.find(n=>n.id===e.from).name; if(o&&!(o.coins||'').includes(c)) o.coins=(o.coins?o.coins+' · ':'')+c; }
+    });
+    coinNodes.forEach(n=>{ if(!d.lists.monedas.includes(n.name.toUpperCase())) d.lists.monedas.push(n.name.toUpperCase()); });
+    d.edges=d.edges.filter(e=>!ids.has(e.from)&&!ids.has(e.to));
+    d.nodes=d.nodes.filter(n=>!ids.has(n.id)); migrated=coinNodes.length;
+  }
+  d.nodes.forEach(n=>{ n.sub=n.sub||''; });
+  d.edges.forEach(e=>{ e.monto=e.monto??''; e.montoMon=e.montoMon||'USD'; e.veces=e.veces??''; });
+  d.version=3; return d;
+}
+S=migrate(S);
+
+let sel=null, conn=null, filterMedio='', query='', chartMetric='n', view='map', isDark=false, LAY={};
+function save(){ try{ localStorage.setItem(KEY,JSON.stringify(S)); }catch(e){} }
+function toast(t){ const x=$('#toast'); x.textContent=t; x.classList.add('show'); clearTimeout(toast.t); toast.t=setTimeout(()=>x.classList.remove('show'),2200); }
+const node=id=>S.nodes.find(n=>n.id===id);
+const edge=id=>S.edges.find(e=>e.id===id);
+const group=id=>S.groups.find(g=>g.id===id);
+function medioColor(m){
+  if(S.lists.medioColors[m]) return S.lists.medioColors[m];
+  const pal=SERIES[isDark?'dark':'light']; const i=S.lists.medios.indexOf(m);
+  return i<0?(isDark?'#9aa4b3':'#6b7584'):pal[i%pal.length];
+}
+const typeColor=t=>TYPE_COL[isDark?'dark':'light'][TYPES[t]?t:'otro'];
+const usd=e=>{ const m=parseFloat(e.monto); if(!isFinite(m)) return 0; return e.montoMon==='MXN'?m/(parseFloat(S.settings.fx)||1):m; };
+const vol=e=>{ const u=usd(e); if(!u) return 0; const v=parseFloat(e.veces); return u*(isFinite(v)?v:1); };
+const money=v=>'$'+Math.round(v).toLocaleString('es-MX');
+const arrowOf=e=>e.from===e.to?'↻':e.dir==='bi'?'⇄':'→';
+const isStore=id=>node(id)?.type==='tienda';
+const groupsOf=id=>S.groups.filter(g=>g.members.includes(id));
+const coinsLine=n=>n.coins||[...new Set(groupsOf(n.id).flatMap(g=>g.coins))].join(' · ');
+const kindLabel=n=>(TYPES[n.type]||'Otro')+(n.sub?' · '+n.sub:'')+(n.type==='tienda'?' · final':'');
+
+/* Reglas de tienda: es el final, solo recibe y en un sentido */
+function enforce(e,quiet){
+  let msg='';
+  if(isStore(e.from)&&!isStore(e.to)){ [e.from,e.to]=[e.to,e.from]; [e.sale,e.entra]=[e.entra,e.sale]; msg='Una tienda solo recibe: se volteó el sentido'; }
+  if(isStore(e.to)&&e.dir==='bi'){ e.dir='uni'; msg=msg||'Pagar en una tienda es de un solo sentido'; }
+  if(msg&&!quiet) toast(msg);
+  return !!msg;
+}
+
+/* ---------- Grupos: conversiones ---------- */
+const pk=(a,b)=>[a,b].sort().join('|');
+function pairMode(g,a,b){ const m=g.pairs[pk(a,b)]; if(m) return m; return (a===g.bridge||b===g.bridge)?'d':(g.bridge?'v':'n'); }
+function route(g,a,b){
+  if(a===b) return [a];
+  const m=pairMode(g,a,b);
+  if(m==='d') return [a,b];
+  if(m==='v'&&g.bridge&&g.coins.includes(g.bridge)&&pairMode(g,a,g.bridge)==='d'&&pairMode(g,g.bridge,b)==='d') return [a,g.bridge,b];
+  return null;
+}
+function groupSize(g){
+  let x=12,y=64,rows=1;
+  g.coins.forEach(c=>{ const w=c.length*7.2+16; if(x+w>GW-12){ x=12; y+=26; rows++; } x+=w+6; });
+  return {w:GW,h:y+20+14};
+}
+
+/* ---------- Tema ---------- */
+function lum(hex){ const h=hex.replace('#',''); const [r,g,b]=[0,2,4].map(i=>{let c=parseInt(h.substr(i,2),16)/255; return c<=.03928?c/12.92:Math.pow((c+.055)/1.055,2.4);}); return .2126*r+.7152*g+.0722*b; }
+function applyTheme(){
+  let key=S.settings.theme;
+  if(key==='sistema') key=matchMedia('(prefers-color-scheme: dark)').matches?'oscuro':'claro';
+  const th=THEMES[key]||THEMES.claro; isDark=th.dark;
+  const r=document.documentElement.style;
+  for(const k in th.v) r.setProperty('--'+k,th.v[k]);
+  const a=S.settings.accent||'#c9962b';
+  r.setProperty('--accent',a);
+  r.setProperty('--accent-soft',`color-mix(in srgb, ${a} ${isDark?28:20}%, ${th.v.panel})`);
+  r.setProperty('--on-accent',lum(a)>0.42?'#14110a':'#ffffff');
+  r.setProperty('--in',isDark?'#4cc683':'#1f8a5b'); r.setProperty('--out',isDark?'#ef8a6b':'#c2563b'); r.setProperty('--bad',isDark?'#ef6b6b':'#c23b3b');
+  r.setProperty('color-scheme',isDark?'dark':'light');
+  $('#gridDot').setAttribute('fill',S.settings.grid?th.v.grid:'transparent');
+}
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{ if(S.settings.theme==='sistema') renderAll(); });
+
+/* ---------- Acomodo ---------- */
+function computeLayout(){
+  LAY={};
+  const items=t=>t==='grupo'?S.groups:S.nodes.filter(n=>n.type===t);
+  if(S.layout.mode==='tipo'){
+    const order=['tienda','tarjeta','banco','otro','exchange','grupo','wallet'];
+    // tiendas cripto (que reciben de wallets/exchanges) van a la derecha
+    const cryptoStore=n=>n.type==='tienda'&&S.edges.some(e=>e.to===n.id&&['exchange','wallet'].includes(node(e.from)?.type));
+    const cols=[]; let cur=null;
+    const push=(list)=>{ if(list.length) cols.push(list); };
+    push(S.nodes.filter(n=>n.type==='tienda'&&!cryptoStore(n)));
+    push(S.nodes.filter(n=>['tarjeta','banco','otro'].includes(n.type)).sort((a,b)=>['tarjeta','banco','otro'].indexOf(a.type)-['tarjeta','banco','otro'].indexOf(b.type)));
+    push(S.nodes.filter(n=>n.type==='exchange'));
+    push(S.groups);
+    push([...S.nodes.filter(n=>n.type==='wallet'),...S.nodes.filter(cryptoStore)]);
+    const h=it=>it.members?groupSize(it).h:NH;
+    const colH=c=>c.reduce((s,it)=>s+h(it)+30,-30);
+    const maxH=Math.max(...cols.map(colH));
+    let x=0;
+    cols.forEach(c=>{ let y=(maxH-colH(c))/2; const w=c[0].members?GW:NW; c.forEach(it=>{ LAY[it.id]={x,y}; y+=h(it)+30; }); x+=w+110; });
+  }else if(S.layout.mode==='circular'){
+    const list=['tienda','tarjeta','banco','otro','exchange','wallet'].flatMap(t=>S.nodes.filter(n=>n.type===t));
+    const N=list.length, R=Math.max(300,N*(NW+30)/(2*Math.PI));
+    list.forEach((n,i)=>{ const a=-Math.PI/2+i*2*Math.PI/N; LAY[n.id]={x:Math.round(R*Math.cos(a)-NW/2),y:Math.round(R*Math.sin(a)*0.8-NH/2)}; });
+    let y=-S.groups.reduce((s,g)=>s+groupSize(g).h+20,0)/2;
+    S.groups.forEach(g=>{ LAY[g.id]={x:-GW/2,y}; y+=groupSize(g).h+20; });
+  }
+}
+const pos=n=>S.layout.mode==='libre'?n:(LAY[n.id]||n);
+function setLayout(m,quiet){
+  S.layout.mode=m; save();
+  $('#lyFree').setAttribute('aria-pressed',m==='libre'); $('#lyTipo').setAttribute('aria-pressed',m==='tipo'); $('#lyCirc').setAttribute('aria-pressed',m==='circular');
+  $('#bAdopt').hidden=m==='libre';
+  renderMap(); if(!quiet){ fit(); toast(m==='libre'?'Modo libre: tu acomodo guardado':'Ordenado. Libre conserva tu acomodo.'); }
+}
+$('#lyFree').onclick=()=>setLayout('libre');
+$('#lyTipo').onclick=()=>setLayout('tipo');
+$('#lyCirc').onclick=()=>setLayout('circular');
+$('#bAdopt').onclick=()=>confirmBox('¿Copiar este orden a tu acomodo libre? Reemplaza las posiciones que tenías en Libre.','Copiar orden',()=>{
+  [...S.nodes,...S.groups].forEach(n=>{ if(LAY[n.id]){ n.x=LAY[n.id].x; n.y=LAY[n.id].y; } }); setLayout('libre');
+});
+
+/* ---------- Mapa ---------- */
+const svg=$('#canvas'), world=$('#world'), gE=$('#gEdges'), gN=$('#gNodes');
+function applyView(){ world.setAttribute('transform',`translate(${S.view.x} ${S.view.y}) scale(${S.view.k})`); }
+function matches(e){
+  if(filterMedio&&e.medio!==filterMedio) return false;
+  if(!query) return true;
+  const a=node(e.from), b=node(e.to);
+  return [e.medio,e.sale,e.entra,e.red,e.notas,a&&a.name,b&&b.name].join(' ').toLowerCase().includes(query);
+}
+const nodeMatches=n=>!query||[n.name,coinsLine(n),n.notes,TYPES[n.type],n.sub].join(' ').toLowerCase().includes(query);
+const groupMatches=g=>!query||[g.name,g.coins.join(' '),g.notes].join(' ').toLowerCase().includes(query);
+function trimTo(cx,cy,w,h,tx,ty){ const vx=tx-cx, vy=ty-cy; const t=Math.min((w/2+7)/Math.abs(vx||1e-6),(h/2+7)/Math.abs(vy||1e-6)); return [cx+vx*Math.min(t,.49),cy+vy*Math.min(t,.49)]; }
+function edgeGeom(e,idx,count){
+  const a=node(e.from), b=node(e.to); if(!a||!b) return null;
+  const A=pos(a), B=pos(b);
+  if(a===b){
+    const r=24+idx*15, sx=A.x+NW*0.7, ex=A.x+NW*0.3, y0=A.y;
+    return {d:`M${sx} ${y0} C ${sx+r} ${y0-r*2.1}, ${ex-r} ${y0-r*2.1}, ${ex} ${y0}`, lx:A.x+NW/2, ly:y0-r*1.6};
+  }
+  const ax=A.x+NW/2, ay=A.y+NH/2, bx=B.x+NW/2, by=B.y+NH/2;
+  const sgn=([e.from,e.to].sort()[0]===e.from)?1:-1;
+  const k=(idx-(count-1)/2)*40*sgn;
+  const mx=(ax+bx)/2, my=(ay+by)/2, dx=bx-ax, dy=by-ay, L=Math.hypot(dx,dy)||1;
+  const cx=mx+(-dy/L)*k, cy=my+(dx/L)*k;
+  const [sx,sy]=trimTo(ax,ay,NW,NH,cx,cy), [ex,ey]=trimTo(bx,by,NW,NH,cx,cy);
+  return {d:`M${sx} ${sy} Q ${cx} ${cy} ${ex} ${ey}`, lx:.25*sx+.5*cx+.25*ex, ly:.25*sy+.5*cy+.25*ey};
+}
+
+function renderMap(){
+  if(S.layout.mode!=='libre') computeLayout();
+  applyView(); gE.innerHTML=''; gN.innerHTML='';
+  const defs=svg.querySelector('defs'); defs.querySelectorAll('marker').forEach(m=>m.remove());
+  new Set(S.edges.map(e=>medioColor(e.medio))).forEach(c=>{
+    const m=el('marker',{id:'m'+c.slice(1),viewBox:'0 0 10 10',refX:'9',refY:'5',markerWidth:'7',markerHeight:'7',orient:'auto-start-reverse'},defs);
+    el('path',{d:'M0 0 L10 5 L0 10 z',fill:c},m);
+  });
+  const focusNode=sel&&sel.kind==='node'?sel.id:null;
+  const focusGroup=sel&&sel.kind==='group'?group(sel.id):null;
+
+  // Líneas de pertenencia grupo ↔ exchange (no son dinero)
+  S.groups.forEach(g=>{
+    const G=pos(g), sz=groupSize(g), gcx=G.x+sz.w/2, gcy=G.y+sz.h/2;
+    g.members.forEach(mid=>{
+      const n=node(mid); if(!n) return; const P=pos(n);
+      const ncx=P.x+NW/2, ncy=P.y+NH/2;
+      const [sx,sy]=trimTo(gcx,gcy,sz.w,sz.h,ncx,ncy), [ex,ey]=trimTo(ncx,ncy,NW,NH,gcx,gcy);
+      const l=el('path',{class:'member',d:`M${sx} ${sy} L${ex} ${ey}`},gE);
+      if((focusNode&&focusNode!==mid)||(focusGroup&&focusGroup!==g)||(query&&!groupMatches(g))) l.classList.add('dim');
+    });
+  });
+
+  const groups={};
+  S.edges.forEach(e=>{ const k=e.from===e.to?'self:'+e.from:[e.from,e.to].sort().join('|'); (groups[k]=groups[k]||[]).push(e); });
+  Object.values(groups).forEach(list=>list.forEach((e,i)=>{
+    const g=edgeGeom(e,i,list.length); if(!g) return;
+    const c=medioColor(e.medio), mk=`url(#m${c.slice(1)})`;
+    const grp=el('g',{class:'edge '+(e.dir==='bi'?'bi':'uni')+(sel&&sel.kind==='edge'&&sel.id===e.id?' sel':''),'data-edge':e.id},gE);
+    if(!matches(e)||(focusNode&&e.from!==focusNode&&e.to!==focusNode)||(focusGroup&&!focusGroup.members.includes(e.from)&&!focusGroup.members.includes(e.to))) grp.classList.add('dim');
+    el('path',{class:'line',d:g.d,stroke:c,'marker-end':mk,...(e.dir==='bi'?{'marker-start':mk}:{})},grp);
+    if(S.settings.anim&&e.dir!=='bi') el('path',{class:'flow',d:g.d,stroke:c},grp);
+    el('path',{class:'hit',d:g.d},grp);
+    if(S.settings.labels!=='none'){
+      const conv=e.sale&&e.entra&&e.sale!==e.entra?`${e.sale}→${e.entra}`:(e.sale||e.entra||'');
+      const red=e.red&&e.red!=='—'?e.red:'';
+      const parts=S.settings.labels==='full'?[e.medio,conv,red]:[conv||e.medio,red];
+      const txt=arrowOf(e)+' '+parts.filter(Boolean).join(' · ');
+      const lbl=el('g',{class:'lbl'},grp); const w=txt.length*6.35+14;
+      el('rect',{x:g.lx-w/2,y:g.ly-10,width:w,height:20,rx:10,stroke:c},lbl);
+      el('text',{x:g.lx,y:g.ly+3.6,'text-anchor':'middle'},lbl).textContent=txt;
+    }
+    grp.addEventListener('pointerdown',ev=>{ if(ev.button!==0) return; ev.stopPropagation(); if(!conn) select('edge',e.id); });
+  }));
+
+  // Grupos de monedas
+  S.groups.forEach(gr=>{
+    const G=pos(gr), sz=groupSize(gr);
+    let cls='group'+(S.layout.mode!=='libre'?' locked':'')+(sel&&sel.kind==='group'&&sel.id===gr.id?' sel':'');
+    const g=el('g',{class:cls,transform:`translate(${G.x} ${G.y})`,'data-group':gr.id},gN);
+    if((query&&!groupMatches(gr))||(focusNode&&!gr.members.includes(focusNode))) g.classList.add('dim');
+    el('rect',{class:'gbody',width:sz.w,height:sz.h,rx:14},g);
+    el('text',{class:'kind',x:14,y:20},g).textContent='Grupo de monedas';
+    el('text',{class:'name',x:14,y:38},g).textContent=gr.name.length>28?gr.name.slice(0,27)+'…':gr.name;
+    const mem=gr.members.map(id=>node(id)?.name).filter(Boolean).join(' · ');
+    el('text',{class:'coins',x:14,y:53},g).textContent=(gr.bridge?'Puente '+gr.bridge+(mem?' · ':''):'')+(mem.length>30?mem.slice(0,29)+'…':mem);
+    let x=12,y=64;
+    gr.coins.forEach(c=>{
+      const w=c.length*7.2+16; if(x+w>GW-12){ x=12; y+=26; }
+      el('rect',{class:'chip'+(c===gr.bridge?' bridge':''),x,y,width:w,height:20,rx:10},g);
+      el('text',{class:'chipt',x:x+w/2,y:y+14,'text-anchor':'middle'},g).textContent=c;
+      x+=w+6;
+    });
+    g.addEventListener('pointerdown',ev=>itemDown(ev,gr,'group'));
+  });
+
+  // Cuentas
+  S.nodes.forEach(n=>{
+    const P=pos(n), c=typeColor(n.type), store=n.type==='tienda';
+    let cls='node'+(store?' store':'')+(S.layout.mode!=='libre'?' locked':'');
+    if(sel&&sel.kind==='node'&&sel.id===n.id) cls+=' sel';
+    if(conn){ cls+=' pick'; if(conn.from===n.id) cls+=' src'; if(conn.targets.includes(n.id)) cls+=' tgt'; }
+    const g=el('g',{class:cls,transform:`translate(${P.x} ${P.y})`,'data-node':n.id},gN);
+    const linked=!focusNode||focusNode===n.id||S.edges.some(e=>(e.from===focusNode&&e.to===n.id)||(e.to===focusNode&&e.from===n.id));
+    if((query&&!nodeMatches(n))||!linked||(focusGroup&&!focusGroup.members.includes(n.id)&&!S.edges.some(e=>(focusGroup.members.includes(e.from)&&e.to===n.id)||(focusGroup.members.includes(e.to)&&e.from===n.id)))) g.classList.add('dim');
+    el('rect',{class:'body',width:NW,height:NH,rx:10},g);
+    if(store){ el('rect',{x:NW-4,y:8,width:4,height:NH-16,rx:2,fill:c},g); el('rect',{x:NW-10,y:8,width:2,height:NH-16,rx:1,fill:c},g); }
+    else el('rect',{x:0,y:8,width:4,height:NH-16,rx:2,fill:c},g);
+    el('text',{class:'kind',x:14,y:18,fill:c},g).textContent=kindLabel(n);
+    el('text',{class:'name',x:14,y:36},g).textContent=n.name.length>20?n.name.slice(0,19)+'…':n.name;
+    const cl=(store?'Acepta: ':'')+coinsLine(n);
+    if(cl.trim()&&cl!=='Acepta: ') el('text',{class:'coins',x:14,y:50},g).textContent=cl.length>25?cl.slice(0,24)+'…':cl;
+    if(!conn){
+      const p=el('g',{class:'plus',transform:`translate(${store?0:NW} ${NH/2})`},g);
+      el('title',{},p).textContent=store?'Agregar quién le paga':'Agregar conexión';
+      el('circle',{r:10},p); el('path',{d:'M-4.5 0 H4.5 M0 -4.5 V4.5'},p);
+      p.addEventListener('pointerdown',ev=>{ if(ev.button!==0) return; ev.stopPropagation(); startConn(n.id); });
+    }
+    g.addEventListener('pointerdown',ev=>itemDown(ev,n,'node'));
+  });
+  renderLegend();
+  $('#banner').hidden=!S.example;
+}
+
+function renderLegend(){
+  const medios=[...new Set(S.edges.map(e=>e.medio).filter(Boolean))];
+  $('#legend').innerHTML=medios.map(m=>`<span><i style="background:${medioColor(m)}"></i>${esc(m)}</span>`).join('')+
+    `<span style="color:var(--fg)">→ un sentido · ⇄ ambos · ↻ interno · ┄ comparte grupo</span>`;
+  const f=$('#fMedio'); f.innerHTML='<option value="">Todos los medios</option>'+S.lists.medios.map(m=>`<option ${m===filterMedio?'selected':''}>${esc(m)}</option>`).join('');
+}
+
+/* ---------- Interacción ---------- */
+function toWorld(cx,cy){ const r=svg.getBoundingClientRect(); return {x:(cx-r.left-S.view.x)/S.view.k, y:(cy-r.top-S.view.y)/S.view.k}; }
+let drag=null;
+function itemDown(ev,it,kind){
+  if(ev.button!==0) return;
+  ev.stopPropagation(); closeCtx();
+  if(conn){ if(kind==='node') pickConn(it.id); else toast('Los grupos se ligan desde su panel'); return; }
+  select(kind,it.id);
+  if(S.layout.mode!=='libre') return;
+  const p=toWorld(ev.clientX,ev.clientY);
+  drag={type:'item',it,dx:p.x-it.x,dy:p.y-it.y,moved:false};
+  svg.setPointerCapture(ev.pointerId);
+}
+svg.addEventListener('pointerdown',ev=>{
+  closeCtx();
+  if(ev.button!==0) return;
+  if(ev.target!==svg&&ev.target.id!=='bgRect') return;
+  drag={type:'pan',sx:ev.clientX,sy:ev.clientY,vx:S.view.x,vy:S.view.y,moved:false};
+  svg.setPointerCapture(ev.pointerId);
+});
+svg.addEventListener('pointermove',ev=>{
+  if(!drag) return;
+  if(drag.type==='item'){
+    const p=toWorld(ev.clientX,ev.clientY);
+    drag.it.x=Math.round((p.x-drag.dx)/6)*6; drag.it.y=Math.round((p.y-drag.dy)/6)*6; drag.moved=true; renderMap();
+  }else{
+    S.view.x=drag.vx+ev.clientX-drag.sx; S.view.y=drag.vy+ev.clientY-drag.sy;
+    if(Math.abs(ev.clientX-drag.sx)+Math.abs(ev.clientY-drag.sy)>3) drag.moved=true;
+    applyView();
+  }
+});
+svg.addEventListener('pointerup',()=>{
+  if(drag){ if(drag.type==='pan'&&!drag.moved&&!conn&&sel){ sel=null; renderMap(); renderSide(); } if(drag.moved) save(); }
+  drag=null;
+});
+svg.addEventListener('dblclick',ev=>{
+  if(ev.target!==svg&&ev.target.id!=='bgRect') return;
+  const p=toWorld(ev.clientX,ev.clientY); addNode('exchange',p.x-NW/2,p.y-NH/2);
+});
+svg.addEventListener('wheel',ev=>{ ev.preventDefault(); zoomAt(ev.clientX,ev.clientY,ev.deltaY<0?1.12:1/1.12); },{passive:false});
+function zoomAt(cx,cy,f){
+  const r=svg.getBoundingClientRect(), px=cx-r.left, py=cy-r.top;
+  const k=Math.min(2.5,Math.max(.2,S.view.k*f)); f=k/S.view.k;
+  S.view.x=px-(px-S.view.x)*f; S.view.y=py-(py-S.view.y)*f; S.view.k=k; applyView(); save();
+}
+function fit(){
+  if($('#mapView').hidden) return;
+  const boxes=[...S.nodes.map(n=>({...pos(n),w:NW,h:NH})),...S.groups.map(g=>({...pos(g),...groupSize(g)}))];
+  if(!boxes.length) return;
+  const minx=Math.min(...boxes.map(b=>b.x))-50, miny=Math.min(...boxes.map(b=>b.y))-100;
+  const maxx=Math.max(...boxes.map(b=>b.x+b.w))+50, maxy=Math.max(...boxes.map(b=>b.y+b.h))+120;
+  const r=svg.getBoundingClientRect(); if(!r.width) return;
+  const k=Math.min(1.6,Math.max(.2,Math.min(r.width/(maxx-minx),r.height/(maxy-miny))));
+  S.view={k,x:(r.width-(maxx-minx)*k)/2-minx*k,y:(r.height-(maxy-miny)*k)/2-miny*k}; applyView(); save();
+}
+const center=()=>{ const r=svg.getBoundingClientRect(); return [r.left+r.width/2,r.top+r.height/2]; };
+$('#zIn').onclick=()=>zoomAt(...center(),1.2);
+$('#zOut').onclick=()=>zoomAt(...center(),1/1.2);
+$('#zFit').onclick=fit;
+
+/* Menú contextual */
+function closeCtx(){ document.querySelectorAll('.ctx').forEach(c=>c.remove()); }
+function ctxMenu(x,y,items){
+  closeCtx();
+  const m=document.createElement('div'); m.className='ctx'; m.setAttribute('role','menu');
+  items.forEach(it=>{
+    if(it==='-'){ m.appendChild(document.createElement('hr')); return; }
+    if(it.h){ const h=document.createElement('div'); h.className='h'; h.textContent=it.h; m.appendChild(h); return; }
+    const b=document.createElement('button'); b.setAttribute('role','menuitem');
+    b.className=(it.on?'on ':'')+(it.danger?'danger':''); if(it.off) b.disabled=true;
+    b.innerHTML=`<span class="ic">${it.ic||''}</span>${esc(it.t)}`;
+    b.onclick=()=>{ closeCtx(); it.f(); };
+    m.appendChild(b);
+  });
+  document.body.appendChild(m);
+  const r=m.getBoundingClientRect();
+  m.style.left=Math.max(8,Math.min(x,innerWidth-r.width-8))+'px';
+  m.style.top=Math.max(8,Math.min(y,innerHeight-r.height-8))+'px';
+  m.querySelector('button')?.focus();
+}
+const newLabel=(k,v)=>k==='otro'?'Otro (persona, efectivo…)':((k==='tarjeta'||k==='wallet'||k==='tienda')?'Nueva ':'Nuevo ')+v.toLowerCase();
+const addItems=(X,Y)=>[...Object.entries(TYPES).map(([k,v])=>({ic:'＋',t:newLabel(k,v),f:()=>addNode(k,X,Y)})),{ic:'◫',t:'Nuevo grupo de monedas',f:()=>addGroup(X,Y)}];
+document.addEventListener('pointerdown',ev=>{ if(!ev.target.closest('.ctx')) closeCtx(); });
+svg.addEventListener('contextmenu',ev=>{
+  ev.preventDefault();
+  const eg=ev.target.closest('[data-edge]'), ng=ev.target.closest('[data-node]'), gg=ev.target.closest('[data-group]');
+  if(eg){
+    const e=edge(eg.dataset.edge); select('edge',e.id); const a=node(e.from), b=node(e.to); const st=isStore(e.to);
+    ctxMenu(ev.clientX,ev.clientY,[
+      {h:`${a?.name} ${arrowOf(e)} ${b?.name}`},
+      {ic:'→',t:'Un sentido',on:e.dir==='uni',f:()=>setDir(e,'uni')},
+      {ic:'⇄',t:st?'Ambos sentidos (no en tiendas)':'Ambos sentidos',on:e.dir==='bi',off:st,f:()=>setDir(e,'bi')},
+      {ic:'⇅',t:'Invertir sentido',off:st,f:()=>swapEdge(e)},
+      '-',
+      {ic:'✎',t:'Editar flujo',f:()=>select('edge',e.id)},
+      {ic:'⧉',t:'Duplicar',f:()=>dupEdge(e)},
+      {ic:'✕',t:'Borrar flujo',danger:true,f:askDelete}
+    ]);
+  }else if(gg){
+    const g=group(gg.dataset.group); select('group',g.id);
+    ctxMenu(ev.clientX,ev.clientY,[
+      {h:g.name},
+      {ic:'✎',t:'Editar grupo y conversiones',f:()=>select('group',g.id)},
+      {ic:'⧉',t:'Duplicar grupo',f:()=>{ const c=JSON.parse(JSON.stringify(g)); c.id=uid(); c.name+=' (copia)'; c.x+=30; c.y+=60; S.groups.push(c); save(); select('group',c.id); }},
+      '-',{ic:'✕',t:'Borrar grupo',danger:true,f:askDelete}
+    ]);
+  }else if(ng){
+    const n=node(ng.dataset.node); select('node',n.id);
+    ctxMenu(ev.clientX,ev.clientY,[
+      {h:n.name},
+      {ic:'+',t:n.type==='tienda'?'Agregar quién le paga':'Conectar desde aquí',f:()=>startConn(n.id)},
+      {ic:'✎',t:'Editar',f:()=>{ select('node',n.id); setTimeout(()=>$('#nName')?.select(),20); }},
+      {ic:'⧉',t:'Duplicar',f:()=>{ const c={...n,id:uid(),name:n.name+' (copia)',x:n.x+30,y:n.y+80}; S.nodes.push(c); save(); select('node',c.id); }},
+      '-',{ic:'✕',t:'Borrar',danger:true,f:askDelete}
+    ]);
+  }else{
+    const p=toWorld(ev.clientX,ev.clientY), X=p.x-NW/2, Y=p.y-NH/2;
+    ctxMenu(ev.clientX,ev.clientY,[
+      {h:'Agregar aquí'},...addItems(X,Y),
+      '-',{h:'Acomodo'},
+      {ic:'✥',t:'Libre',on:S.layout.mode==='libre',f:()=>setLayout('libre')},
+      {ic:'▥',t:'Ordenar por tipo',on:S.layout.mode==='tipo',f:()=>setLayout('tipo')},
+      {ic:'◯',t:'Ordenar en círculo',on:S.layout.mode==='circular',f:()=>setLayout('circular')},
+      {ic:'⤢',t:'Ajustar a la vista',f:fit}
+    ]);
+  }
+});
+
+function newPos(x,y){ if(x!==undefined) return [Math.round(x),Math.round(y)]; const p=toWorld(...center()); return [Math.round(p.x-NW/2+Math.random()*60-30),Math.round(p.y-NH/2+Math.random()*60-30)]; }
+function addNode(type,x,y){
+  [x,y]=newPos(x,y);
+  const n={id:uid(),name:newLabel(type,TYPES[type]).replace(/^Otro.*/,'Otro'),type,x,y,coins:'',notes:'',sub:SUBS[type]?SUBS[type][0]:''};
+  S.nodes.push(n); save(); select('node',n.id);
+  if(S.layout.mode!=='libre') toast('Se agregó al orden; en Libre queda donde la pusiste');
+  setTimeout(()=>{ const i=$('#nName'); if(i){ i.focus(); i.select(); } },30);
+}
+function addGroup(x,y){
+  [x,y]=newPos(x,y);
+  const g={id:uid(),name:'Nuevo grupo',x,y,members:[],coins:['USDT','BTC','ETH'],bridge:'USDT',pairs:{},notes:''};
+  S.groups.push(g); save(); select('group',g.id);
+  setTimeout(()=>{ const i=$('#gName'); if(i){ i.focus(); i.select(); } },30);
+}
+$('#bAdd').onclick=ev=>{ const r=ev.target.getBoundingClientRect(); ctxMenu(r.left,r.bottom+4,[{h:'Agregar'},...addItems()]); };
+
+/* Conexión múltiple */
+function startConn(from){
+  conn={from:from||null,targets:[],dir:isStore(from)?'in':'out',medio:isStore(from)?'Tarjeta':(S.lists.medios[0]||'')};
+  sel=from?{kind:'node',id:from}:null; $('#bLink').classList.add('active'); renderConnBar(); renderMap(); renderSide();
+}
+function endConn(){ conn=null; $('#bLink').classList.remove('active'); $('#connbar').hidden=true; renderMap(); }
+$('#bLink').onclick=()=>conn?endConn():startConn(null);
+function pickConn(id){
+  if(!conn.from){ conn.from=id; if(isStore(id)){ conn.dir='in'; conn.medio='Tarjeta'; } }
+  else{ const i=conn.targets.indexOf(id); if(i>=0) conn.targets.splice(i,1); else conn.targets.push(id); }
+  renderConnBar(); renderMap();
+}
+function renderConnBar(){
+  const b=$('#connbar'); b.hidden=false;
+  if(!conn.from){ b.innerHTML=`<span class="t">Conectar:</span><span>clic en la cuenta de origen</span><button class="btn" id="cX">Cancelar</button>`; $('#cX').onclick=endConn; return; }
+  const f=node(conn.from), n=conn.targets.length, st=f.type==='tienda';
+  b.innerHTML=`<span class="t">${st?'Quién le paga a':'Desde'} ${esc(f.name)}</span><span>clic en una o varias cuentas <span class="count">${n}</span></span>
+    <select id="cDir" aria-label="Sentido" ${st?'disabled':''}><option value="out">Sale de ${esc(f.name)} →</option><option value="in">Entra a ${esc(f.name)} ←</option><option value="bi">Ambos sentidos ⇄</option></select>
+    <select id="cMedio" aria-label="Medio">${S.lists.medios.map(m=>`<option ${m===conn.medio?'selected':''}>${esc(m)}</option>`).join('')}</select>
+    <button class="btn primary" id="cOk" ${n?'':'disabled'}>Crear ${n||''} ${n===1?'conexión':'conexiones'}</button><button class="btn" id="cX">Cancelar</button>`;
+  $('#cDir').value=conn.dir; $('#cDir').onchange=e=>conn.dir=e.target.value; $('#cMedio').onchange=e=>conn.medio=e.target.value;
+  $('#cX').onclick=endConn;
+  $('#cOk').onclick=()=>{
+    let fixed=0;
+    const made=conn.targets.map(t=>{
+      const [a,b]=conn.dir==='in'?[t,conn.from]:[conn.from,t];
+      const e={id:uid(),from:a,to:b,dir:conn.dir==='bi'&&a!==b?'bi':'uni',medio:conn.medio,sale:'',entra:'',red:'—',comision:'',tiempo:'',monto:'',montoMon:'USD',veces:'',notas:''};
+      if(enforce(e,true)) fixed++;
+      S.edges.push(e); return e;
+    });
+    const from=conn.from; save(); endConn();
+    if(made.length===1) select('edge',made[0].id); else select('node',from);
+    toast(made.length+(made.length===1?' flujo creado':' flujos creados')+(fixed?' · las tiendas quedaron como destino final':''));
+  };
+}
+
+function select(kind,id){ sel={kind,id}; renderMap(); renderSide(); }
+function setDir(e,d){
+  if(d==='bi'&&isStore(e.to)){ toast('Pagar en una tienda es de un solo sentido'); return; }
+  e.dir=d; save(); renderMap(); renderSide(); toast(d==='bi'?'Ahora en ambos sentidos ⇄':'Ahora en un sentido →');
+}
+function swapEdge(e){
+  if(isStore(e.to)){ toast('Una tienda es el final: no se puede invertir'); return; }
+  [e.from,e.to]=[e.to,e.from]; [e.sale,e.entra]=[e.entra,e.sale]; enforce(e); save(); renderMap(); renderSide(); toast('Sentido invertido');
+}
+function dupEdge(e){ const c={...e,id:uid()}; S.edges.push(c); save(); select('edge',c.id); toast('Flujo duplicado'); }
+
+document.addEventListener('keydown',ev=>{
+  if(ev.key==='Escape'){ closeCtx(); if(conn) endConn(); else if(sel){ sel=null; renderMap(); renderSide(); } }
+  if(['INPUT','TEXTAREA','SELECT'].includes(document.activeElement.tagName)) return;
+  if((ev.key==='Delete'||ev.key==='Backspace')&&sel&&view==='map') askDelete();
+});
+
+/* ---------- Panel lateral ---------- */
+function listOptions(listName,value,blank){
+  const opts=S.lists[listName], v=value??'';
+  return (blank?`<option value="" ${v?'':'selected'}>${blank}</option>`:'')+(v&&!opts.includes(v)?`<option selected>${esc(v)}</option>`:'')+opts.map(o=>`<option ${o===v?'selected':''}>${esc(o)}</option>`).join('')+'<option value="__new">+ Agregar nueva…</option>';
+}
+const LIST_TITLE={medios:'Nuevo medio',redes:'Nueva red',monedas:'Nueva moneda'};
+function onListSelect(s,listName,apply){
+  s.addEventListener('change',()=>{
+    if(s.value!=='__new'){ apply(s.value); return; }
+    promptBox(LIST_TITLE[listName],'',v=>{ if(listName==='monedas') v=v.toUpperCase(); if(!S.lists[listName].includes(v)) S.lists[listName].push(v); apply(v); },()=>apply(null));
+  });
+}
+function flowLine(e,me){
+  const a=node(e.from), b=node(e.to);
+  const conv=e.sale&&e.entra&&e.sale!==e.entra?`${e.sale} → ${e.entra}`:(e.sale||e.entra||'');
+  const other=e.from===me?b:a;
+  const who=e.from===e.to?'Dentro de la cuenta':`${e.dir==='bi'?'⇄':e.from===me?'→':'←'} ${esc(other?.name||'?')}`;
+  return `<div class="flow" data-edge="${e.id}"><div>${who}</div><div class="m"><span class="dot" style="background:${medioColor(e.medio)}"></span> ${esc(e.medio||'Sin medio')}${conv?' · '+esc(conv):''}${e.red&&e.red!=='—'?' · '+esc(e.red):''}${e.comision?' · '+esc(e.comision):''}</div></div>`;
+}
+
+/* Editor de grupo (se usa en el panel y en el catálogo) */
+function groupEditor(g,prefix){
+  const cands=S.nodes.filter(n=>['exchange','wallet'].includes(n.type));
+  const coinsAvail=S.lists.monedas.filter(c=>!g.coins.includes(c));
+  return `<div class="field"><label for="${prefix}Name">Nombre del grupo</label><input id="${prefix}Name" data-g="name" value="${esc(g.name)}"></div>
+    <div class="field"><label>Lo comparten</label><div class="checks">${cands.map(n=>`<label class="ck"><input type="checkbox" data-mem="${n.id}" ${g.members.includes(n.id)?'checked':''}> <span class="dot" style="background:${typeColor(n.type)}"></span>${esc(n.name)}</label>`).join('')||'<span class="empty">Agrega exchanges o wallets primero</span>'}</div></div>
+    <div class="field"><label>Monedas del grupo</label><div class="coinset">${g.coins.map(c=>`<span class="cchip${c===g.bridge?' br':''}">${esc(c)}<button data-rmcoin="${esc(c)}" aria-label="Quitar ${esc(c)}">×</button></span>`).join('')}
+      <select data-addcoin aria-label="Agregar moneda"><option value="">+ moneda</option>${coinsAvail.map(c=>`<option>${esc(c)}</option>`).join('')}<option value="__new">+ Nueva…</option></select></div></div>
+    <div class="field"><label>Moneda puente</label><select data-g="bridge"><option value="">Ninguna (todo directo o nada)</option>${g.coins.map(c=>`<option ${c===g.bridge?'selected':''}>${esc(c)}</option>`).join('')}</select></div>
+    <div class="field"><label>Conversiones · clic en una casilla para cambiarla</label>
+      <div class="mxwrap">${matrixHTML(g)}</div>
+      <div class="mxleg"><span><b class="d">✓</b> Directo</span><span><b class="v">${esc(g.bridge?g.bridge.slice(0,4):'↻')}</b> Vía ${esc(g.bridge||'puente')}</span><span><b class="n">—</b> No se puede</span></div></div>
+    <div class="field"><label>Probar una conversión</label><div class="rt"><select data-rt="a">${g.coins.map(c=>`<option>${esc(c)}</option>`).join('')}</select><span>→</span><select data-rt="b">${g.coins.map((c,i)=>`<option ${i===Math.min(1,g.coins.length-1)?'selected':''}>${esc(c)}</option>`).join('')}</select></div><div class="rtout" data-rtout></div></div>
+    <div class="field"><label for="${prefix}Notes">Notas</label><textarea id="${prefix}Notes" data-g="notes">${esc(g.notes)}</textarea></div>`;
+}
+function matrixHTML(g){
+  const cs=g.coins;
+  if(cs.length<2) return '<p class="empty">Agrega al menos dos monedas.</p>';
+  const cell=(a,b)=>{ if(a===b) return `<td class="dg">·</td>`; const m=pairMode(g,a,b); const t={d:'✓',v:g.bridge?g.bridge.slice(0,4):'↻',n:'—'}[m];
+    const tl={d:`${a} ↔ ${b}: directo`,v:`${a} ↔ ${b}: vía ${g.bridge}`,n:`${a} ↔ ${b}: no se puede`}[m];
+    return `<td class="${m}"><button data-pair="${esc(a)}|${esc(b)}" title="${esc(tl)}">${esc(t)}</button></td>`; };
+  return `<table class="mx"><thead><tr><th></th>${cs.map(c=>`<th>${esc(c)}</th>`).join('')}</tr></thead><tbody>${cs.map(a=>`<tr><th>${esc(a)}</th>${cs.map(b=>cell(a,b)).join('')}</tr>`).join('')}</tbody></table>`;
+}
+function wireGroupEditor(root,g,rerender){
+  const changed=()=>{ save(); renderMap(); };
+  root.querySelectorAll('[data-g]').forEach(i=>i.addEventListener(i.tagName==='SELECT'?'change':'input',()=>{ g[i.dataset.g]=i.value; changed(); if(i.dataset.g==='bridge') rerender(); }));
+  root.querySelectorAll('[data-mem]').forEach(c=>c.onchange=()=>{ const id=c.dataset.mem; g.members=c.checked?[...g.members,id]:g.members.filter(x=>x!==id); changed(); });
+  root.querySelectorAll('[data-rmcoin]').forEach(b=>b.onclick=()=>{ const c=b.dataset.rmcoin; g.coins=g.coins.filter(x=>x!==c); if(g.bridge===c) g.bridge=''; Object.keys(g.pairs).forEach(k=>{ if(k.split('|').includes(c)) delete g.pairs[k]; }); changed(); rerender(); });
+  const add=root.querySelector('[data-addcoin]');
+  if(add) add.onchange=()=>{
+    const put=c=>{ if(c&&!g.coins.includes(c)) g.coins.push(c); changed(); rerender(); };
+    if(add.value==='__new') promptBox('Nueva moneda','',v=>{ v=v.toUpperCase(); if(!S.lists.monedas.includes(v)) S.lists.monedas.push(v); put(v); },rerender);
+    else put(add.value);
+  };
+  root.querySelectorAll('[data-pair]').forEach(b=>b.onclick=()=>{
+    const [a,c]=b.dataset.pair.split('|'); const cur=pairMode(g,a,c);
+    const cycle=g.bridge&&a!==g.bridge&&c!==g.bridge?{d:'v',v:'n',n:'d'}:{d:'n',n:'d',v:'d'};
+    g.pairs[pk(a,c)]=cycle[cur]; changed(); rerender();
+  });
+  const ra=root.querySelector('[data-rt="a"]'), rb=root.querySelector('[data-rt="b"]'), out=root.querySelector('[data-rtout]');
+  const test=()=>{ if(!ra||!out) return; const r=route(g,ra.value,rb.value);
+    out.innerHTML=!r?`<span class="bad">No hay ruta en este grupo</span>`:r.length===1?'Es la misma moneda':`${r.map(esc).join(' → ')} <span class="muted">· ${r.length-1} ${r.length===2?'operación':'operaciones'}</span>`; };
+  if(ra){ ra.onchange=test; rb.onchange=test; test(); }
+}
+
+function renderSide(){
+  const side=$('#side');
+  if(!sel){
+    side.innerHTML=`<div><div class="eyebrow">Resumen</div><h2>${S.nodes.length} lugares · ${S.edges.length} flujos · ${S.groups.length} grupos</h2></div>
+      <p class="empty">Los cuadros son lugares donde está o termina tu dinero. La moneda es lo que viaja por la flecha.</p>
+      <div class="field"><label>Cómo se lee</label><div class="empty" style="font-size:12.5px;display:flex;flex-direction:column;gap:5px">
+        <span><b>Flecha</b>: medio (color) + moneda que viaja + red.</span>
+        <span><b>Grupo de monedas</b> (borde punteado): monedas que comparten varios exchanges y qué se convierte directo o vía puente.</span>
+        <span><b>Tienda</b>: el final del camino. Solo recibe y muestra qué medios de pago acepta.</span></div></div>
+      <div class="field"><label>Atajos</label><div class="empty" style="font-size:12.5px;display:flex;flex-direction:column;gap:5px">
+        <span><b>Clic derecho en vacío</b>: agregar lugar o grupo ahí mismo.</span>
+        <span><b>Botón +</b>: elige una o varias cuentas y crea todas las conexiones juntas.</span>
+        <span><b>Clic derecho en una flecha</b>: un sentido, ambos o invertir.</span></div></div>`;
+    return;
+  }
+  if(sel.kind==='group'){
+    const g=group(sel.id); if(!g){ sel=null; return renderSide(); }
+    side.innerHTML=`<div><div class="eyebrow">Grupo de monedas</div><h2>${esc(g.name)}</h2></div>${groupEditor(g,'g')}
+      <div class="actions"><button class="btn danger" id="gDel">Borrar grupo</button></div>`;
+    wireGroupEditor(side,g,renderSide);
+    $('#gName').addEventListener('input',()=>side.querySelector('h2').textContent=g.name);
+    $('#gDel').onclick=askDelete;
+    return;
+  }
+  if(sel.kind==='node'){
+    const n=node(sel.id); if(!n){ sel=null; return renderSide(); }
+    const store=n.type==='tienda';
+    const ins=S.edges.filter(e=>e.from!==e.to&&(e.to===n.id||(e.dir==='bi'&&e.from===n.id)));
+    const outs=S.edges.filter(e=>e.from!==e.to&&(e.from===n.id||(e.dir==='bi'&&e.to===n.id)));
+    const self=S.edges.filter(e=>e.from===n.id&&e.to===n.id);
+    const gs=groupsOf(n.id);
+    side.innerHTML=`<div><div class="eyebrow" style="color:${typeColor(n.type)}">${esc(kindLabel(n))}</div><h2>${esc(n.name)}</h2></div>
+      <div class="field"><label for="nName">Nombre</label><input id="nName" value="${esc(n.name)}"></div>
+      <div class="row2"><div class="field"><label for="nType">Tipo</label><select id="nType">${Object.entries(TYPES).map(([k,v])=>`<option value="${k}" ${k===n.type?'selected':''}>${v}</option>`).join('')}</select></div>
+      ${SUBS[n.type]?`<div class="field"><label for="nSub">Clase</label><select id="nSub">${SUBS[n.type].map(s=>`<option ${s===n.sub?'selected':''}>${s}</option>`).join('')}</select></div>`:'<div></div>'}</div>
+      <div class="field"><label for="nCoins">${store?'Medios de pago que acepta':n.type==='exchange'?'Monedas (opcional; los grupos ya las dicen)':'Monedas que maneja'}</label><input id="nCoins" value="${esc(n.coins)}" placeholder="${store?'TDC · Débito · USDT':'MXN · USDT · BTC'}"></div>
+      ${n.type==='exchange'||n.type==='wallet'?`<div class="field"><label>Grupos de monedas (${gs.length})</label><div class="flows">${gs.map(g=>`<div class="flow" data-grp="${g.id}"><div>${esc(g.name)}</div><div class="m">${esc(g.coins.join(' · '))}${g.bridge?' · puente '+esc(g.bridge):''}</div></div>`).join('')||'<span class="empty">No está en ningún grupo</span>'}</div></div>`:''}
+      <div class="field"><label for="nNotes">Notas</label><textarea id="nNotes" placeholder="Usuario, límites, para qué la usas…">${esc(n.notes)}</textarea></div>
+      <div class="field"><label>${store?'Le pagan desde':'Entra dinero desde'} (${ins.length})</label><div class="flows">${ins.map(e=>flowLine(e,n.id)).join('')||`<span class="empty">${store?'Nadie le paga todavía':'Nada entra aquí todavía'}</span>`}</div></div>
+      ${store?'':`<div class="field"><label>Sale dinero hacia (${outs.length})</label><div class="flows">${outs.map(e=>flowLine(e,n.id)).join('')||'<span class="empty">Nada sale de aquí todavía</span>'}</div></div>`}
+      ${self.length?`<div class="field"><label>Dentro de la cuenta (${self.length})</label><div class="flows">${self.map(e=>flowLine(e,n.id)).join('')}</div></div>`:''}
+      <div class="actions"><button class="btn primary" id="nLink">${store?'+ Agregar quién le paga':'+ Conectar desde aquí'}</button><button class="btn danger" id="nDel">Borrar</button></div>`;
+    const upd=(k,v)=>{ n[k]=v; save(); renderMap(); };
+    $('#nName').oninput=e=>{ upd('name',e.target.value||'Sin nombre'); side.querySelector('h2').textContent=n.name; };
+    $('#nType').onchange=e=>{
+      n.type=e.target.value; n.sub=SUBS[n.type]?SUBS[n.type][0]:'';
+      let f=0; S.edges.forEach(x=>{ if(x.from===n.id||x.to===n.id) f+=enforce(x,true)?1:0; });
+      save(); renderMap(); renderSide(); if(f) toast(`${f} flujos se ajustaron: la tienda solo recibe`);
+    };
+    $('#nSub')&&($('#nSub').onchange=e=>{ upd('sub',e.target.value); side.querySelector('.eyebrow').textContent=kindLabel(n); });
+    $('#nCoins').oninput=e=>upd('coins',e.target.value);
+    $('#nNotes').oninput=e=>upd('notes',e.target.value);
+    $('#nDel').onclick=askDelete;
+    $('#nLink').onclick=()=>startConn(n.id);
+    side.querySelectorAll('[data-grp]').forEach(f=>f.onclick=()=>select('group',f.dataset.grp));
+  }else{
+    const e=edge(sel.id); if(!e){ sel=null; return renderSide(); }
+    const a=node(e.from), b=node(e.to), st=isStore(e.to);
+    const nodeOpts=v=>S.nodes.map(x=>`<option value="${x.id}" ${x.id===v?'selected':''}>${esc(x.name)}${x.type==='tienda'?' (tienda)':''}</option>`).join('');
+    const via=[...groupsOf(e.from)].filter(g=>e.sale&&e.entra&&e.sale!==e.entra&&g.coins.includes(e.sale)&&g.coins.includes(e.entra)).map(g=>route(g,e.sale,e.entra)).find(Boolean);
+    side.innerHTML=`<div><div class="eyebrow" style="color:${medioColor(e.medio)}">${st?'Pago · final':'Flujo'}</div><h2>${esc(a?.name||'?')} ${arrowOf(e)} ${esc(b?.name||'?')}</h2></div>
+      <div class="row2"><div class="field"><label for="eFrom">Origen</label><select id="eFrom">${nodeOpts(e.from)}</select></div>
+      <div class="field"><label for="eTo">Destino</label><select id="eTo">${nodeOpts(e.to)}</select></div></div>
+      <div class="field"><label>Sentido${st?' · las tiendas solo reciben':''}</label><div class="dirpick">
+        <button data-d="uni" aria-pressed="${e.dir==='uni'}">→ Un sentido</button>
+        <button data-d="bi" aria-pressed="${e.dir==='bi'}" ${st?'disabled':''}>⇄ Ambos</button>
+        <button data-d="swap" aria-pressed="false" ${st?'disabled':''}>⇅ Invertir</button></div></div>
+      <div class="field"><label for="eMedio">Medio</label><select id="eMedio">${listOptions('medios',e.medio)}</select></div>
+      <div class="row2"><div class="field"><label for="eSale">Moneda que sale</label><select id="eSale">${listOptions('monedas',e.sale,'—')}</select></div>
+      <div class="field"><label for="eEntra">Moneda que llega</label><select id="eEntra">${listOptions('monedas',e.entra,'—')}</select></div></div>
+      ${via&&via.length>2?`<div class="note">En ${esc(a.name)} esta conversión va ${via.map(esc).join(' → ')}</div>`:''}
+      <div class="field"><label for="eRed">Red</label><select id="eRed">${listOptions('redes',e.red)}</select></div>
+      <div class="row2"><div class="field"><label for="eCom">Comisión</label><input id="eCom" value="${esc(e.comision)}" placeholder="1 USDT / 0.1%"></div>
+      <div class="field"><label for="eTiempo">Tiempo</label><input id="eTiempo" value="${esc(e.tiempo)}" placeholder="~5 min"></div></div>
+      <div class="subhead">Volumen (alimenta las gráficas)</div>
+      <div class="row3"><div class="field"><label for="eMonto">Monto típico</label><input id="eMonto" type="number" min="0" step="any" value="${esc(e.monto)}"></div>
+      <div class="field"><label for="eMon">En</label><select id="eMon"><option ${e.montoMon==='USD'?'selected':''}>USD</option><option ${e.montoMon==='MXN'?'selected':''}>MXN</option></select></div>
+      <div class="field"><label for="eVeces">Veces al mes</label><input id="eVeces" type="number" min="0" step="any" value="${esc(e.veces)}"></div></div>
+      <div class="field"><label for="eNotas">Notas</label><textarea id="eNotas" placeholder="Monto mínimo, dirección/memo, cuándo lo usas…">${esc(e.notas)}</textarea></div>
+      <div class="actions"><button class="btn" id="eDup">Duplicar</button><button class="btn danger" id="eDel">Borrar flujo</button></div>`;
+    const upd=(k,v,re)=>{ e[k]=v; if(['from','to'].includes(k)) enforce(e); save(); renderMap(); if(re) renderSide(); };
+    $('#eFrom').onchange=x=>upd('from',x.target.value,1);
+    $('#eTo').onchange=x=>upd('to',x.target.value,1);
+    side.querySelectorAll('.dirpick button').forEach(btn=>btn.onclick=()=>btn.dataset.d==='swap'?swapEdge(e):setDir(e,btn.dataset.d));
+    onListSelect($('#eMedio'),'medios',v=>v===null?renderSide():upd('medio',v,1));
+    onListSelect($('#eRed'),'redes',v=>v===null?renderSide():upd('red',v,1));
+    onListSelect($('#eSale'),'monedas',v=>{ if(v===null) return renderSide(); const old=e.sale; e.sale=v; if(!e.entra||e.entra===old) e.entra=v; save(); renderMap(); renderSide(); });
+    onListSelect($('#eEntra'),'monedas',v=>v===null?renderSide():upd('entra',v,1));
+    $('#eCom').oninput=x=>upd('comision',x.target.value);
+    $('#eTiempo').oninput=x=>upd('tiempo',x.target.value);
+    $('#eMonto').oninput=x=>upd('monto',x.target.value);
+    $('#eMon').onchange=x=>upd('montoMon',x.target.value);
+    $('#eVeces').oninput=x=>upd('veces',x.target.value);
+    $('#eNotas').oninput=x=>upd('notas',x.target.value);
+    $('#eDel').onclick=askDelete;
+    $('#eDup').onclick=()=>dupEdge(e);
+  }
+  side.querySelectorAll('.flow[data-edge]').forEach(f=>f.onclick=()=>select('edge',f.dataset.edge));
+}
+
+/* ---------- Diálogos ---------- */
+function confirmBox(msg,okText,onOk){
+  const m=document.createElement('div'); m.className='modal';
+  m.innerHTML=`<div class="box" role="dialog" aria-modal="true"><div>${msg}</div><div class="actions" style="justify-content:flex-end"><button class="btn" data-x>Cancelar</button><button class="btn primary" data-ok>${okText}</button></div></div>`;
+  document.body.appendChild(m);
+  m.querySelector('[data-x]').onclick=()=>m.remove();
+  m.querySelector('[data-ok]').onclick=()=>{ m.remove(); onOk(); };
+  m.addEventListener('click',e=>{ if(e.target===m) m.remove(); });
+  m.querySelector('[data-ok]').focus();
+}
+function promptBox(title,val,onOk,onCancel){
+  const m=document.createElement('div'); m.className='modal';
+  m.innerHTML=`<div class="box" role="dialog" aria-modal="true"><b>${esc(title)}</b><input value="${esc(val)}" aria-label="${esc(title)}"><div class="actions" style="justify-content:flex-end"><button class="btn" data-x>Cancelar</button><button class="btn primary" data-ok>Agregar</button></div></div>`;
+  document.body.appendChild(m);
+  const i=m.querySelector('input'); i.focus();
+  const ok=()=>{ const v=i.value.trim(); if(!v){ i.focus(); return; } m.remove(); onOk(v); };
+  const no=()=>{ m.remove(); onCancel&&onCancel(); };
+  m.querySelector('[data-x]').onclick=no; m.querySelector('[data-ok]').onclick=ok;
+  i.addEventListener('keydown',e=>{ if(e.key==='Enter') ok(); if(e.key==='Escape') no(); });
+}
+function askDelete(){
+  if(!sel) return;
+  if(sel.kind==='node'){
+    const n=node(sel.id); const k=S.edges.filter(e=>e.from===n.id||e.to===n.id).length;
+    confirmBox(`¿Borrar <b>${esc(n.name)}</b>${k?` y sus ${k} flujos`:''}?`,'Borrar',()=>{
+      S.nodes=S.nodes.filter(x=>x.id!==n.id); S.edges=S.edges.filter(e=>e.from!==n.id&&e.to!==n.id); S.groups.forEach(g=>g.members=g.members.filter(m=>m!==n.id));
+      sel=null; save(); renderAll(); toast('Borrado');
+    });
+  }else if(sel.kind==='group'){
+    const g=group(sel.id);
+    confirmBox(`¿Borrar el grupo <b>${esc(g.name)}</b>? Las cuentas y flujos se quedan.`,'Borrar',()=>{ S.groups=S.groups.filter(x=>x.id!==g.id); sel=null; save(); renderAll(); toast('Grupo borrado'); });
+  }else{
+    const id=sel.id;
+    confirmBox('¿Borrar este flujo?','Borrar',()=>{ S.edges=S.edges.filter(e=>e.id!==id); sel=null; save(); renderAll(); toast('Flujo borrado'); });
+  }
+}
+
+/* ---------- Catálogo editable ---------- */
+function renderCatalog(){
+  const v=$('#catView');
+  v.innerHTML=`<div class="page-in">
+    <div class="headrow"><div><h2>Catálogo de flujos</h2><p class="sub">Edita directo en la tabla; los cambios se guardan y se ven en el mapa.</p></div>
+    <div class="actions"><button class="btn primary" id="tAdd">+ Nuevo flujo</button></div></div>
+    <div class="tablewrap"><table id="flowTable"><thead><tr><th>#</th><th style="width:170px">Origen</th><th style="width:138px">Sentido</th><th style="width:170px">Destino</th><th style="width:175px">Medio</th><th style="width:96px">Sale</th><th style="width:96px">Llega</th><th style="width:118px">Red</th><th style="width:100px">Comisión</th><th style="width:90px">Tiempo</th><th style="width:90px">Monto</th><th style="width:70px">En</th><th style="width:72px">Veces/mes</th><th>Notas</th><th style="width:96px"></th></tr></thead><tbody id="tBody"></tbody></table></div>
+    <div class="headrow"><div><h2 style="font-size:15px">Grupos de monedas</h2><p class="sub">Qué monedas comparten tus exchanges y cómo se convierten entre ellas.</p></div><button class="btn" id="gAdd">+ Nuevo grupo</button></div>
+    <div class="gcards" id="gcards"></div>
+    <div><h2 style="font-size:15px">Por lugar</h2><p class="sub">Clic en una tarjeta para verla en el mapa.</p></div>
+    <div class="cards" id="cards"></div></div>`;
+  fillTable(); renderGroupCards(); renderCards();
+  $('#tAdd').onclick=()=>{
+    if(!S.nodes.length){ toast('Primero agrega un lugar en el mapa'); return; }
+    const e={id:uid(),from:S.nodes[0].id,to:(S.nodes[1]||S.nodes[0]).id,dir:'uni',medio:S.lists.medios[0]||'',sale:'',entra:'',red:'—',comision:'',tiempo:'',monto:'',montoMon:'USD',veces:'',notas:''};
+    enforce(e,true); S.edges.push(e); save(); renderMap(); filterMedio=''; query=''; $('#q').value=''; renderLegend(); fillTable(); renderCards();
+    const row=document.querySelector(`tr[data-edge="${e.id}"]`); row.classList.add('hl'); row.scrollIntoView({block:'center'}); row.querySelector('select').focus();
+  };
+  $('#gAdd').onclick=()=>{ const g={id:uid(),name:'Nuevo grupo',x:720,y:700,members:[],coins:['USDT','BTC','ETH'],bridge:'USDT',pairs:{},notes:''}; S.groups.push(g); save(); renderGroupCards(); };
+}
+function renderGroupCards(){
+  const box=$('#gcards'); if(!box) return;
+  box.innerHTML=S.groups.filter(groupMatches).map(g=>`<div class="gcard" data-gc="${g.id}">${groupEditor(g,'c'+g.id)}<div class="actions"><button class="btn sm" data-gmap>◎ Ver en el mapa</button><button class="btn sm danger" data-gdel>Borrar grupo</button></div></div>`).join('')||'<p class="empty">Sin grupos todavía.</p>';
+  box.querySelectorAll('[data-gc]').forEach(c=>{
+    const g=group(c.dataset.gc);
+    wireGroupEditor(c,g,()=>{ renderGroupCards(); renderCards(); });
+    c.querySelector('[data-gmap]').onclick=()=>{ showView('map'); select('group',g.id); };
+    c.querySelector('[data-gdel]').onclick=()=>confirmBox(`¿Borrar el grupo <b>${esc(g.name)}</b>?`,'Borrar',()=>{ S.groups=S.groups.filter(x=>x.id!==g.id); save(); renderMap(); renderGroupCards(); });
+  });
+}
+function rowHTML(e,i){
+  const nodeOpts=v=>S.nodes.map(x=>`<option value="${x.id}" ${x.id===v?'selected':''}>${esc(x.name)}</option>`).join('');
+  const st=isStore(e.to);
+  return `<tr data-edge="${e.id}"><td class="ix">${i+1}</td>
+  <td><select class="cell" data-k="from">${nodeOpts(e.from)}</select></td>
+  <td><select class="cell" data-k="dir" ${st||e.from===e.to?'disabled':''}><option value="uni" ${e.dir!=='bi'?'selected':''}>${e.from===e.to?'↻ Interno':st?'→ Pago final':'→ Un sentido'}</option><option value="bi" ${e.dir==='bi'?'selected':''}>⇄ Ambos</option></select></td>
+  <td><select class="cell" data-k="to">${nodeOpts(e.to)}</select></td>
+  <td><select class="cell" data-k="medio" data-list="medios" style="border-left:3px solid ${medioColor(e.medio)}">${listOptions('medios',e.medio)}</select></td>
+  <td><select class="cell mono" data-k="sale" data-list="monedas">${listOptions('monedas',e.sale,'—')}</select></td>
+  <td><select class="cell mono" data-k="entra" data-list="monedas">${listOptions('monedas',e.entra,'—')}</select></td>
+  <td><select class="cell" data-k="red" data-list="redes">${listOptions('redes',e.red)}</select></td>
+  <td><input class="cell" data-k="comision" value="${esc(e.comision)}" aria-label="Comisión"></td>
+  <td><input class="cell" data-k="tiempo" value="${esc(e.tiempo)}" aria-label="Tiempo"></td>
+  <td><input class="cell num" type="number" step="any" min="0" data-k="monto" value="${esc(e.monto)}" aria-label="Monto"></td>
+  <td><select class="cell" data-k="montoMon"><option ${e.montoMon!=='MXN'?'selected':''}>USD</option><option ${e.montoMon==='MXN'?'selected':''}>MXN</option></select></td>
+  <td><input class="cell num" type="number" step="any" min="0" data-k="veces" value="${esc(e.veces)}" aria-label="Veces al mes"></td>
+  <td><input class="cell" data-k="notas" value="${esc(e.notas)}" aria-label="Notas"></td>
+  <td class="act"><button class="btn sm" data-a="swap" title="Invertir sentido" ${st?'disabled':''}>⇅</button> <button class="btn sm" data-a="map" title="Ver en el mapa">◎</button> <button class="btn sm danger" data-a="del" title="Borrar">✕</button></td></tr>`;
+}
+function fillTable(){
+  const tb=$('#tBody'); if(!tb) return;
+  const list=S.edges.filter(matches);
+  tb.innerHTML=list.map(e=>rowHTML(e,S.edges.indexOf(e))).join('')||`<tr><td colspan="15" class="empty" style="padding:14px">Sin flujos que coincidan con la búsqueda o el filtro.</td></tr>`;
+  tb.querySelectorAll('tr[data-edge]').forEach(tr=>{
+    const e=edge(tr.dataset.edge);
+    tr.querySelectorAll('[data-k]').forEach(c=>{
+      const k=c.dataset.k;
+      c.addEventListener(c.tagName==='SELECT'?'change':'input',()=>{
+        const v=c.value;
+        if(c.dataset.list&&v==='__new'){
+          promptBox(LIST_TITLE[c.dataset.list],'',nv=>{ if(c.dataset.list==='monedas') nv=nv.toUpperCase(); if(!S.lists[c.dataset.list].includes(nv)) S.lists[c.dataset.list].push(nv); e[k]=nv; save(); renderMap(); fillTable(); renderCards(); },()=>fillTable());
+          return;
+        }
+        e[k]=v;
+        if(k==='sale'&&!e.entra) e.entra=v;
+        const fixed=['from','to'].includes(k)&&enforce(e);
+        save(); renderMap();
+        if(['from','to','medio','sale','dir'].includes(k)||fixed){ renderCards(); fillTable(); }
+      });
+    });
+    tr.querySelector('[data-a="swap"]').onclick=()=>{ if(isStore(e.to)) return; [e.from,e.to]=[e.to,e.from]; [e.sale,e.entra]=[e.entra,e.sale]; enforce(e); save(); renderMap(); fillTable(); renderCards(); toast('Sentido invertido'); };
+    tr.querySelector('[data-a="map"]').onclick=()=>{ showView('map'); select('edge',e.id); };
+    tr.querySelector('[data-a="del"]').onclick=()=>confirmBox('¿Borrar este flujo?','Borrar',()=>{ S.edges=S.edges.filter(x=>x.id!==e.id); save(); renderMap(); fillTable(); renderCards(); toast('Flujo borrado'); });
+  });
+}
+function renderCards(){
+  const box=$('#cards'); if(!box) return;
+  const ord=['tarjeta','banco','otro','exchange','wallet','tienda'];
+  box.innerHTML=S.nodes.filter(nodeMatches).sort((a,b)=>ord.indexOf(a.type)-ord.indexOf(b.type)).map(n=>{
+    const store=n.type==='tienda';
+    const ins=S.edges.filter(e=>e.from!==e.to&&(e.to===n.id||(e.dir==='bi'&&e.from===n.id)));
+    const outs=S.edges.filter(e=>e.from!==e.to&&(e.from===n.id||(e.dir==='bi'&&e.to===n.id)));
+    const self=S.edges.filter(e=>e.from===n.id&&e.to===n.id);
+    const other=e=>esc(node(e.from===n.id?e.to:e.from)?.name||'?');
+    const desc=e=>`${esc(e.medio||'—')}${e.sale?' · '+esc(!e.entra||e.sale===e.entra?e.sale:e.sale+'→'+e.entra):''}${e.red&&e.red!=='—'?' · '+esc(e.red):''}`;
+    const gs=groupsOf(n.id);
+    return `<div class="card" data-node="${n.id}"><h3><span class="dot" style="background:${typeColor(n.type)}"></span>${esc(n.name)} <span class="chip">${esc(kindLabel(n))}</span></h3>
+      ${coinsLine(n)?`<div class="empty" style="font-family:var(--f-mono);font-size:11.5px">${store?'Acepta: ':''}${esc(coinsLine(n))}</div>`:''}
+      ${gs.length?`<h4>Grupos</h4><div class="empty" style="font-size:12.5px">${gs.map(g=>esc(g.name)).join(' · ')}</div>`:''}
+      <h4>${store?'Le pagan desde':'Entra desde'}</h4>${ins.length?`<ul>${ins.map(e=>`<li>${other(e)} — ${desc(e)}</li>`).join('')}</ul>`:'<div class="empty">—</div>'}
+      ${store?'':`<h4>Sale hacia</h4>${outs.length?`<ul>${outs.map(e=>`<li>${other(e)} — ${desc(e)}</li>`).join('')}</ul>`:'<div class="empty">—</div>'}`}
+      ${self.length?`<h4>Dentro de la cuenta</h4><ul>${self.map(e=>`<li>${desc(e)}</li>`).join('')}</ul>`:''}</div>`;
+  }).join('');
+  box.querySelectorAll('.card').forEach(c=>c.onclick=()=>{ showView('map'); select('node',c.dataset.node); });
+}
+
+/* ---------- Gráficas ---------- */
+function agg(rows,keyFn,valFn){ const m=new Map(); rows.forEach(r=>{ const k=keyFn(r); if(k==null||k==='') return; m.set(k,(m.get(k)||0)+valFn(r)); }); return [...m.entries()].map(([k,v])=>({k,v})).filter(x=>x.v>0).sort((a,b)=>b.v-a.v); }
+function bars(rows,color,fmt,tip,emptyMsg){
+  if(!rows.length) return `<p class="empty">${emptyMsg||(chartMetric==='v'?'Sin montos capturados. Agrega monto y veces al mes en los flujos.':'Sin datos.')}</p>`;
+  const max=Math.max(...rows.map(r=>r.v));
+  return `<div class="bars">${rows.map(r=>`<div class="bl" title="${esc(r.k)}">${esc(r.k)}</div><div class="track" title="${esc(r.k)}: ${tip(r.v)}"><div class="bar" style="width:${(r.v/max*100).toFixed(1)}%;background:${r.c||color}"></div></div><div class="bv">${fmt(r.v)}</div>`).join('')}</div>`;
+}
+function renderCharts(){
+  const v=$('#chartsView');
+  const E=S.edges.filter(matches);
+  const isV=chartMetric==='v';
+  const val=isV?vol:()=>1;
+  const fmt=isV?money:(x=>String(Math.round(x*10)/10));
+  const tip=isV?(x=>money(x)+' USD al mes'):(x=>x+(x===1?' flujo':' flujos'));
+  const unit=isV?'Volumen mensual estimado (USD)':'Número de flujos';
+  const total=E.reduce((s,e)=>s+vol(e),0);
+  const toStores=E.filter(e=>isStore(e.to));
+  const gasto=toStores.reduce((s,e)=>s+vol(e),0);
+  const sinMonto=E.filter(e=>!usd(e)).length;
+  const byMedio=agg(E,e=>e.medio,val).map(r=>({...r,c:medioColor(r.k)}));
+  const byCoin=agg(E,e=>e.sale||e.entra,val);
+  const byStore=agg(toStores,e=>node(e.to)?.name,val);
+  const ext=E.filter(e=>e.from!==e.to);
+  const io=S.nodes.filter(n=>n.type!=='tienda').map(n=>{
+    let i=0,o=0; ext.forEach(e=>{ const w=val(e); if(e.to===n.id||(e.dir==='bi'&&e.from===n.id)) i+=w; if(e.from===n.id||(e.dir==='bi'&&e.to===n.id)) o+=w; });
+    return {n,i,o};
+  }).filter(r=>r.i||r.o).sort((a,b)=>(b.i+b.o)-(a.i+a.o)).slice(0,14);
+  const maxIO=Math.max(1,...io.map(r=>Math.max(r.i,r.o)));
+  const routes=E.map(e=>({e,v:vol(e)})).filter(r=>r.v>0).sort((a,b)=>b.v-a.v).slice(0,8)
+    .map(r=>({k:`${node(r.e.from)?.name} ${arrowOf(r.e)} ${node(r.e.to)?.name}${r.e.sale?' · '+r.e.sale:''}`,v:r.v,c:medioColor(r.e.medio)}));
+  const counts=Object.keys(TYPES).map(t=>{ const c=S.nodes.filter(n=>n.type===t).length; return c?`${c} ${TYPES[t].toLowerCase()}${c>1?(t==='tarjeta'||t==='tienda'?'s':t==='banco'?'s':'s'):''}`:''; }).filter(Boolean).join(' · ');
+
+  v.innerHTML=`<div class="page-in">
+    <div class="headrow"><div><h2>Gráficas</h2><p class="sub">${filterMedio||query?'Con el filtro actual · ':''}Tipo de cambio ${S.settings.fx} MXN por USD (cámbialo en Configuración).</p></div>
+      <div class="seg" role="group" aria-label="Medida"><button id="mN" aria-pressed="${!isV}">Número de flujos</button><button id="mV" aria-pressed="${isV}">Volumen mensual (USD)</button></div></div>
+    <div class="kpis">
+      <div class="kpi"><div class="l">Lugares</div><div class="v">${S.nodes.length}</div><div class="s">${counts}</div></div>
+      <div class="kpi"><div class="l">Flujos</div><div class="v">${E.length}</div><div class="s">${E.filter(e=>e.dir==='bi').length} de ida y vuelta · ${toStores.length} pagos a tiendas</div></div>
+      <div class="kpi"><div class="l">Gasto mensual en tiendas</div><div class="v">${money(gasto)}</div><div class="s">USD · ${total?Math.round(gasto/total*100):0}% del volumen</div></div>
+      <div class="kpi"><div class="l">Volumen mensual total</div><div class="v">${money(total)}</div><div class="s">${sinMonto?sinMonto+' flujos sin monto no cuentan':'Todos los flujos tienen monto'}</div></div>
+    </div>
+    <div class="charts">
+      <div class="chart"><h3>Por medio</h3><p class="cs">${unit}</p>${bars(byMedio,'var(--accent)',fmt,tip)}</div>
+      <div class="chart"><h3>Entradas y salidas por lugar</h3><p class="cs">${unit} · los flujos ⇄ cuentan en ambos lados</p>
+        <div class="leg"><span><i style="background:var(--in)"></i>Entra</span><span><i style="background:var(--out)"></i>Sale</span></div>
+        ${io.length?`<div class="div">${io.map(r=>`<div class="bl" title="${esc(r.n.name)}">${esc(r.n.name)}</div>
+          <div class="side l" title="Entra a ${esc(r.n.name)}: ${tip(r.i)}"><div class="bar" style="width:${(r.i/maxIO*86).toFixed(1)}%;background:var(--in)"></div><span class="bv">${r.i?fmt(r.i):''}</span></div>
+          <div class="side r" title="Sale de ${esc(r.n.name)}: ${tip(r.o)}"><div class="bar" style="width:${(r.o/maxIO*86).toFixed(1)}%;background:var(--out)"></div><span class="bv">${r.o?fmt(r.o):''}</span></div>`).join('')}</div>`:'<p class="empty">Sin datos.</p>'}</div>
+      <div class="chart"><h3>Gasto por tienda</h3><p class="cs">${unit} · pagos que terminan en tiendas</p>${bars(byStore,'var(--out)',fmt,tip,'Sin pagos a tiendas todavía.')}</div>
+      <div class="chart"><h3>Moneda que viaja</h3><p class="cs">${unit} · según la moneda que sale</p>${bars(byCoin,'var(--accent)',fmt,tip)}</div>
+      <div class="chart" style="grid-column:1/-1"><h3>Rutas con más volumen</h3><p class="cs">Volumen mensual estimado (USD) · color = medio</p>${bars(routes,'var(--accent)',money,x=>money(x)+' USD al mes','Sin montos capturados.')}</div>
+    </div></div>`;
+  $('#mN').onclick=()=>{ chartMetric='n'; renderCharts(); };
+  $('#mV').onclick=()=>{ chartMetric='v'; renderCharts(); };
+}
+
+/* ---------- Configuración ---------- */
+function renderConfig(){
+  const st=S.settings, v=$('#cfgView');
+  const uses=m=>S.edges.filter(e=>e.medio===m).length, usesR=r=>S.edges.filter(e=>e.red===r).length;
+  const usesC=c=>S.edges.filter(e=>e.sale===c||e.entra===c).length+S.groups.filter(g=>g.coins.includes(c)).length;
+  const themeCard=(k,label,th)=>`<button class="theme" data-th="${k}" aria-pressed="${st.theme===k}"><div class="pv" style="background:${th.v.paper}"><b style="background:${th.v.panel};border:1px solid ${th.v.line}"></b><u style="background:${th.v.muted}"></u><s style="background:${st.accent}"></s></div><span>${label}</span></button>`;
+  const sys={v:{paper:'linear-gradient(90deg,#f8f9fc 50%,#131a25 50%)',panel:'#ffffff',line:'#d5dbe6',muted:'#93a0b4'}};
+  const simpleList=(name,arr,usesF)=>`<div class="lst" id="lst_${name}">${arr.map((r,i)=>`<div class="it nc"><input type="text" value="${esc(r)}" data-i="${i}" aria-label="Nombre"><span class="uses">${usesF(r)}</span><button class="btn sm danger" data-del="${i}" title="Quitar de la lista">✕</button></div>`).join('')}</div>`;
+  v.innerHTML=`<div class="page-in"><div><h2>Configuración</h2><p class="sub">Se guarda junto con tu mapa y viaja en el respaldo JSON.</p></div>
+  <div class="settings">
+    <div class="sbox"><h3>Tema</h3><div class="themes">${themeCard('sistema','Sistema',sys)}${Object.entries(THEMES).map(([k,t])=>themeCard(k,t.label,t)).join('')}</div></div>
+    <div class="sbox"><h3>Color de acento</h3>
+      <div class="swatches">${ACCENTS.map(([n,c])=>`<button class="sw" data-ac="${c}" title="${n}" aria-label="${n}" aria-pressed="${st.accent.toLowerCase()===c}" style="background:${c}"></button>`).join('')}
+      <label class="opt" style="gap:8px"><input type="color" id="acCustom" value="${st.accent}"> <span class="d">Personalizado</span></label></div>
+      <div class="opt"><span class="d">Se usa en botones, selección, grupos de monedas y barras de las gráficas.</span></div></div>
+    <div class="sbox"><h3>Mapa</h3>
+      <div class="opt"><div>Animación de flujo<div class="d">Puntos que avanzan en las flechas de un sentido</div></div><div class="seg"><button data-o="anim" data-v="1" aria-pressed="${st.anim}">Sí</button><button data-o="anim" data-v="0" aria-pressed="${!st.anim}">No</button></div></div>
+      <div class="opt"><div>Etiquetas en flechas<div class="d">Compactas: moneda y red; el color dice el medio</div></div><div class="seg"><button data-o="labels" data-v="full" aria-pressed="${st.labels==='full'}">Completas</button><button data-o="labels" data-v="compact" aria-pressed="${st.labels!=='full'&&st.labels!=='none'}">Compactas</button><button data-o="labels" data-v="none" aria-pressed="${st.labels==='none'}">Ocultas</button></div></div>
+      <div class="opt"><div>Cuadrícula de puntos</div><div class="seg"><button data-o="grid" data-v="1" aria-pressed="${st.grid}">Sí</button><button data-o="grid" data-v="0" aria-pressed="${!st.grid}">No</button></div></div>
+      <div class="opt"><div>Tipo de cambio<div class="d">MXN por 1 USD, para sumar montos en pesos</div></div><input id="fx" type="number" step="0.01" min="0" value="${st.fx}" style="width:100px;border:1px solid var(--line);background:var(--paper);border-radius:7px;padding:6px 8px;text-align:right"></div></div>
+    <div class="sbox"><h3>Medios</h3><div class="lst" id="lstMedios">${S.lists.medios.map((m,i)=>`<div class="it"><input type="color" value="${medioColor(m)}" data-i="${i}" aria-label="Color de ${esc(m)}"><input type="text" value="${esc(m)}" data-i="${i}" aria-label="Nombre"><span class="uses">${uses(m)}</span><button class="btn sm danger" data-del="${i}" title="Quitar de la lista">✕</button></div>`).join('')}</div>
+      <div class="actions"><button class="btn" id="addMedio">+ Agregar medio</button><button class="btn" id="resetColors">Colores por defecto</button></div></div>
+    <div class="sbox"><h3>Monedas</h3><p class="d" style="margin:0;font-size:12px;color:var(--muted)">Lo que viaja en las flechas y lo que forma los grupos. Renombrar cambia todos los usos.</p>${simpleList('monedas',S.lists.monedas,usesC)}
+      <div class="actions"><button class="btn" id="addCoin">+ Agregar moneda</button></div></div>
+    <div class="sbox"><h3>Redes</h3>${simpleList('redes',S.lists.redes,usesR)}
+      <div class="actions"><button class="btn" id="addRed">+ Agregar red</button></div></div>
+    <div class="sbox"><h3>Datos</h3>
+      <div class="opt"><div>Respaldo<div class="d">Tu mapa vive en este navegador. Exporta el JSON para no perderlo.</div></div><div class="actions"><button class="btn" id="cfgExport">Exportar</button><button class="btn" id="cfgImport">Importar JSON</button></div></div>
+      <div class="opt"><div>Mapa de ejemplo<div class="d">Reemplaza el mapa actual por el ejemplo base</div></div><button class="btn" id="cfgSample">Cargar ejemplo</button></div>
+      <div class="opt"><div>Empezar de cero<div class="d">Borra lugares, flujos y grupos; conserva listas y configuración</div></div><button class="btn danger" id="cfgClear">Borrar mapa</button></div></div>
+  </div></div>`;
+  const re=()=>{ save(); applyTheme(); renderMap(); renderConfig(); };
+  v.querySelectorAll('[data-th]').forEach(b=>b.onclick=()=>{ st.theme=b.dataset.th; re(); });
+  v.querySelectorAll('[data-ac]').forEach(b=>b.onclick=()=>{ st.accent=b.dataset.ac; re(); });
+  $('#acCustom').oninput=e=>{ st.accent=e.target.value; save(); applyTheme(); renderMap(); };
+  $('#acCustom').onchange=()=>renderConfig();
+  v.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{ const k=b.dataset.o; st[k]=k==='labels'?b.dataset.v:b.dataset.v==='1'; re(); });
+  $('#fx').oninput=e=>{ st.fx=parseFloat(e.target.value)||st.fx; save(); };
+  $('#lstMedios').querySelectorAll('input[type=color]').forEach(c=>c.oninput=()=>{ S.lists.medioColors[S.lists.medios[c.dataset.i]]=c.value; save(); renderMap(); });
+  $('#lstMedios').querySelectorAll('input[type=text]').forEach(t=>t.onchange=()=>{
+    const i=+t.dataset.i, old=S.lists.medios[i], nw=t.value.trim(); if(!nw||nw===old) return;
+    S.lists.medios[i]=nw; S.edges.forEach(e=>{ if(e.medio===old) e.medio=nw; });
+    if(S.lists.medioColors[old]){ S.lists.medioColors[nw]=S.lists.medioColors[old]; delete S.lists.medioColors[old]; }
+    re(); toast('Medio renombrado en todos sus flujos');
+  });
+  $('#lstMedios').querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{ const m=S.lists.medios[b.dataset.del]; confirmBox(`¿Quitar <b>${esc(m)}</b> de la lista? Los ${uses(m)} flujos que lo usan lo conservan.`,'Quitar',()=>{ S.lists.medios.splice(b.dataset.del,1); re(); }); });
+  $('#lst_redes').querySelectorAll('input[type=text]').forEach(t=>t.onchange=()=>{
+    const i=+t.dataset.i, old=S.lists.redes[i], nw=t.value.trim(); if(!nw||nw===old) return;
+    S.lists.redes[i]=nw; S.edges.forEach(e=>{ if(e.red===old) e.red=nw; }); re(); toast('Red renombrada en todos sus flujos');
+  });
+  $('#lst_redes').querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{ S.lists.redes.splice(b.dataset.del,1); re(); });
+  $('#lst_monedas').querySelectorAll('input[type=text]').forEach(t=>t.onchange=()=>{
+    const i=+t.dataset.i, old=S.lists.monedas[i], nw=t.value.trim().toUpperCase(); if(!nw||nw===old) return;
+    S.lists.monedas[i]=nw;
+    S.edges.forEach(e=>{ if(e.sale===old) e.sale=nw; if(e.entra===old) e.entra=nw; });
+    S.groups.forEach(g=>{ g.coins=g.coins.map(c=>c===old?nw:c); if(g.bridge===old) g.bridge=nw;
+      const np={}; Object.entries(g.pairs).forEach(([k,m])=>{ np[pk(...k.split('|').map(c=>c===old?nw:c))]=m; }); g.pairs=np; });
+    re(); toast('Moneda renombrada en flujos y grupos');
+  });
+  $('#lst_monedas').querySelectorAll('[data-del]').forEach(b=>b.onclick=()=>{ S.lists.monedas.splice(b.dataset.del,1); re(); });
+  $('#addMedio').onclick=()=>promptBox('Nuevo medio','',m=>{ if(!S.lists.medios.includes(m)) S.lists.medios.push(m); re(); });
+  $('#addRed').onclick=()=>promptBox('Nueva red','',r=>{ if(!S.lists.redes.includes(r)) S.lists.redes.push(r); re(); });
+  $('#addCoin').onclick=()=>promptBox('Nueva moneda','',c=>{ c=c.toUpperCase(); if(!S.lists.monedas.includes(c)) S.lists.monedas.push(c); re(); });
+  $('#resetColors').onclick=()=>{ S.lists.medioColors={}; re(); };
+  $('#cfgExport').onclick=exportMenu;
+  $('#cfgImport').onclick=()=>$('#fileIn').click();
+  $('#cfgSample').onclick=()=>confirmBox('¿Reemplazar tu mapa por el ejemplo? Exporta antes si quieres conservar el actual.','Cargar ejemplo',()=>{ const keep=S.settings; S=sample(); S.settings=keep; sel=null; save(); setLayout('libre',true); renderAll(); toast('Ejemplo cargado'); });
+  $('#cfgClear').onclick=()=>confirmBox('¿Borrar todos los lugares, flujos y grupos?','Borrar mapa',()=>{ S.nodes=[]; S.edges=[]; S.groups=[]; delete S.example; sel=null; save(); renderAll(); toast('Mapa vacío'); });
+}
+
+/* ---------- Vistas ---------- */
+function showView(v){
+  view=v; closeCtx(); if(conn&&v!=='map') endConn();
+  $('#mapView').hidden=v!=='map'; $('#side').hidden=v!=='map';
+  $('#catView').hidden=v!=='cat'; $('#chartsView').hidden=v!=='charts'; $('#cfgView').hidden=v!=='cfg';
+  document.querySelectorAll('[data-view]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.view===v));
+  document.querySelector('.maponly').hidden=v!=='map';
+  $('#toolbar').hidden=v==='cfg';
+  if(v==='cat') renderCatalog(); if(v==='charts') renderCharts(); if(v==='cfg') renderConfig();
+  if(v==='map') renderMap();
+}
+document.querySelectorAll('[data-view]').forEach(b=>b.onclick=()=>showView(b.dataset.view));
+function renderAll(){ applyTheme(); renderMap(); renderSide(); if(view==='cat') renderCatalog(); if(view==='charts') renderCharts(); if(view==='cfg') renderConfig(); }
+$('#q').oninput=e=>{ query=e.target.value.trim().toLowerCase(); renderMap(); if(view==='cat'){ fillTable(); renderGroupCards(); renderCards(); } if(view==='charts') renderCharts(); };
+$('#fMedio').onchange=e=>{ filterMedio=e.target.value; renderMap(); if(view==='cat') fillTable(); if(view==='charts') renderCharts(); };
+
+/* ---------- Exportar / importar ---------- */
+function download(name,text,type){ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([text],{type})); a.download=name; document.body.appendChild(a); a.click(); setTimeout(()=>{ URL.revokeObjectURL(a.href); a.remove(); },500); }
+const stamp=()=>new Date().toISOString().slice(0,10);
+function exportMenu(){
+  const m=document.createElement('div'); m.className='modal';
+  m.innerHTML=`<div class="box"><b style="font:700 15px var(--f-display)">Exportar</b>
+    <button class="btn" data-f="json">Respaldo completo (JSON) — para volver a importar</button>
+    <button class="btn" data-f="csv">Catálogo de flujos (CSV) — para Excel</button>
+    <button class="btn" data-f="gcsv">Conversiones por grupo (CSV) — para Excel</button>
+    <button class="btn" data-f="svg">Imagen del mapa (SVG)</button>
+    <button class="btn" data-x>Cerrar</button></div>`;
+  document.body.appendChild(m);
+  m.addEventListener('click',e=>{ if(e.target===m||e.target.dataset.x!==undefined) m.remove(); });
+  const q=x=>`"${String(x??'').replace(/"/g,'""')}"`;
+  m.querySelectorAll('[data-f]').forEach(b=>b.onclick=()=>{
+    const f=b.dataset.f;
+    if(f==='json'){ const out=JSON.parse(JSON.stringify(S)); delete out.example; download(`mapa_flujos_cripto_${stamp()}.json`,JSON.stringify(out,null,2),'application/json'); }
+    if(f==='csv'){
+      const head=['Origen','Tipo origen','Sentido','Destino','Tipo destino','Medio','Moneda sale','Moneda llega','Red','Comision','Tiempo','Monto','Moneda monto','Veces al mes','Volumen mensual USD','Notas'];
+      const lines=S.edges.map(e=>{ const a=node(e.from), b=node(e.to); return [a?.name,a&&kindLabel(a),e.from===e.to?'interno':e.dir==='bi'?'ambos':'un sentido',b?.name,b&&kindLabel(b),e.medio,e.sale,e.entra,e.red,e.comision,e.tiempo,e.monto,e.montoMon,e.veces,vol(e)?vol(e).toFixed(2):'',e.notas].map(q).join(','); });
+      download(`flujos_cripto_${stamp()}.csv`,'﻿'+[head.map(q).join(','),...lines].join('\r\n'),'text/csv');
+    }
+    if(f==='gcsv'){
+      const head=['Grupo','Lo comparten','Moneda A','Moneda B','Conversion','Ruta'];
+      const lines=[];
+      S.groups.forEach(g=>{ const mem=g.members.map(id=>node(id)?.name).filter(Boolean).join(' / ');
+        g.coins.forEach((a,i)=>g.coins.slice(i+1).forEach(c=>{ const m={d:'Directo',v:'Vía '+g.bridge,n:'No se puede'}[pairMode(g,a,c)]; const r=route(g,a,c); lines.push([g.name,mem,a,c,m,r?r.join(' > '):''].map(q).join(',')); })); });
+      download(`conversiones_grupos_${stamp()}.csv`,'﻿'+[head.map(q).join(','),...lines].join('\r\n'),'text/csv');
+    }
+    if(f==='svg'){
+      const clone=svg.cloneNode(true);
+      const boxes=[...S.nodes.map(n=>({...pos(n),w:NW,h:NH})),...S.groups.map(g=>({...pos(g),...groupSize(g)}))];
+      const minx=Math.min(...boxes.map(b=>b.x))-60, miny=Math.min(...boxes.map(b=>b.y))-110;
+      const w=Math.max(...boxes.map(b=>b.x+b.w))+60-minx, h=Math.max(...boxes.map(b=>b.y+b.h))+60-miny;
+      clone.setAttribute('viewBox',`${minx} ${miny} ${w} ${h}`); clone.setAttribute('width',w); clone.setAttribute('height',h);
+      clone.querySelector('#world').removeAttribute('transform');
+      const cs=getComputedStyle(document.documentElement);
+      clone.querySelector('#bgRect').setAttribute('fill',cs.getPropertyValue('--paper'));
+      clone.querySelectorAll('.dim').forEach(x=>x.classList.remove('dim')); clone.querySelectorAll('.plus,.flow').forEach(x=>x.remove());
+      const vars=['--paper','--panel','--fg','--muted','--line','--accent','--accent-soft','--on-accent'].map(k=>`${k}:${cs.getPropertyValue(k)}`).join(';');
+      const style=document.createElementNS(NS,'style');
+      style.textContent=`svg{${vars};font-family:'IBM Plex Sans',sans-serif}`+[...document.styleSheets].flatMap(s=>{ try{ return [...s.cssRules].map(r=>r.cssText).filter(t=>/^\.(node|edge|group|member)/.test(t)); }catch(e){ return []; } }).join('\n');
+      clone.insertBefore(style,clone.firstChild); clone.setAttribute('xmlns',NS);
+      download(`mapa_flujos_cripto_${stamp()}.svg`,new XMLSerializer().serializeToString(clone),'image/svg+xml');
+    }
+    toast('Exportado'); m.remove();
+  });
+}
+$('#bExport').onclick=exportMenu;
+$('#fileIn').onchange=ev=>{
+  const f=ev.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{ try{
+    const d=JSON.parse(r.result); if(!Array.isArray(d.nodes)||!Array.isArray(d.edges)) throw new Error('el archivo no tiene lugares y flujos');
+    confirmBox(`Importar <b>${esc(f.name)}</b> (${d.nodes.length} lugares, ${d.edges.length} flujos). Reemplaza el mapa actual.`,'Importar',()=>{
+      delete d.example; migrated=0; S=migrate(d); sel=null; save(); setLayout(S.layout.mode,true); renderAll(); setTimeout(fit,30);
+      toast(migrated?`Mapa importado · ${migrated} monedas pasaron a ser lo que viaja en las flechas`:'Mapa importado');
+    });
+  }catch(e){ toast('No se pudo leer: '+e.message); } ev.target.value=''; };
+  r.readAsText(f);
+};
+
+/* ---------- Ejemplo ---------- */
+$('#bKeep').onclick=()=>{ delete S.example; save(); renderMap(); toast('Listo, ya es tu mapa'); };
+$('#bBlank').onclick=()=>confirmBox('¿Borrar el ejemplo y empezar con el lienzo vacío? Se conservan las listas de medios, monedas y redes.','Empezar en blanco',()=>{
+  S.nodes=[]; S.edges=[]; S.groups=[]; delete S.example; S.view={x:60,y:60,k:1}; sel=null; save(); renderAll(); toast('Lienzo vacío');
+});
+
+/* ---------- Inicio ---------- */
+applyTheme(); save();
+setLayout(S.layout.mode,true);
+renderSide();
+if(S.example) setTimeout(fit,50);
+if(migrated) setTimeout(()=>toast(`${migrated} monedas dejaron de ser cuadros: ahora viajan en las flechas`),400);
+})();
+
+</script>
+</body>
+</html>
