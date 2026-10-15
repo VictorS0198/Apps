@@ -387,6 +387,21 @@ body.nav-side .filters{display:none}
 @container (max-width:300px){.wtools .wname{display:none}}
 @media(min-width:1600px){.dash-grid{gap:16px}.dw{padding:16px 20px}}
 .cv-pie{grid-template-columns:minmax(170px,260px) minmax(0,560px)}
+.dec-cash{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,180px),1fr));gap:10px}
+.dec-table{min-width:1100px}.dec-table td{vertical-align:top}.dec-table td:last-child,.dec-table td:nth-child(8){text-align:left}
+.dec-table .cy-pill{display:inline-block;margin:0 4px 4px 0;font-weight:500}
+.rbar{position:relative;height:8px;border-radius:4px;background:linear-gradient(90deg,var(--buy-bg),var(--bg),var(--sell-bg));border:1px solid var(--ln);margin-top:6px}
+.rbar i{position:absolute;top:-4px;width:4px;height:14px;border-radius:2px;transform:translateX(-50%)}
+.rbar i.rp{background:var(--ink)}.rbar i.ra{background:#F5B82E}
+.rbar-l{display:flex;justify-content:space-between;font-size:10.5px;margin-top:3px}
+.rleg{display:inline-block;width:4px;height:12px;border-radius:2px;vertical-align:middle}.rleg.rp{background:var(--ink)}.rleg.ra{background:#F5B82E}
+.sim-table{min-width:760px}.sim-table input,.sim-table select{margin:0;min-width:110px}
+.sim-table td{vertical-align:middle}
+.sim-warn{margin-top:10px;padding:8px 12px;border-radius:8px;background:var(--sell-bg);color:var(--sell);font-size:13px}
+.sim-chg{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px}
+.sim-chg label{display:flex;align-items:center;gap:10px;margin:0;flex:1;min-width:260px}.sim-chg input[type=range]{flex:1;margin:0;padding:0;min-height:0}
+.sim-hit td{background:color-mix(in srgb,var(--buy) 8%,transparent)}
+.dec-head .cy-pill{margin-left:8px}
 </style>
 </head>
 <body>
@@ -412,6 +427,7 @@ body.nav-side .filters{display:none}
 <button id="t1" aria-pressed="true">Ciclos</button>
 <button id="t2" aria-pressed="false">Movimientos</button>
 <button id="t7" aria-pressed="false">Dashboard</button>
+<button id="t10" aria-pressed="false">Decisiones</button>
 <button id="t8" aria-pressed="false">Reportes</button>
 <button id="t9" aria-pressed="false">Brokers</button>
 <button id="t3" aria-pressed="false">Gráficas</button>
@@ -463,6 +479,7 @@ body.nav-side .filters{display:none}
 <div id="w7" hidden><div id="v7"></div><section class="card" id="bk7"></section></div>
 <div id="w8" hidden><div id="v8"></div><section class="card" id="bk8"></section></div>
 <div id="w9" hidden><div id="v9"></div></div>
+<div id="w10" hidden><div id="v10"></div></div>
 <p class="mu" style="margin:6px 0 0">Los datos viven en este navegador: descarga seguido el respaldo general (arriba a la derecha). Precios, tipo de cambio, íconos y Excel requieren internet.</p>
 </main>
 <div id="printArea"></div>
@@ -875,14 +892,14 @@ document.addEventListener('click',function(e){
 
 /* ---------- tabs ---------- */
 var tab=1;
-function setTab(t){tab=t;$('#tab1').hidden=t!=1;var _fl=document.querySelector('.filters');if(_fl)_fl.style.display=(t==1||t==2)?'':'none';for(var i=2;i<=9;i++)$('#w'+i).hidden=t!=i;
- for(var j=1;j<=9;j++)$('#t'+j).setAttribute('aria-pressed',t==j);
- if(t==3)renderCharts();if(t==4)renderDatos();if(t==5){renderConfig();refreshBkAll()}if(t==7)renderPositions();if(t==8)renderReports();if(t==9)renderBrokers();if(t==6){renderMarket();fetchMarket(true).then(afterMarket)}}
+function setTab(t){tab=t;$('#tab1').hidden=t!=1;var _fl=document.querySelector('.filters');if(_fl)_fl.style.display=(t==1||t==2)?'':'none';for(var i=2;i<=10;i++)$('#w'+i).hidden=t!=i;
+ for(var j=1;j<=10;j++)$('#t'+j).setAttribute('aria-pressed',t==j);
+ if(t==3)renderCharts();if(t==4)renderDatos();if(t==5){renderConfig();refreshBkAll()}if(t==7)renderPositions();if(t==8)renderReports();if(t==9)renderBrokers();if(t==10)renderDecisions();if(t==6){renderMarket();fetchMarket(true).then(afterMarket)}}
 /* reordenar pestañas: modo edición con flechas o arrastrando */
 var KTABS='registro-cripto.taborder';
 (function(){
  var bar=$('#t1').parentNode,btn=$('#tabOrd'),editing=false,drag=null;
- function tabs(){return [].slice.call(bar.querySelectorAll('button[id^="t"]')).filter(function(b){return /^t\d$/.test(b.id)})}
+ function tabs(){return [].slice.call(bar.querySelectorAll('button[id^="t"]')).filter(function(b){return /^t\d+$/.test(b.id)})}
  function save(){try{localStorage.setItem(KTABS,JSON.stringify(tabs().map(function(b){return b.id})))}catch(e){}}
  try{var ord=JSON.parse(localStorage.getItem(KTABS)||'null');if(Array.isArray(ord))ord.forEach(function(id){var b=$('#'+id);if(b)bar.insertBefore(b,btn)})}catch(e){}
  try{if(!localStorage.getItem('registro-cripto.dashfirst')){bar.insertBefore($('#t7'),bar.firstChild);localStorage.setItem('registro-cripto.dashfirst','1');save()}}catch(e){}
@@ -902,7 +919,7 @@ var KTABS='registro-cripto.taborder';
   var r=t.getBoundingClientRect();bar.insertBefore(drag,(e.clientX>r.left+r.width/2)?t.nextSibling:t)});
  bar.addEventListener('dragend',function(){if(drag){drag.classList.remove('dragging');drag=null;save()}});
 })();
-$('#t1').onclick=function(){setTab(1)};$('#t9').onclick=function(){setTab(9)};$('#t2').onclick=function(){setTab(2)};$('#t3').onclick=function(){setTab(3)};$('#t4').onclick=function(){setTab(4)};$('#t5').onclick=function(){setTab(5)};$('#t6').onclick=function(){setTab(6)};$('#t7').onclick=function(){setTab(7)};$('#t8').onclick=function(){setTab(8)};
+$('#t1').onclick=function(){setTab(1)};$('#t9').onclick=function(){setTab(9)};$('#t10').onclick=function(){setTab(10)};$('#t2').onclick=function(){setTab(2)};$('#t3').onclick=function(){setTab(3)};$('#t4').onclick=function(){setTab(4)};$('#t5').onclick=function(){setTab(5)};$('#t6').onclick=function(){setTab(6)};$('#t7').onclick=function(){setTab(7)};$('#t8').onclick=function(){setTab(8)};
 
 /* ---------- pestaña Datos ---------- */
 $('#v4').innerHTML='<div class="card"><h2>Criptomonedas</h2><div class="taglist" id="dCoins"></div>'+
@@ -1055,7 +1072,7 @@ function fetchMarket(withBingx){
  }).catch(function(){}));
  return Promise.allSettled(jobs).then(function(){mktBusy=false;mktTime=new Date()});
 }
-function afterMarket(){if(typeof recordHist=='function')recordHist();if(tab==6)renderMarket();if(tab==7)renderPositions();if(tab==1)render()}
+function afterMarket(){if(typeof recordHist=='function')recordHist();if(tab==10&&typeof renderDecisions=='function')renderDecisions();if(tab==6)renderMarket();if(tab==7)renderPositions();if(tab==1)render()}
 function refPrice(c){var o=MKT[c]||{};return o.binance||o.bybit||o.bingx||null}
 function px(p){return p==null||isNaN(p)?'—':'$'+n(p,p<1?6:p<100?4:2)}
 $('#v6').innerHTML='<div class="card"><div class="row"><h2 style="margin:0">Mercado de tus criptomonedas</h2><span class="sp"></span><span class="mu" id="mktMsg"></span><button id="mktRefresh" type="button">Actualizar</button></div>'+
@@ -2846,6 +2863,147 @@ $('#v7').addEventListener('input',function(e){var t=e.target;if(!t.getAttribute|
 })();
 applyNav();
 var _rsT=null,_rsW=window.innerWidth;window.addEventListener('resize',function(){clearTimeout(_rsT);_rsT=setTimeout(function(){if(Math.abs(window.innerWidth-_rsW)<40)return;_rsW=window.innerWidth;if(tab==7&&!document.querySelector('.dw.dragging'))renderPositions();if(tab==9&&typeof renderBrokers=='function')renderBrokers()},250)});
+
+
+/* ================= Decisiones de compra + simulador (todo de prueba, sobre datos reales) ================= */
+var KSIM='registro-cripto.sim';
+var SIM={rows:[],chg:0};try{var _s=JSON.parse(localStorage.getItem(KSIM)||'null');if(_s&&Array.isArray(_s.rows))SIM=_s}catch(e){}
+function saveSim(){try{localStorage.setItem(KSIM,JSON.stringify(SIM))}catch(e){}}
+var KLINES={},klBusy=false;
+function fetchKlines(coins){
+ if(klBusy)return Promise.resolve();klBusy=true;
+ var todo=coins.filter(function(c){return !KLINES[c]||Date.now()-KLINES[c].t>30*60e3});
+ return Promise.all(todo.map(function(c){
+  return fetch('https://api.binance.com/api/v3/klines?symbol='+c+'USDT&interval=1d&limit=90').then(function(r){return r.ok?r.json():null}).then(function(a){
+   if(!Array.isArray(a)||!a.length)return;var cl=a.map(function(k){return +k[4]}),hi=a.map(function(k){return +k[2]}),lo=a.map(function(k){return +k[3]});
+   var avg=function(arr){return arr.reduce(function(s,v){return s+v},0)/arr.length};
+   KLINES[c]={t:Date.now(),min90:Math.min.apply(null,lo),max90:Math.max.apply(null,hi),avg30:avg(cl.slice(-30)),avg90:avg(cl),c7:cl.length>7?cl[cl.length-8]:null,c30:cl.length>30?cl[cl.length-31]:null};
+  }).catch(function(){});
+ })).then(function(){klBusy=false},function(){klBusy=false});
+}
+/* posiciones reales por moneda y por broker */
+function decPositions(){
+ var data=brokerData(),coins={},cash={usdt:{},mxn:{}};
+ data.forEach(function(b){b.rows.forEach(function(r){
+  if(r.asset=='USDT'){cash.usdt[b.plat]=(cash.usdt[b.plat]||0)+r.qty;return}
+  if(r.asset=='MXN'){cash.mxn[b.plat]=(cash.mxn[b.plat]||0)+r.qty;return}
+  var o=coins[r.asset]||(coins[r.asset]={coin:r.asset,qty:0,cost:0,qc:0,plats:{}});
+  o.qty+=r.qty;o.plats[b.plat]=(o.plats[b.plat]||0)+r.qty;if(r.avg!=null){o.cost+=r.qty*r.avg;o.qc+=r.qty}
+ })});
+ Object.keys(coins).forEach(function(k){var o=coins[k];o.avg=o.qc>0?o.cost/o.qc:null;o.p=refPrice(k);o.val=o.p?o.qty*o.p:null});
+ return{coins:coins,cash:cash};
+}
+function lastMove(coin){var a=M.filter(function(m){return m.coin==coin&&m.price>0}).sort(function(x,y){return x.time<y.time?1:-1});return a[0]||null}
+function rangeBar(lo,hi,p,avg){
+ if(!(hi>lo)||!p)return '<span class="mu">—</span>';
+ var pos=function(v){return Math.max(0,Math.min(100,(v-lo)/(hi-lo)*100))};
+ return '<div class="rbar" title="Mín. 90 d '+px(lo)+' · Máx. 90 d '+px(hi)+'"><i style="left:'+pos(p)+'%" class="rp"></i>'+(avg?'<i style="left:'+pos(avg)+'%" class="ra"></i>':'')+'</div><div class="rbar-l mu"><span>'+px(lo)+'</span><span>'+px(hi)+'</span></div>';
+}
+function decSignals(o,k){
+ var s=[];if(!o.p)return s;
+ if(o.avg){var d=(o.p/o.avg-1)*100;s.push(d<0?{t:'Bajo tu promedio '+n(d,1)+'%',c:'up',h:'Comprar aquí bajaría tu precio promedio'}:{t:'Sobre tu promedio +'+n(d,1)+'%',c:'warn',h:'Comprar aquí subiría tu precio promedio'})}
+ if(k){var r=(o.p-k.min90)/(k.max90-k.min90);if(r<=0.2)s.push({t:'Cerca del mínimo de 90 días',c:'up'});else if(r>=0.8)s.push({t:'Cerca del máximo de 90 días',c:'dn'});
+  if(k.avg30){var d30=(o.p/k.avg30-1)*100;s.push({t:(d30<0?'':'+')+n(d30,1)+'% vs. promedio 30 d',c:d30<0?'up':'dn'})}}
+ var cy=cycles().filter(function(x){return x.o.coin==o.coin&&x.st!='cerrado'&&x.o.action=='VENTA'});
+ if(cy.length)s.push({t:cy.length+' recompra'+(cy.length>1?'s':'')+' pendiente'+(cy.length>1?'s':''),c:'warn'});
+ return s;
+}
+function simCompute(pos){
+ var chg=+SIM.chg||0,f=1+chg/100,before={},after={},spent={},fees=0,warn=[];
+ Object.keys(pos.coins).forEach(function(k){var o=pos.coins[k];before[k]={qty:o.qty,cost:o.cost,qc:o.qc,p:o.p};after[k]={qty:o.qty,cost:o.cost,qc:o.qc,p:o.p}});
+ SIM.rows.forEach(function(r){
+  var amt=+r.amt||0,c=r.coin;if(!c||!(amt>0))return;var p=+r.price||refPrice(c);if(!p)return;
+  var fp=((FEES[r.plat]||{}).maker||0)/100,q=amt/p*(1-fp);fees+=amt*fp;
+  spent[r.plat]=(spent[r.plat]||0)+amt;
+  var a=after[c]||(after[c]={qty:0,cost:0,qc:0,p:refPrice(c)});a.qty+=q;a.cost+=amt;a.qc+=q;
+  if(!before[c])before[c]={qty:0,cost:0,qc:0,p:refPrice(c)};
+ });
+ Object.keys(spent).forEach(function(pl){var have=pos.cash.usdt[pl]||0;if(spent[pl]>have+1e-6)warn.push(pl+': quieres usar '+n(spent[pl],2)+' USDT y tienes '+n(have,2))});
+ var cashU=Object.keys(pos.cash.usdt).reduce(function(s,k){return s+pos.cash.usdt[k]},0),cashM=Object.keys(pos.cash.mxn).reduce(function(s,k){return s+pos.cash.mxn[k]},0)/FX;
+ var tot=function(set,cash){var v=cash,cr=0,cost=0,miss=false;Object.keys(set).forEach(function(k){var x=set[k];if(x.p){cr+=x.qty*x.p*f}else miss=true;cost+=x.cost});return{total:v+cr,cripto:cr,cost:cost,miss:miss}};
+ var sp=Object.keys(spent).reduce(function(s,k){return s+spent[k]},0);
+ return{before:before,after:after,spent:spent,sp:sp,fees:fees,warn:warn,f:f,chg:chg,tb:tot(before,cashU+cashM),ta:tot(after,cashU+cashM-sp),cashU:cashU};
+}
+function renderDecisions(){
+ var el=$('#v10');if(!el)return;
+ var pos=decPositions(),coins=Object.keys(pos.coins).filter(function(k){return pos.coins[k].qty>1e-9}).sort(function(a,b){return (pos.coins[b].val||0)-(pos.coins[a].val||0)});
+ var at=accountTotals(FX),tv=at.total||1;
+ var plats=Object.keys(pos.cash.usdt).sort();
+ /* efectivo */
+ var cashHtml='<div class="dec-cash">'+plats.map(function(pl){return '<div class="fl-stat"><div class="mu">'+esc(pl)+'</div><div class="num fl-v">'+n(pos.cash.usdt[pl],2)+' USDT</div></div>'}).join('')+
+  Object.keys(pos.cash.mxn).filter(function(k){return pos.cash.mxn[k]}).map(function(pl){return '<div class="fl-stat"><div class="mu">'+esc(pl)+' (pesos)</div><div class="num fl-v">'+n(pos.cash.mxn[pl],2)+' MXN</div><div class="mu" style="font-size:12px">≈ '+n(pos.cash.mxn[pl]/FX,2)+' USD</div></div>'}).join('')+'</div>';
+ /* tabla de monedas */
+ var rows=coins.map(function(k){var o=pos.coins[k],K=KLINES[k],mk=MKT[k]||{},lm=lastMove(k),d=o.avg&&o.p?(o.p/o.avg-1)*100:null,sig=decSignals(o,K);
+  var mainPlat=Object.keys(o.plats).sort(function(a,b){return o.plats[b]-o.plats[a]})[0];
+  return '<tr><td>'+coinIcon(k,18)+'<b>'+esc(k)+'</b><div class="mu" style="font-size:11px">'+Object.keys(o.plats).map(esc).join(', ')+'</div></td>'+
+   '<td class="num">'+n(o.qty,6)+'<div class="mu" style="font-size:11px">'+(o.val!=null?n(o.val,2)+' USD · '+n(o.val/tv*100,1)+'%':'')+'</div></td>'+
+   '<td class="num">'+px(o.p)+(mk.chg!=null?'<div style="font-size:11px;color:'+col(mk.chg)+'">'+(mk.chg>=0?'+':'')+n(mk.chg,2)+'% 24 h</div>':'')+'</td>'+
+   '<td class="num">'+(o.avg?px(o.avg):'—')+(d!=null?'<div style="font-size:11px;color:'+col(d)+'">'+(d>=0?'+':'')+n(d,1)+'%</div>':'')+'</td>'+
+   '<td style="min-width:150px">'+(K?rangeBar(K.min90,K.max90,o.p,o.avg):'<span class="mu" style="font-size:12px">cargando…</span>')+'</td>'+
+   '<td class="num" style="font-size:12px">'+(K&&K.c7&&o.p?'<span style="color:'+col(o.p-K.c7)+'">'+(o.p>=K.c7?'+':'')+n((o.p/K.c7-1)*100,1)+'%</span> 7 d<br>':'')+(K&&K.c30&&o.p?'<span style="color:'+col(o.p-K.c30)+'">'+(o.p>=K.c30?'+':'')+n((o.p/K.c30-1)*100,1)+'%</span> 30 d':'')+'</td>'+
+   '<td style="font-size:12px">'+(lm?'<b class="'+lm.action+'">'+lm.action+'</b> '+px(lm.price)+'<div class="mu">'+fd(lm.time).slice(0,10)+'</div>':'<span class="mu">—</span>')+'</td>'+
+   '<td>'+sig.map(function(s){return '<span class="cy-pill '+s.c+'"'+(s.h?' title="'+esc(s.h)+'"':'')+'>'+esc(s.t)+'</span>'}).join(' ')+'</td>'+
+   '<td><button type="button" class="sm" data-simadd="'+esc(k)+'" data-simplat="'+esc(mainPlat||'')+'">Simular compra</button></td></tr>'}).join('');
+ /* recompras pendientes */
+ var pend=cycles().filter(function(x){return x.st!='cerrado'&&x.o.action=='VENTA'});
+ var pendHtml=pend.length?'<div class="wrap"><table class="ptable" style="min-width:640px"><thead><tr><th>Folio</th><th>Moneda</th><th>Vendiste a</th><th>Hoy</th><th>Cambio</th><th>Falta recomprar</th><th>Monedas que obtendrías hoy</th><th></th></tr></thead><tbody>'+pend.map(function(x){
+  var o=x.o,p=refPrice(o.coin),op=x.op,chg=p&&op?(p/op-1)*100:null,remU=x.byQ?null:x.rem,getQ=p&&remU?remU/p:null,soldQ=o.qty>0&&o.usdt>0&&remU?o.qty*(remU/o.usdt):null;
+  return '<tr><td class="mu">'+folio(o.id)+'</td><td>'+coinIcon(o.coin,16)+esc(o.coin)+'</td><td class="num">'+px(op)+'</td><td class="num">'+px(p)+'</td><td class="num" style="color:'+(chg!=null?(chg<0?'var(--buy)':'var(--sell)'):'')+'">'+(chg!=null?(chg>=0?'+':'')+n(chg,2)+'%':'—')+'</td>'+
+   '<td class="num">'+(remU!=null?n(remU,2)+' USD':n(x.rem,6)+' '+esc(o.coin))+'</td><td class="num">'+(getQ!=null?n(getQ,6)+(soldQ?' <span style="color:'+col(getQ-soldQ)+'">('+(getQ>=soldQ?'+':'')+n(getQ-soldQ,6)+')</span>':''):'—')+'</td>'+
+   '<td>'+(remU?'<button type="button" class="sm" data-simadd="'+esc(o.coin)+'" data-simplat="'+esc(o.plat||'')+'" data-simamt="'+(+remU.toFixed(2))+'">Simular recompra</button>':'')+'</td></tr>'}).join('')+'</tbody></table></div>':'<p class="mu">No tienes recompras pendientes.</p>';
+ /* simulador */
+ var allCoins=COINS.filter(function(c){return !isCash(c)}).concat(coins).filter(function(v,i,a){return a.indexOf(v)==i}).sort();
+ var allPlats=Object.keys(FEES).sort();
+ var simRows=SIM.rows.map(function(r,i){var p=refPrice(r.coin),fp=((FEES[r.plat]||{}).maker||0),pr=+r.price||p,q=pr&&r.amt?r.amt/pr*(1-fp/100):null;
+  return '<tr><td><select data-simf="coin" data-i="'+i+'">'+allCoins.map(function(c){return '<option'+(c==r.coin?' selected':'')+'>'+esc(c)+'</option>'}).join('')+'</select></td>'+
+   '<td><select data-simf="plat" data-i="'+i+'">'+allPlats.map(function(c){return '<option'+(c==r.plat?' selected':'')+'>'+esc(c)+'</option>'}).join('')+'</select></td>'+
+   '<td><input type="number" step="any" min="0" data-simf="amt" data-i="'+i+'" value="'+(r.amt||'')+'" placeholder="USD"></td>'+
+   '<td><input type="number" step="any" min="0" data-simf="price" data-i="'+i+'" value="'+(r.price||'')+'" placeholder="'+(p?'hoy '+p:'precio')+'"></td>'+
+   '<td class="num">'+(q!=null?n(q,6)+' '+esc(r.coin):'—')+'<div class="mu" style="font-size:11px">comisión '+n(fp,3)+'% en '+esc(r.coin)+'</div></td>'+
+   '<td><button type="button" class="wbtn" data-simdel="'+i+'" title="Quitar">✕</button></td></tr>'}).join('');
+ var S=simCompute(pos);
+ var keys=Object.keys(S.after).filter(function(k){return S.after[k].qty>1e-9||S.before[k].qty>1e-9}).sort(function(a,b){return (S.after[b].qty*(S.after[b].p||0))-(S.after[a].qty*(S.after[a].p||0))});
+ var touched={};SIM.rows.forEach(function(r){if(r.coin&&+r.amt>0)touched[r.coin]=1});
+ var resRows=keys.map(function(k){var b=S.before[k],a=S.after[k],ab=b.qc?b.cost/b.qc:null,aa=a.qc?a.cost/a.qc:null,pb=b.p?b.qty*b.p*S.f:0,pa=a.p?a.qty*a.p*S.f:0;
+  return '<tr'+(touched[k]?' class="sim-hit"':'')+'><td>'+coinIcon(k,16)+'<b>'+esc(k)+'</b></td><td class="num">'+n(b.qty,6)+'</td><td class="num">'+n(a.qty,6)+'</td><td class="num">'+(ab?px(ab):'—')+'</td><td class="num">'+(aa?px(aa):'—')+(ab&&aa&&touched[k]?'<div style="font-size:11px;color:'+col(ab-aa)+'">'+(aa<=ab?'▼ ':'▲ ')+n(Math.abs(aa/ab-1)*100,1)+'%</div>':'')+'</td>'+
+   '<td class="num">'+n(pb/S.tb.total*100,1)+'%</td><td class="num">'+n(pa/S.ta.total*100,1)+'%</td><td class="num" style="color:'+col(pa-a.cost)+'">'+(a.p?(pa-a.cost>=0?'+':'')+n(pa-a.cost,2):'—')+'</td></tr>'}).join('');
+ var tile=function(l,v,s,c){return '<div class="fl-stat"><div class="mu">'+l+'</div><div class="num fl-v"'+(c?' style="color:'+c+'"':'')+'>'+v+'</div>'+(s?'<div class="mu" style="font-size:12px">'+s+'</div>':'')+'</div>'};
+ var plB=S.tb.cripto-S.tb.cost,plA=S.ta.cripto-S.ta.cost;
+ var chartKeys=keys.slice(0,10);
+ var chart=SIM.rows.length?colsSvg(chartKeys,[{name:'Antes',color:'#8C9BAB',vals:chartKeys.map(function(k){var b=S.before[k];return b.p?+(b.qty*b.p*S.f).toFixed(2):0})},{name:'Después',color:'#1F8A7E',vals:chartKeys.map(function(k){var a=S.after[k];return a.p?+(a.qty*a.p*S.f).toFixed(2):0})}],{unit:'USD',w:Math.max(620,Math.min(1600,(el.clientWidth||1000)-80)),h:280}):'';
+ el.innerHTML='<div class="card dec-head"><div class="row"><h2 style="margin:0">Decisiones de compra</h2><span class="cy-pill warn">Modo prueba</span><span class="sp"></span><button type="button" class="sm" id="decRefresh">Actualizar precios</button></div>'+
+  '<p class="mu" style="margin:6px 0 0">Todo en esta pestaña usa tus datos reales y los precios de hoy, pero <b>nada de lo que hagas aquí cambia tus registros</b>. Es información para decidir, no una recomendación.</p></div>'+
+  '<div class="card"><h2>Efectivo disponible para comprar</h2>'+(cashHtml.length>30?cashHtml:'<p class="mu">Sin saldos de USDT capturados.</p>')+'</div>'+
+  '<div class="card"><h2>Tus monedas hoy</h2><p class="mu" style="margin:0 0 8px;font-size:13px">La barra de rango va del mínimo al máximo de los últimos 90 días (Binance): <span class="rleg rp"></span> precio de hoy · <span class="rleg ra"></span> tu precio promedio de entrada.</p>'+
+   (coins.length?'<div class="wrap"><table class="ptable dec-table"><thead><tr><th>Moneda</th><th>Tienes</th><th>Precio hoy</th><th>Tu promedio</th><th>Rango 90 días</th><th>Tendencia</th><th>Último movimiento</th><th>Para tomar en cuenta</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>':'<p class="mu">Aún no hay monedas.</p>')+'</div>'+
+  '<div class="card"><h2>Recompras pendientes</h2>'+pendHtml+'</div>'+
+  '<div class="card sim-card"><div class="row"><h2 style="margin:0">Simulador de compras</h2><span class="cy-pill warn">Prueba</span><span class="sp"></span><button type="button" class="sm" id="simAdd">+ Agregar compra</button>'+(SIM.rows.length?'<button type="button" class="sm x" id="simClear">Limpiar</button>':'')+'</div>'+
+   '<p class="mu" style="margin:6px 0 10px;font-size:13px">Agrega varias compras y mira cómo quedaría tu portafolio. El precio vacío usa el de hoy; la comisión es la maker de cada broker y se cobra en la moneda que recibes. Se guarda solo en este navegador como prueba.</p>'+
+   (SIM.rows.length?'<div class="wrap"><table class="ptable sim-table"><thead><tr><th>Moneda</th><th>Broker</th><th>Monto (USDT)</th><th>Precio de compra</th><th>Recibirías</th><th></th></tr></thead><tbody>'+simRows+'</tbody></table></div>':'<p class="mu empty">Agrega una compra con el botón, o con "Simular compra" en la tabla de arriba.</p>')+
+   (S.warn.length?'<div class="sim-warn">⚠ No te alcanza el USDT: '+S.warn.map(esc).join(' · ')+'</div>':'')+
+   '<div class="sim-chg"><label><span class="mu">Si los precios cambian</span><input type="range" min="-60" max="100" step="1" id="simChg" value="'+S.chg+'"><b class="num" id="simChgV">'+(S.chg>0?'+':'')+S.chg+'%</b></label><button type="button" class="sm x" id="simChg0">Precios de hoy</button></div>'+
+   '<div class="fl-grid" style="margin-top:10px">'+tile('USDT a usar',n(S.sp,2),'quedan '+n(S.cashU-S.sp,2)+' USDT')+tile('Comisiones',n(S.fees,2)+' USD','')+
+    tile('Valor total',n(S.ta.total,2)+' USD','antes: '+n(S.tb.total,2)+(S.chg?' (con '+(S.chg>0?'+':'')+S.chg+'%)':''))+tile('Costo abierto',n(S.ta.cost,2)+' USD','antes: '+n(S.tb.cost,2))+
+    tile('Ganancia/pérdida abierta',(plA>=0?'+':'')+n(plA,2)+' USD','antes: '+(plB>=0?'+':'')+n(plB,2)+(S.ta.cost?' · '+(plA>=0?'+':'')+n(plA/S.ta.cost*100,1)+'%':''),col(plA))+'</div>'+
+   (SIM.rows.length?'<div class="chartbox" style="margin-top:12px"><h3>Valor por moneda: antes y después (USD'+(S.chg?', con '+(S.chg>0?'+':'')+S.chg+'%':'')+')</h3>'+chart+'</div>':'')+
+   '<div class="wrap" style="margin-top:12px"><table class="ptable"><thead><tr><th>Moneda</th><th>Cantidad antes</th><th>Después</th><th>Promedio antes</th><th>Después</th><th>% portafolio antes</th><th>Después</th><th>Ganancia/pérdida después</th></tr></thead><tbody>'+resRows+'</tbody></table></div></div>';
+ var need=coins.concat(SIM.rows.map(function(r){return r.coin})).filter(function(c,i,a){return c&&a.indexOf(c)==i&&!KLINES[c]});
+ if(need.length)fetchKlines(need).then(function(){if(tab==10)renderDecisions()});
+}
+$('#v10').addEventListener('click',function(e){
+ var b=e.target.closest&&e.target.closest('button');if(!b)return;
+ if(b.id=='decRefresh'){b.disabled=true;KLINES={};fetchMarket(true).then(afterMarket).then(function(){renderDecisions()});return}
+ if(b.id=='simAdd'){var c=Object.keys(decPositions().coins)[0]||'BTC';SIM.rows.push({coin:c,plat:Object.keys(FEES).sort()[0],amt:100,price:''});saveSim();renderDecisions();return}
+ if(b.id=='simClear'){if(confirm('¿Borrar todas las compras de prueba?')){SIM.rows=[];SIM.chg=0;saveSim();renderDecisions()}return}
+ if(b.id=='simChg0'){SIM.chg=0;saveSim();renderDecisions();return}
+ if(b.getAttribute('data-simdel')!=null){SIM.rows.splice(+b.getAttribute('data-simdel'),1);saveSim();renderDecisions();return}
+ if(b.getAttribute('data-simadd')){var pl=b.getAttribute('data-simplat')||Object.keys(FEES).sort()[0];SIM.rows.push({coin:b.getAttribute('data-simadd'),plat:FEES[pl]?pl:Object.keys(FEES).sort()[0],amt:+b.getAttribute('data-simamt')||100,price:''});saveSim();renderDecisions();
+  setTimeout(function(){var s=document.querySelector('.sim-card');if(s)s.scrollIntoView({behavior:'smooth',block:'start'})},50);return}
+});
+$('#v10').addEventListener('change',function(e){var t=e.target,f=t.getAttribute&&t.getAttribute('data-simf');if(!f)return;var r=SIM.rows[+t.getAttribute('data-i')];if(!r)return;
+ r[f]=(f=='amt'||f=='price')?(t.value===''?'':+t.value):t.value;saveSim();renderDecisions()});
+$('#v10').addEventListener('input',function(e){if(e.target.id!='simChg')return;SIM.chg=+e.target.value;var v=$('#simChgV');if(v)v.textContent=(SIM.chg>0?'+':'')+SIM.chg+'%'});
+$('#v10').addEventListener('change',function(e){if(e.target.id!='simChg')return;saveSim();renderDecisions()});
 
 /* ================= Nube: Supabase personal (misma cuenta y tabla que tus otras apps) =================
    Cada dato guardado en este navegador (movimientos, tenencias, ingresos/retiros, estados de cuenta, reportes…)
