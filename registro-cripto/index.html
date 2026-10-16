@@ -155,6 +155,40 @@ button.sm,.lbtn{padding:5px 9px;font-size:13px}
 .rep-head{display:flex;gap:12px;align-items:center;margin-bottom:8px}
 .rep-head img{width:56px;height:56px;border-radius:10px}
 @media print{body.printing #ovl{display:none!important}}
+.rcharts{display:grid;gap:14px 18px;grid-template-columns:repeat(2,minmax(0,1fr))}
+.rcharts.rc1{grid-template-columns:minmax(0,1fr)}.rcharts.rc3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.rcharts .chartbox{max-width:none}.rcharts .rwide{grid-column:1/-1}
+.rep{--mu:#555;--ln:#d6d6d6;--sf:#fff;--ink:#111}
+.rep-classic svg{filter:grayscale(1)}
+.rep-classic h2{border-bottom-color:#111}
+.rep-compact .rsec th,.rep-compact .rsec td{font-size:10.5px;padding:2px 4px}.rep-compact .rsec h2{font-size:13px;margin-top:10px}
+.rep-large .rsec th,.rep-large .rsec td{font-size:14px;padding:5px 7px}.rep-large .rsec h2{font-size:17px}.rep-large h1{font-size:24px}
+.rnote{font-size:13px;margin:4px 0}
+.rp-leg{font-size:11px;margin-bottom:4px;color:#555}
+.rp-heat svg,.rp-scat svg{width:100%;height:auto}
+.rp-grid{display:grid;grid-template-columns:minmax(220px,300px) minmax(0,1fr);gap:18px;margin-top:6px}
+.rp-grid h3{margin:0 0 8px;font-size:15px}
+.rp-chk{display:flex!important;gap:8px;align-items:center;margin:0 0 6px;color:var(--ink)}
+.rp-chk input{width:auto;margin:0}
+.rp-fmt{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.rp-fmt label,.rp-note,.rp-movn{margin:0}
+.rp-note textarea{width:100%}
+.rp-thumbs{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.rp-thumb{border:2px solid var(--ln);border-radius:12px;padding:8px;cursor:pointer;background:var(--sf);display:flex;flex-direction:column;gap:6px;transition:border-color .12s,opacity .12s;opacity:.62}
+.rp-thumb.on{border-color:var(--acc,#2E93BE);opacity:1;box-shadow:0 0 0 3px color-mix(in srgb,var(--acc,#2E93BE) 22%,transparent)}
+.rp-thumb:focus-visible{outline:3px solid var(--acc,#2E93BE);outline-offset:2px}
+.rp-prev{--mu:#555;--ln:#ddd;--sf:#fff;--ink:#111;background:#fff;border-radius:8px;height:120px;overflow:hidden;display:grid;place-items:center;padding:4px;pointer-events:none}
+.rp-prev>*{width:100%;max-height:112px;display:flex;justify-content:center;align-items:center}
+.rp-prev .cv-pie{display:flex!important}.rp-prev .cv-pie>:not(svg){display:none}
+.rp-prev svg{max-height:110px!important;max-width:100%!important;width:auto!important;height:auto;display:block}
+.rp-prev .rp-leg{display:none}.rp-prev .rp-heat,.rp-prev .rp-scat{display:block}.rp-prev .rp-heat svg,.rp-prev .rp-scat svg{width:100%!important}
+.rp-prev .hist-empty{font-size:11px;text-align:center}
+.rp-tl{display:flex;gap:6px;align-items:center;font-size:13px;font-weight:600;line-height:1.25}
+.rp-tick{flex:none;width:20px;height:20px;border-radius:6px;border:2px solid var(--ln);display:grid;place-items:center;font-size:13px;color:#fff}
+.rp-thumb.on .rp-tick{background:var(--acc,#2E93BE);border-color:var(--acc,#2E93BE)}
+.rp-thumb select{height:32px;font-size:13px}
+@media (max-width:700px){.rp-grid{grid-template-columns:minmax(0,1fr)}}
+
 [hidden]{display:none!important}
 input:not([type=checkbox]):not([type=radio]):not([type=file]),select{height:40px;padding:0 10px}
 td input:not([type=checkbox]){height:34px}
@@ -407,6 +441,40 @@ body.nav-side .filters{display:none}
 .cyc-cfg{display:flex;flex-wrap:wrap;gap:6px 16px;margin:12px 0 4px;padding:10px 12px;border:1px dashed var(--ln);border-radius:10px}
 .cyc-bar{display:flex;flex-wrap:wrap;gap:8px 10px;align-items:center;margin-top:12px}
 .cyc-sel{width:auto;margin:0}.cyc-q{width:auto;min-width:220px;flex:1;margin:0}
+.mv{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px}
+.mv-dt{font-size:12px;white-space:nowrap}.mv-ed{padding:2px 8px}
+.cy-dt{font-size:12px;white-space:nowrap;margin-right:4px}
+@media(max-width:640px){.cy-dt{order:5;width:100%}}
+/* cielo */
+#skyDeco{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+#skyDeco .sky-orb{position:absolute;width:150px;height:150px;transform:translate(-50%,-50%);opacity:.5}
+#skyDeco.sky-night .sky-orb{opacity:.6}
+#skyDeco .star{position:absolute;border-radius:50%;background:#fff;opacity:.5;animation:twk 4s ease-in-out infinite}
+@keyframes twk{50%{opacity:.12}}
+#skyDeco .mini-moon,#skyDeco .mini-sun{position:absolute;font-size:22px;opacity:.07;color:var(--ink)}
+#skyDeco .mini-sun{color:#F5B82E;opacity:.12}
+#skyDeco .cloud{position:absolute;width:160px;height:46px;border-radius:40px;background:var(--sf);opacity:.35;filter:blur(2px);animation:cld 120s linear infinite}
+#skyDeco .cloud::before,#skyDeco .cloud::after{content:"";position:absolute;background:inherit;border-radius:50%}
+#skyDeco .cloud::before{width:70px;height:70px;left:24px;top:-34px}#skyDeco .cloud::after{width:50px;height:50px;left:80px;top:-22px}
+@keyframes cld{from{transform:translateX(-30vw)}to{transform:translateX(30vw)}}
+@media (prefers-reduced-motion:reduce){#skyDeco *{animation:none!important}}
+body.printing #skyDeco{display:none}
+/* preferencias */
+.pref-logo{width:88px;height:88px;border-radius:18px;object-fit:cover;border:1px solid var(--ln)}
+.acc-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:6px}
+.acc-sw{width:34px;height:34px;border-radius:50%;padding:0;border:2px solid var(--ln)}
+.acc-sw.on{outline:3px solid var(--ink);outline-offset:2px}
+.acc-custom{display:inline-flex;align-items:center;gap:6px;margin:0;cursor:pointer}.acc-custom input{width:38px;height:34px;padding:0;border:0;background:none;margin:0}
+input.auto-calc{background:var(--bg)!important;border-style:dashed!important;color:var(--mu)}
+:root{--hm:#4C8DF0;--sc-buy:#3B82F6;--sc-sell:#E8845C}
+.ch-head{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap;margin-bottom:8px}.ch-t{margin:0;font-size:15px}.ch-s{font-size:12px}
+.sm-seg button{padding:4px 10px;font-size:12px}
+svg.heat{width:100%;height:auto;display:block}
+.heat-leg{display:flex;align-items:center;gap:8px;font-size:12px;margin-top:6px}.heat-leg i{display:inline-block;width:120px;height:10px;border-radius:6px;background:linear-gradient(90deg,color-mix(in srgb,var(--hm) 15%,transparent),var(--hm))}
+.sc-leg{display:inline-flex;align-items:center;gap:6px;font-size:12px;color:var(--mu)}.sc-leg i{width:10px;height:10px;border-radius:50%;display:inline-block}
+.sc-pt{cursor:pointer;transition:r .12s}.sc-pt:hover,.sc-pt.on{r:7;stroke:var(--ink);stroke-width:2}
+.sc-card{margin-top:8px;padding:8px 12px;border:1px solid var(--ln);border-radius:10px;background:var(--bg);display:flex;flex-wrap:wrap;gap:6px;align-items:center;font-size:13px}
+#chHeat,#chScatter{margin-bottom:12px}
 </style>
 </head>
 <body>
@@ -503,7 +571,7 @@ body.nav-side .filters{display:none}
 
 <script>
 /* --- sincronización: registra qué datos cambian para subirlos a la nube --- */
-var SYNC_KEYS=['registro-cripto.v3','registro-cripto.holdings','registro-cripto.fees2','registro-cripto.coins','registro-cripto.reports','registro-cripto.flows','registro-cripto.ledger','registro-cripto.taborder','registro-cripto.theme','registro-cripto.dash','registro-cripto.hist','registro-cripto.cycui'];
+var SYNC_KEYS=['registro-cripto.v3','registro-cripto.holdings','registro-cripto.fees2','registro-cripto.coins','registro-cripto.reports','registro-cripto.flows','registro-cripto.ledger','registro-cripto.taborder','registro-cripto.theme','registro-cripto.dash','registro-cripto.hist','registro-cripto.cycui','registro-cripto.prefs','registro-cripto.logo','registro-cripto.decb'];
 var SYNC_META={},CLOUD_DIRTY={},CLOUD_READY=false,CLOUD_APPLYING=false;
 try{SYNC_META=JSON.parse(localStorage.getItem('registro-cripto.syncmeta')||'{}')||{}}catch(e){SYNC_META={}}
 function saveSyncMeta(){try{Storage.prototype._rcSet.call(localStorage,'registro-cripto.syncmeta',JSON.stringify(SYNC_META))}catch(e){}}
@@ -554,6 +622,117 @@ function parseFolio(s){if(s==null)return null;var m=String(s).match(/(\d+)/);ret
 /* ---------- tema ---------- */
 function applyTheme(t){document.documentElement.setAttribute('data-theme',t=='auto'?'':t)}
 var theme=localStorage.getItem(KTHEME)||'auto';applyTheme(theme);
+
+/* ================= Preferencias: acento, tema por hora, cielo, campo calculado, perfil ================= */
+var KPREF='registro-cripto.prefs',KLOGO='registro-cripto.logo';
+var PREF={calc:'amt',accent:'',hourly:false,dayTheme:'light',nightTheme:'dark',dayStart:'07:00',nightStart:'19:00',sky:true,font:100,density:'normal',title:''};
+try{var _p=JSON.parse(localStorage.getItem(KPREF)||'null');if(_p)Object.keys(_p).forEach(function(k){PREF[k]=_p[k]})}catch(e){}
+function savePref(){try{localStorage.setItem(KPREF,JSON.stringify(PREF))}catch(e){}}
+var ACCENTS=[['','Del tema'],['#1F8A7E','Turquesa'],['#2E93BE','Azul'],['#5F6FCC','Índigo'],['#8058C4','Morado'],['#C73B78','Rosa'],['#C8553D','Coral'],['#DB7A2C','Naranja'],['#D4AF37','Oro'],['#2F9E62','Verde']];
+function hm(s){var a=String(s||'0:0').split(':');return (+a[0]||0)*60+(+a[1]||0)}
+function isDay(){var d=new Date(),m=d.getHours()*60+d.getMinutes(),a=hm(PREF.dayStart),b=hm(PREF.nightStart);return a<b?(m>=a&&m<b):!(m>=b&&m<a)}
+function effTheme(){return PREF.hourly?(isDay()?PREF.dayTheme:PREF.nightTheme):theme}
+function applyAll(){
+ applyTheme(effTheme());
+ var st=$('#prefStyle');if(!st){st=document.createElement('style');st.id='prefStyle';document.head.appendChild(st)}
+ var a=PREF.accent,css='';
+ if(a)css+=':root{--acc:'+a+';--hm:'+a+'}.tabs button[aria-pressed=true]{background:'+a+'!important;color:#fff!important;border-color:'+a+'!important}button.p{background:'+a+';border-color:'+a+';color:#fff}'+
+  '.seg button[aria-pressed=true]{box-shadow:inset 0 -2px 0 '+a+',0 1px 3px rgba(0,0,0,.18)}.bknum{background:'+a+'}.cy-car,.cv-car{color:'+a+'}input:focus,select:focus,textarea:focus{outline-color:'+a+';border-color:'+a+'}a{color:'+a+'}';
+ css+='html{font-size:'+(PREF.font||100)+'%}';
+ if(PREF.density=='compact')css+='.card{padding:10px 12px;margin-bottom:8px}.dw{padding:10px 12px}.fl-stat{padding:8px 10px}td,th{padding-top:4px;padding-bottom:4px}';
+ st.textContent=css;
+ if(PREF.title){var h=document.querySelector('.topbar h1');if(h)h.textContent=PREF.title}
+ renderSky();
+}
+/* cielo: sol o luna que recorre un arco según la hora, con estrellas o nubes suaves */
+function renderSky(){
+ var el=$('#skyDeco');
+ if(!PREF.sky){if(el)el.remove();return}
+ if(!el){el=document.createElement('div');el.id='skyDeco';el.setAttribute('aria-hidden','true');document.body.insertBefore(el,document.body.firstChild)}
+ var d=new Date(),m=d.getHours()*60+d.getMinutes(),a=hm(PREF.dayStart),b=hm(PREF.nightStart),day=isDay();
+ var len=day?((b-a+1440)%1440||720):((a-b+1440)%1440||720),pos=day?((m-a+1440)%1440)/len:((m-b+1440)%1440)/len;pos=Math.max(0,Math.min(1,pos));
+ var x=6+pos*88,y=34-Math.sin(pos*Math.PI)*26;
+ var sun='<svg viewBox="0 0 100 100"><defs><radialGradient id="sg"><stop offset="0" stop-color="#FFE38A"/><stop offset=".6" stop-color="#FDB813"/><stop offset="1" stop-color="#FDB813" stop-opacity="0"/></radialGradient></defs><circle cx="50" cy="50" r="48" fill="url(#sg)" opacity=".55"/><circle cx="50" cy="50" r="20" fill="#FFD54F"/>'+
+  Array.apply(null,{length:12}).map(function(_,i){var t=i*Math.PI/6;return '<line x1="'+(50+28*Math.cos(t)).toFixed(1)+'" y1="'+(50+28*Math.sin(t)).toFixed(1)+'" x2="'+(50+38*Math.cos(t)).toFixed(1)+'" y2="'+(50+38*Math.sin(t)).toFixed(1)+'" stroke="#FFC107" stroke-width="4" stroke-linecap="round"/>'}).join('')+'</svg>';
+ var moon='<svg viewBox="0 0 100 100"><defs><radialGradient id="mg"><stop offset="0" stop-color="#E8EEFF" stop-opacity=".5"/><stop offset="1" stop-color="#E8EEFF" stop-opacity="0"/></radialGradient><mask id="mm"><rect width="100" height="100" fill="#fff"/><circle cx="62" cy="40" r="22" fill="#000"/></mask></defs><circle cx="50" cy="50" r="48" fill="url(#mg)"/><circle cx="50" cy="50" r="24" fill="#F1F4FF" mask="url(#mm)"/></svg>';
+ var extras='';
+ if(!day){var seed=7;var rnd=function(){seed=(seed*9301+49297)%233280;return seed/233280};
+  for(var i=0;i<46;i++){var sx=rnd()*100,sy=rnd()*70,sz=(rnd()*1.6+.6).toFixed(1);extras+='<i class="star" style="left:'+sx.toFixed(1)+'%;top:'+sy.toFixed(1)+'%;width:'+sz+'px;height:'+sz+'px;animation-delay:'+(rnd()*4).toFixed(1)+'s"></i>'}
+  for(var j=0;j<5;j++){var mx=rnd()*100,my=rnd()*80;extras+='<span class="mini-moon" style="left:'+mx.toFixed(1)+'%;top:'+my.toFixed(1)+'%">☾</span>'}}
+ else{var seed2=3;var r2=function(){seed2=(seed2*9301+49297)%233280;return seed2/233280};
+  for(var k=0;k<5;k++){extras+='<span class="mini-sun" style="left:'+(r2()*100).toFixed(1)+'%;top:'+(r2()*85).toFixed(1)+'%">☀</span>'}
+  for(var c=0;c<3;c++){extras+='<i class="cloud" style="left:'+(r2()*90).toFixed(1)+'%;top:'+(8+r2()*30).toFixed(1)+'%;animation-delay:-'+(r2()*60).toFixed(0)+'s"></i>'}}
+ el.className=day?'sky-day':'sky-night';
+ el.innerHTML=extras+'<div class="sky-orb" style="left:'+x.toFixed(1)+'%;top:'+y.toFixed(1)+'%">'+(day?sun:moon)+'</div>';
+}
+setInterval(function(){if(PREF.hourly||PREF.sky)applyAll()},60000);
+
+/* campo que se calcula solo: monto, cantidad o precio */
+var CALC_LBL={amt:'Monto',qty:'Cantidad de cripto',price:'Precio (USD)'};
+function applyCalcUI(){
+ ['amt','qty','price'].forEach(function(id){var el=$('#'+id);if(!el)return;var auto=PREF.calc==id;
+  el.readOnly=auto;el.tabIndex=auto?-1:0;el.placeholder=auto?'se calcula solo':'';el.classList.toggle('auto-calc',auto);if(auto){el.classList.remove('valid','invalid')}
+  var lab=el.closest('label'),lt=lab&&lab.querySelector('.lt');
+  if(lt)lt.textContent=CALC_LBL[id]+(auto?(id=='amt'?' (cantidad × precio)':id=='qty'?' (monto ÷ precio)':' (monto ÷ cantidad)'):'');
+ });
+}
+/* perfil: imagen propia */
+var LOGO_ORIG=null;
+function applyLogo(){var img=document.querySelector('.brand-logo');if(!img)return;if(LOGO_ORIG==null)LOGO_ORIG=img.src;var v=null;try{v=localStorage.getItem(KLOGO)}catch(e){}img.src=v||LOGO_ORIG}
+function setLogoFile(file,cb){
+ var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){
+  var S=256,cv=document.createElement('canvas');cv.width=S;cv.height=S;var ctx=cv.getContext('2d'),s=Math.min(im.width,im.height);
+  ctx.drawImage(im,(im.width-s)/2,(im.height-s)/2,s,s,0,0,S,S);
+  try{localStorage.setItem(KLOGO,cv.toDataURL('image/jpeg',.88))}catch(e){alert('No se pudo guardar la imagen.')}applyLogo();cb&&cb()};im.src=r.result};r.readAsDataURL(file);
+}
+/* sección extra de Configuración */
+function prefCardsHtml(){
+ var th=THEMES.filter(function(t){return t[0]!='auto'}).map(function(t){return [t[0],t[1]]});
+ var opt=function(list,v){return list.map(function(t){return '<option value="'+t[0]+'"'+(t[0]==v?' selected':'')+'>'+esc(t[1])+'</option>'}).join('')};
+ var logo=null;try{logo=localStorage.getItem(KLOGO)}catch(e){}
+ return '<div class="card" id="prefCard"><h2>Perfil</h2><div class="row" style="gap:16px;align-items:center;flex-wrap:wrap">'+
+   '<img class="pref-logo" alt="Imagen de perfil" src="'+(logo||LOGO_ORIG||'')+'"><div style="display:grid;gap:8px">'+
+   '<label class="btnlike" style="width:max-content"><input type="file" accept="image/*" id="logoFile" hidden>Cambiar imagen</label>'+(logo?'<button type="button" class="sm x" id="logoReset">Volver a la original</button>':'')+
+   '<span class="mu" style="font-size:12px">Se recorta cuadrada y se guarda en tu nube con tus datos.</span></div>'+
+   '<label style="flex:1;min-width:220px;margin:0"><span class="lt">Nombre que aparece arriba</span><input id="prefTitle" placeholder="Registro de actividad" value="'+esc(PREF.title||'')+'"></label></div></div>'+
+  '<div class="card"><h2>Color y tema automático</h2>'+
+   '<span class="lt">Color de acento</span><div class="acc-row">'+ACCENTS.map(function(a){return '<button type="button" class="acc-sw'+(PREF.accent==a[0]?' on':'')+'" data-acc="'+a[0]+'" title="'+a[1]+'" style="background:'+(a[0]||'linear-gradient(135deg,var(--ink) 50%,var(--sf) 50%)')+'"></button>'}).join('')+
+   '<label class="acc-custom" title="Elegir otro color"><input type="color" id="accPick" value="'+(PREF.accent||'#1F8A7E')+'"><span>Otro…</span></label></div>'+
+   '<div class="fgrid c3" style="margin-top:14px">'+
+   '<label class="chk"><input type="checkbox" id="prefHourly"'+(PREF.hourly?' checked':'')+'><span>Cambiar el tema según la hora</span></label>'+
+   '<label><span class="lt">Tema de día</span><select id="prefDay">'+opt(th,PREF.dayTheme)+'</select></label>'+
+   '<label><span class="lt">Tema de noche</span><select id="prefNight">'+opt(th,PREF.nightTheme)+'</select></label>'+
+   '<label><span class="lt">Empieza el día</span><input type="time" id="prefDayStart" value="'+PREF.dayStart+'"></label>'+
+   '<label><span class="lt">Empieza la noche</span><input type="time" id="prefNightStart" value="'+PREF.nightStart+'"></label>'+
+   '<label class="chk"><input type="checkbox" id="prefSky"'+(PREF.sky?' checked':'')+'><span>Cielo de fondo: sol de día, luna y estrellas de noche, que se mueven con la hora</span></label>'+
+   '</div><p class="mu" style="font-size:12px;margin:8px 0 0">Ahora es '+(isDay()?'de día ☀':'de noche ☾')+'. '+(PREF.hourly?'El tema se elige solo; la cuadrícula de temas de arriba se usa cuando lo apagas.':'')+'</p></div>'+
+  '<div class="card"><h2>Lectura</h2><div class="fgrid c3">'+
+   '<label><span class="lt">Tamaño de letra</span><select id="prefFont">'+opt([[90,'Chico'],[100,'Normal'],[110,'Grande'],[120,'Muy grande']],PREF.font)+'</select></label>'+
+   '<label><span class="lt">Espaciado</span><select id="prefDensity">'+opt([['normal','Normal'],['compact','Compacto']],PREF.density)+'</select></label></div></div>'+
+  '<div class="card"><h2>Llenado de ciclos</h2><p class="mu" style="margin:0 0 8px">Al registrar un movimiento, escribe dos de los tres datos y el tercero se calcula solo.</p><div class="seg" role="group" aria-label="Campo que se calcula solo">'+
+   [['amt','Se calcula el monto'],['qty','Se calcula la cantidad'],['price','Se calcula el precio']].map(function(o){return '<button type="button" data-pcalc="'+o[0]+'" aria-pressed="'+(PREF.calc==o[0])+'">'+o[1]+'</button>'}).join('')+'</div></div>';
+}
+function renderPrefCards(){var w=$('#prefWrap');if(!w){var v=$('#v5');if(!v)return;v.insertAdjacentHTML('afterbegin','<div id="prefWrap"></div>');w=$('#prefWrap')}w.innerHTML=prefCardsHtml()}
+document.addEventListener('click',function(e){
+ var b=e.target.closest&&e.target.closest('[data-acc],[data-pcalc],#logoReset');if(!b||!b.closest('#v5'))return;
+ if(b.id=='logoReset'){try{localStorage.removeItem(KLOGO)}catch(err){}applyLogo();renderPrefCards();return}
+ if(b.hasAttribute('data-acc'))PREF.accent=b.getAttribute('data-acc');
+ if(b.hasAttribute('data-pcalc')){PREF.calc=b.getAttribute('data-pcalc');applyCalcUI();validateForm()}
+ savePref();applyAll();renderPrefCards();
+});
+document.addEventListener('change',function(e){
+ var t=e.target;if(!t.closest||!t.closest('#prefWrap'))return;
+ if(t.id=='logoFile'&&t.files&&t.files[0]){setLogoFile(t.files[0],renderPrefCards);return}
+ if(t.id=='accPick')PREF.accent=t.value;
+ if(t.id=='prefHourly')PREF.hourly=t.checked;if(t.id=='prefSky')PREF.sky=t.checked;
+ if(t.id=='prefDay')PREF.dayTheme=t.value;if(t.id=='prefNight')PREF.nightTheme=t.value;
+ if(t.id=='prefDayStart')PREF.dayStart=t.value||'07:00';if(t.id=='prefNightStart')PREF.nightStart=t.value||'19:00';
+ if(t.id=='prefFont')PREF.font=+t.value;if(t.id=='prefDensity')PREF.density=t.value;
+ if(t.id=='prefTitle'){PREF.title=t.value.trim();var h=document.querySelector('.topbar h1');if(h)h.textContent=PREF.title||'Registro de actividad'}
+ savePref();applyAll();renderPrefCards();
+});
+
+applyAll();applyLogo();
 
 /* ---------- fondo / marca de agua ---------- */
 var wmOn=localStorage.getItem(KWM);wmOn=wmOn==null?true:wmOn=='1';
@@ -718,19 +897,24 @@ function fieldOk(id){
  return v!==''&&!isNaN(parseFloat(v))&&parseFloat(v)>0;
 }
 function computeAmt(){
- var q=parseFloat($('#qty').value),pr=parseFloat($('#price').value),fx=parseFloat($('#fx').value)||FX;
- if(q>0&&pr>0){var u=q*pr;$('#amt').value=+($('#curr').value=='MXN'?u*fx:u).toFixed(8)}else $('#amt').value='';
+ var q=parseFloat($('#qty').value),pr=parseFloat($('#price').value),a=parseFloat($('#amt').value),fx=parseFloat($('#fx').value)||FX,mx=$('#curr').value=='MXN';
+ var c=(typeof PREF!='undefined'&&PREF.calc)||'amt';
+ if(c=='amt'){if(q>0&&pr>0){var u=q*pr;$('#amt').value=+(mx?u*fx:u).toFixed(8)}else $('#amt').value=''}
+ else if(c=='qty'){var au=mx?a/fx:a;if(au>0&&pr>0)$('#qty').value=+(au/pr).toFixed(8);else $('#qty').value=''}
+ else{var au2=mx?a/fx:a;if(au2>0&&q>0)$('#price').value=+(au2/q).toPrecision(10);else $('#price').value=''}
 }
 function validateForm(){
  computeAmt();updateFeeDisplay();
  var ok=true;
- REQ.forEach(function(id){var el=$('#'+id),good=fieldOk(id);el.classList.toggle('valid',good);el.classList.toggle('invalid',!good);if(!good)ok=false});
+ REQ.forEach(function(id){var el=$('#'+id),good=fieldOk(id),plain=el.disabled||el.readOnly||(typeof PREF!='undefined'&&PREF.calc==id);
+  if(plain){el.classList.remove('valid','invalid')}else{el.classList.toggle('valid',good);el.classList.toggle('invalid',!good)}if(!good)ok=false});
  if($('#feepct').dataset.pct===''||$('#feepct').dataset.pct==null)ok=false;
  $('#add').disabled=!ok;
  return ok;
 }
 REQ.forEach(function(id){$('#'+id).addEventListener('input',function(){if(id=='amt')updateFeeDisplay();validateForm()});$('#'+id).addEventListener('change',function(){if(id=='amt'||id=='curr')updateFeeDisplay();validateForm()})});
 $('#curr').addEventListener('change',validateForm);
+applyCalcUI();
 
 function amountInUsd(){
  var amt=parseFloat($('#amt').value)||0,c=$('#curr').value,fx=parseFloat($('#fx').value)||FX;
@@ -949,7 +1133,7 @@ function cardHtml(x){
  }else if(x.delta!=null){
   line+='<span>Resultado <b class="num" style="color:'+cc(x.delta)+'">'+(x.delta>=0?'+':'')+n(x.delta,x.unit=='USD'?2:6)+' '+esc(x.unit)+'</b>'+(x.retPct!=null?' <span class="mu">('+(x.retPct>=0?'+':'')+n(x.retPct,1)+'%)</span>':'')+'</span>';
  }else line+='<span class="mu">'+(o.closedManual?'Cerrado manualmente':'Sin resultado: falta la cantidad de cripto')+'</span>';
- var sum='<summary><span class="cy-car" aria-hidden="true">›</span><span class="chip '+x.st+'">'+lab+'</span><span class="cy-coin">'+coinIcon(o.coin,18)+'<b>'+esc(o.coin)+'</b></span><span class="mu num">'+folio(o.id)+'</span><span class="cy-info">'+line+'</span><span class="sp"></span>'+(open?'<button class="p sm" type="button" data-comp="'+o.id+'">Registrar '+need+'</button>':'')+'</summary>';
+ var sum='<summary><span class="cy-car" aria-hidden="true">›</span><span class="chip '+x.st+'">'+lab+'</span><span class="cy-coin">'+coinIcon(o.coin,18)+'<b>'+esc(o.coin)+'</b></span><span class="mu num">'+folio(o.id)+'</span><span class="cy-info">'+line+'</span><span class="sp"></span><span class="cy-dt mu num">'+(open?'Abierto ':'Cerrado ')+fd(open?o.time:x.all[x.all.length-1].time).slice(0,16)+'</span>'+(open?'<button class="p sm" type="button" data-comp="'+o.id+'">Registrar '+need+'</button>':'')+'</summary>';
  var meta=['Complementado '+n(x.pctDone,1)+'%'];
  if(x.op)meta.push('Precio de '+(sell?'venta':'compra')+' '+px(x.op));
  if(x.p)meta.push('Hoy '+px(x.p));
@@ -957,7 +1141,7 @@ function cardHtml(x){
  if(o.closedManual)meta.push('Cerrado manualmente');
  var body='<div class="cy-body"><div class="bar'+(sell?'':' b')+'" role="img" aria-label="'+Math.round(x.pctDone)+'% complementado"><i style="width:'+x.pctDone+'%"></i></div>'+
   '<div class="mu cy-meta">'+meta.join(' · ')+'</div>'+
-  x.all.map(function(m){return'<div class="mv"><span class="'+m.action+'"><b>'+m.action+'</b></span><span class="num">'+n(m.usdt)+' USD</span>'+(m.curr=='MXN'?'<span class="num mu">('+n(m.amountOrig)+' MXN)</span>':'')+(m.qty?'<span class="num mu">'+n(m.qty,8)+' '+esc(m.coin)+(m.price?' @ '+n(m.price):'')+'</span>':'')+'<span class="mu">'+fd(m.time)+' · '+esc(m.plat)+' · '+(m.otype=='maker'?'maker':'taker')+(reflected(m)?' · ya en saldos':'')+'</span></div>'}).join('')+
+  x.all.map(function(m){return'<div class="mv"><span class="'+m.action+'"><b>'+m.action+'</b></span><span class="num">'+n(m.usdt)+' USD</span>'+(m.curr=='MXN'?'<span class="num mu">('+n(m.amountOrig)+' MXN)</span>':'')+(m.qty?'<span class="num mu">'+n(m.qty,8)+' '+esc(m.coin)+(m.price?' @ '+n(m.price):'')+'</span>':'')+'<span class="mu">'+esc(m.plat)+' · '+(m.otype=='maker'?'maker':'taker')+(reflected(m)?' · ya en saldos':'')+(m.id==o.id?' · apertura':' · complemento')+'</span><span class="sp"></span><span class="mu num mv-dt">'+fd(m.time)+'</span><button class="x sm mv-ed" type="button" data-edit="'+m.id+'" title="Editar este movimiento">Editar</button></div>'}).join('')+
   (small?'<div class="cy-small"><span>Faltan solo <b class="num">'+n(x.remUsd)+' USD</b>, menos que el mínimo usual de una orden. Puedes darlo por cerrado, o '+(sell?'recomprar':'vender')+' 10 USD: el excedente abre un folio nuevo que se cierra con '+(sell?'venta':'recompra')+'.</span><button class="sm" type="button" data-cclose="'+o.id+'">Marcar como cerrado</button><button class="sm" type="button" data-c10="'+o.id+'">'+(sell?'Recomprar':'Vender')+' 10 USD</button></div>':'')+
   '<div class="row cyc-foot"><button class="x" type="button" data-edit="'+o.id+'">Editar apertura</button>'+(o.closedManual?'<button class="x" type="button" data-creopen="'+o.id+'">Reabrir ciclo</button>':'')+'</div></div>';
  return '<details class="card cy" data-cyc="'+o.id+'"'+(openCyc[o.id]?' open':'')+'>'+sum+body+'</details>';
@@ -1050,7 +1234,7 @@ $('#v5').innerHTML='<div class="card"><h2>Apariencia</h2>'+
 '</div>'+
 '<div class="card"><h2>Fondo por moneda</h2><p class="mu">Sube una imagen para cada cripto (ideal cuadrada, PNG o JPG; se guarda en este navegador). Si una moneda no tiene imagen propia, se usa su sigla como fondo de texto.</p><div id="dBg"></div></div>';
 function renderConfig(){
- renderThemeGrid();
+ renderThemeGrid();renderPrefCards();
  $('#bgMode').value=bgMode;
  $('#bgFixedWrap').hidden=bgMode!='fixed';
  $('#bgFixedCoin').innerHTML='<option value="">Genérico (todas las siglas)</option>'+COINS.slice().sort().map(function(c){return '<option'+(c==bgFixed?' selected':'')+'>'+c+'</option>'}).join('');
@@ -1118,13 +1302,16 @@ function svgLine(values,opts){
  '<text x="'+pad+'" y="14">'+n(mx,2)+'</text><text x="'+pad+'" y="'+(h-2)+'">'+n(mn,2)+'</text></svg>';
 }
 var chartCoin=null;
-$('#v3').innerHTML='<div class="chartgrid">'+
+$('#v3').innerHTML='<div class="card" id="chHeat"></div><div class="card" id="chScatter"></div><div class="chartgrid">'+
 '<div class="card"><h2>Precio últimas 24h (Binance)</h2><select id="chCoinSel" style="margin-bottom:8px"></select><div id="chPrice"></div></div>'+
 '<div class="card"><h2>Resultado % por ciclo cerrado</h2><div id="chResult"></div></div>'+
 '<div class="card"><h2>Volumen por moneda (USD)</h2><div id="chCoin"></div></div>'+
 '<div class="card"><h2>Volumen por plataforma (USD)</h2><div id="chPlat"></div></div>'+
 '</div>';
 function renderCharts(){
+ var _w=($('#v3').clientWidth||1000)-40;
+ $('#chHeat').innerHTML=heatHtml('gHeat',M.map(function(m){return{t:m.time,v:m.usdt}}),'Qué días');
+ $('#chScatter').innerHTML=scatterHtml('gScat',M.filter(function(m){return m.usdt>0}).map(function(m){return{t:m.time,v:m.usdt,k:m.action=='VENTA'?'SELL':'BUY',c:m.coin,d:m.plat+' · '+folio(m.ciclo),mid:m.id}}),'Cada movimiento',_w);
  var cs=cycles().filter(function(x){return x.retPct!=null});
  var byDate=cs.sort(function(a,b){return a.o.time<b.o.time?-1:1});
  $('#chResult').innerHTML=byDate.length?svgBars(byDate.map(function(x){return{label:fmtDT(x.o.time).slice(0,10),value:x.retPct}}),{zero:true}):'<p class="mu empty">Aún no hay ciclos con resultado calculable.</p>';
@@ -1529,7 +1716,7 @@ function bkInfo(){
 function fullBackup(){
  return{app:'registro-actividad',version:1,generado:new Date().toISOString(),
   movimientos:M,tenencias:H,brokers:FEES,monedas:COINS,tipoCambio:FX,
-  ajustes:{tema:theme,fondoActivo:wmOn,modoFondo:bgMode,fondoFijo:bgFixed},fondos:backgrounds,reportes:REPORTS,aportaciones:FLW,estadosCuenta:LED,dashboard:DASH,historial:HIST};
+  ajustes:{tema:theme,fondoActivo:wmOn,modoFondo:bgMode,fondoFijo:bgFixed},fondos:backgrounds,reportes:REPORTS,aportaciones:FLW,estadosCuenta:LED,dashboard:DASH,historial:HIST,preferencias:PREF,perfil:(function(){try{return localStorage.getItem(KLOGO)||''}catch(e){return ''}})()};
 }
 function markBackup(){try{localStorage.setItem(KLAST,String(Date.now()))}catch(e){}bkInfo()}
 /* --- exportar todo: los tres formatos llevan exactamente lo mismo --- */
@@ -1599,7 +1786,7 @@ function restoreFromObject(d){
    if(a.fondoActivo!=null)set(KWM,a.fondoActivo?'1':'0');
    if(a.modoFondo)set(KBGMODE,a.modoFondo);
    set(KBGFIXED,a.fondoFijo||'');
-   set(KBG,d.fondos||{});set(KREP,d.reportes||[]);if(Array.isArray(d.aportaciones))set(KFLOW,d.aportaciones);if(d.estadosCuenta&&d.estadosCuenta.trades)set(KLED,d.estadosCuenta);if(d.dashboard&&d.dashboard.items)set(KDASH,d.dashboard);if(Array.isArray(d.historial))set(KHIST,d.historial);
+   set(KBG,d.fondos||{});set(KREP,d.reportes||[]);if(Array.isArray(d.aportaciones))set(KFLOW,d.aportaciones);if(d.estadosCuenta&&d.estadosCuenta.trades)set(KLED,d.estadosCuenta);if(d.dashboard&&d.dashboard.items)set(KDASH,d.dashboard);if(Array.isArray(d.historial))set(KHIST,d.historial);if(d.preferencias)set(KPREF,d.preferencias);if(d.perfil)set(KLOGO,d.perfil);
    location.reload();
   }catch(err){alert('No se pudo restaurar: el almacenamiento del navegador está lleno o bloqueado.')}
  }
@@ -1749,7 +1936,7 @@ function renderThemeGrid(){
 }
 $('#v5').addEventListener('click',function(e){
  var b=e.target.closest&&e.target.closest('[data-theme]');
- if(b){theme=b.getAttribute('data-theme');try{localStorage.setItem(KTHEME,theme)}catch(err){}applyTheme(theme);renderThemeGrid()}
+ if(b){theme=b.getAttribute('data-theme');try{localStorage.setItem(KTHEME,theme)}catch(err){}if(PREF.hourly){PREF.hourly=false;savePref()}applyAll();renderThemeGrid();renderPrefCards()}
 });
 
 /* ---------- gráficos (SVG propio, sin librerías): dona, pastel, barras, columnas, mosaico ---------- */
@@ -2042,26 +2229,27 @@ function reportBuild(o){
   '<div class="rmeta">Generado: '+fmtDT(o.when)+'</div>'+
   '<div class="rmeta">Dólar: 1 USD = '+n(fx,4)+' MXN · '+fxLine+'</div>'+
   '<div class="rmeta">Precios de mercado: '+(o.pricesAt?'actualizados '+fmtDT(o.pricesAt):'sin actualizar')+'</div></div></div>'+
-  (function(){var at=accountTotals(fx),d=at.total-at.totalC;
+  (!RPO.sec.total?'':(function(){var at=accountTotals(fx),d=at.total-at.totalC;
    return '<div class="rtotal"><div>Valor total de las cuentas (cripto + USDT + pesos)</div><div class="big">'+n(at.total,2)+' USD · '+n(at.total*fx,2)+' MXN'+(at.miss?' *':'')+'</div>'+
    '<table><tbody><tr><td>Cripto a valor actual</td><td class="r">'+n(at.cripto,2)+' USD</td></tr><tr><td>USDT</td><td class="r">'+n(at.usdt,2)+' USD</td></tr>'+
    (at.mxn?'<tr><td>Pesos ('+n(at.mxn,2)+' MXN)</td><td class="r">'+n(at.mxnUsd,2)+' USD</td></tr>':'')+
    '<tr><td>A precio de entrada (Valor)</td><td class="r">'+n(at.totalC,2)+' USD ('+(d>=0?'+':'')+n(d,2)+')</td></tr>'+
    (FLW.length?(function(){var ft=flowTotals(),fv=at.total*fx-ft.net;return '<tr><td>Dinero ingresado</td><td class="r">'+n(ft.inn,2)+' MXN</td></tr><tr><td>Dinero retirado</td><td class="r">'+n(ft.out,2)+' MXN</td></tr><tr><td><b>Neto aportado (lo que debería haber)</b></td><td class="r"><b>'+n(ft.net,2)+' MXN</b></td></tr><tr><td><b>'+(fv>=0?'A favor':'En contra')+' respecto a lo aportado</b></td><td class="r"><b>'+(fv>=0?'+':'')+n(fv,2)+' MXN'+(ft.net>0?' ('+(fv>=0?'+':'')+n(fv/ft.net*100,1)+'%)':'')+'</b></td></tr>'})():'')+
-   '</tbody></table></div>'})()+
-  '<div class="rsec" style="page-break-inside:avoid"><h2>Resumen</h2><table><tbody>'+
+   '</tbody></table></div>'})())+
+  (!RPO.sec.resumen?'':'<div class="rsec" style="page-break-inside:avoid"><h2>Resumen</h2><table><tbody>'+
   '<tr><td>Costo abierto (cripto)</td><td class="r">'+n(lt.cost,2)+' USD</td></tr>'+
   '<tr><td>Valor actual (cripto)</td><td class="r">'+n(lt.val,2)+' USD</td></tr>'+
   '<tr><td>Ganancia/pérdida abierta</td><td class="r">'+(lt.pl>=0?'+':'')+n(lt.pl,2)+' USD</td></tr>'+
   '<tr><td>Realizado (neto de comisiones)</td><td class="r">'+(lt.rea>=0?'+':'')+n(lt.rea,2)+' USD</td></tr>'+
   '<tr><td>Valor total (cripto a precio de entrada + USDT + pesos)</td><td class="r">'+n(grandC,2)+' USD · '+n(grandC*fx,2)+' MXN</td></tr>'+
   '<tr><td><b>Valor actual total (cripto + USDT + pesos)</b></td><td class="r"><b>'+n(grand,2)+' USD · '+n(grand*fx,2)+' MXN</b>'+(missAny?' *':'')+'</td></tr>'+
-  '</tbody></table></div>'+
-  (secs||'<p>Sin cantidades registradas.</p>')+
-  (data.length?'<div class="rsec" style="page-break-inside:avoid"><h2>Total por activo (todos los brokers)</h2><table><thead><tr><th>Activo</th><th class="r">Cantidad</th><th class="r">Valor (USD)</th><th class="r">Valor actual (USD)</th><th class="r">Valor actual (MXN)</th></tr></thead><tbody>'+totRows+'</tbody></table></div>':'')+
-  (o.charts?'<div class="rsec"><h2>Resumen gráfico</h2><div class="rcharts">'+chartsHtml(fx,'#111')+'</div></div>':'')+
+  '</tbody></table></div>')+
+  (!RPO.sec.brokers?'':(secs||'<p>Sin cantidades registradas.</p>'))+
+  (data.length&&RPO.sec.activos?'<div class="rsec" style="page-break-inside:avoid"><h2>Total por activo (todos los brokers)</h2><table><thead><tr><th>Activo</th><th class="r">Cantidad</th><th class="r">Valor (USD)</th><th class="r">Valor actual (USD)</th><th class="r">Valor actual (MXN)</th></tr></thead><tbody>'+totRows+'</tbody></table></div>':'')+
+  rpChartsHtml(fx)+(RPO.sec.ciclos?rpCyclesHtml():'')+(RPO.sec.movs?rpMovsHtml(RPO.movsN):'')+
+  (RPO.sec.nota&&RPO.note?'<div class="rsec"><h2>Nota</h2><p class="rnote">'+esc(RPO.note).replace(/\n/g,'<br>')+'</p></div>':'')+
   '<p class="rsub" style="margin-top:10px">Valor = cantidad × precio promedio de entrada (lo que valdría sin pérdidas); Valor actual = cantidad × precio de mercado. Los pesos se convierten al tipo de cambio de este reporte. Los precios de cripto son el último valor disponible de Binance, Bybit o BingX.'+(missAny?' * Falta precio de alguna moneda; su valor no se incluye en los totales.':'')+(lt.miss.length?' Sin precio: '+lt.miss.join(', ')+'.':'')+'</p></div>';
- return{html:html,usd:grand,mxn:grand*fx};
+ return{html:rpWrap(html),usd:grand,mxn:grand*fx};
 }
 function finalReportHtml(r){return r.html.split('__RNAME__').join(esc(r.name))}
 function printReportRec(r){
@@ -2079,16 +2267,83 @@ function stampName(){var d=new Date();return d.getFullYear()+'_'+p2(d.getMonth()
 function sanitizeName(s){return String(s==null?'':s).trim().replace(/[\\\/:*?"<>|]/g,'').replace(/\s+/g,'_').replace(/_+/g,'_').replace(/^_+|_+$/g,'')}
 function sanitizeLive(s){return String(s).replace(/[\\\/:*?"<>|]/g,'').replace(/\s/g,'_').replace(/_+/g,'_')}
 function uniqueName(name){var base=name,i=2;while(REPORTS.some(function(r){return r.name==name}))name=base+'_'+(i++);return name}
-function openReportDialog(){
- var pref=localStorage.getItem(KRPC)!=='0';
- openOvl('<h2>Generar reporte</h2><label>Nombre del reporte<input id="rpName" value="'+esc('Reporte_'+stampName())+'"></label>'+
-  '<div class="row" style="margin:8px 0 10px"><span class="mu">Sugerencias:</span>'+['Reporte','Posiciones','Cierre_semanal','Cierre_mensual'].map(function(s){return '<button type="button" class="chipbtn" data-rpchip="'+s+'">'+s+'</button>'}).join('')+'</div>'+
-  '<label class="row" style="margin:0 0 6px;color:var(--ink)"><input type="checkbox" id="rpCharts" style="width:auto;margin:0"'+(pref?' checked':'')+'>Incluir gráficos (barras y pastel)</label>'+
-  '<p class="mu" style="margin:6px 0 10px">El nombre va sin espacios (guion bajo como separador) y será el nombre sugerido al guardarlo como PDF. Antes de generarlo se consulta el precio del dólar y los precios de mercado de ese momento, y el reporte queda guardado en el historial (pestaña Reportes).</p>'+
-  '<div class="row"><button class="p" id="rpGo" type="button">Generar</button><button type="button" id="rpCancel">Cancelar</button><span class="mu" id="rpMsg"></span></div>');
- $('#rpName').addEventListener('input',function(){var el=this,pos=el.selectionStart,v=sanitizeLive(el.value);if(v!==el.value){el.value=v;el.setSelectionRange(pos,pos)}});
- $('#rpName').focus();$('#rpName').select();
+
+/* ================= Reporte personalizable ================= */
+var KRPO='registro-cripto.rpopts';
+var RP_SECS=[['total','Valor total de las cuentas'],['resumen','Resumen (costo, valor, ganancia, realizado)'],['brokers','Detalle por broker'],['activos','Total por activo'],['ciclos','Ciclos activos'],['movs','Movimientos recientes'],['nota','Nota al final']];
+var RP_CH=[['asset','Composición por activo',1],['broker','Distribución por broker',1],['pl','Ganancia/pérdida por cripto',0],['cv','Costo vs valor actual',0],['heat','Qué días (mapa de calor)',0],['scat','Cada movimiento (dispersión)',0],['hist','Valor total en el tiempo',0]];
+var RP_TYPES=[['donut','Dona'],['pie','Pastel'],['hbar','Barras'],['vbar','Columnas'],['treemap','Mosaico']];
+var RPO={sec:{total:1,resumen:1,brokers:1,activos:1,ciclos:0,movs:0,nota:0},ch:{asset:1,broker:1,pl:1,cv:1,heat:0,scat:0,hist:0},types:{asset:'donut',broker:'donut'},size:'letter',orient:'portrait',style:'color',density:'normal',cols:2,note:'',movsN:20};
+try{var _ro=JSON.parse(localStorage.getItem(KRPO)||'null');if(_ro)Object.keys(_ro).forEach(function(k){RPO[k]=_ro[k]})}catch(e){}
+(function(){if(!localStorage.getItem(KRPO)&&localStorage.getItem(KRPC)==='0')RP_CH.forEach(function(c){RPO.ch[c[0]]=0})})();
+function saveRpo(){try{localStorage.setItem(KRPO,JSON.stringify(RPO))}catch(e){}}
+function rpChart(k,fx,o,thumb){
+ var d=portfolio(fx,'val'),t=RPO.types[k]||'donut',opt=Object.assign({},o||{});
+ var comp=function(items){return t=='pie'||t=='donut'?donutSvg(items,Object.assign(opt,{pie:t=='pie'})):t=='hbar'?hbarSvg(items,opt):t=='vbar'?vbarSvg(items,opt):treemapSvg(items,opt)};
+ if(k=='asset')return comp(d.asset);
+ if(k=='broker')return comp(d.broker);
+ if(k=='pl')return hbarSvg(d.pl,Object.assign({signed:true},opt));
+ if(k=='cv')return groupSvg(d.cv,opt);
+ if(k=='heat'){var hh=heatHtml('rpHeat'+(thumb?'T':''),M.map(function(m){return{t:m.time,v:m.usdt}}),'Qué días');return '<div class="rp-heat">'+hh.slice(hh.indexOf('<svg'))+'</div>'}
+ if(k=='scat'){var sh=scatterHtml('rpScat'+(thumb?'T':''),M.filter(function(m){return m.usdt>0}).map(function(m){return{t:m.time,v:m.usdt,k:m.action=='VENTA'?'SELL':'BUY',c:m.coin}}),'Cada movimiento',900);var i0=sh.indexOf('<svg');if(i0<0)return emptyChart();return '<div class="rp-scat"><div class="sc-leg rp-leg"><i style="background:var(--sc-buy)"></i>Compra <i style="background:var(--sc-sell)"></i>Venta · escala logarítmica</div>'+sh.slice(i0).replace(/<div class="sc-detail"[^>]*><\/div>/,'').replace(/ data-sp="[^"]*"/g,'')+'</div>'}
+ if(k=='hist'){var h=histChart(260,900);return h.svg}
+ return '';
 }
+function openReportDialog(){
+ var fx=FX,sec=RP_SECS.map(function(s){return '<label class="rp-chk"><input type="checkbox" data-rpsec="'+s[0]+'"'+(RPO.sec[s[0]]?' checked':'')+'>'+s[1]+'</label>'}).join('');
+ var ch=RP_CH.map(function(c){var on=!!RPO.ch[c[0]];return '<div class="rp-thumb'+(on?' on':'')+'" data-rpch="'+c[0]+'" role="button" tabindex="0" aria-pressed="'+on+'"><div class="rp-prev">'+rpChart(c[0],fx,RPT,true)+'</div><div class="rp-tl"><span class="rp-tick">'+(on?'✓':'')+'</span>'+c[1]+'</div>'+
+  (c[2]?'<select data-rptype="'+c[0]+'" onclick="event.stopPropagation()">'+RP_TYPES.map(function(t){return '<option value="'+t[0]+'"'+((RPO.types[c[0]]||'donut')==t[0]?' selected':'')+'>'+t[1]+'</option>'}).join('')+'</select>':'')+'</div>'}).join('');
+ var sel=function(id,list,v){return '<select id="'+id+'">'+list.map(function(o){return '<option value="'+o[0]+'"'+(String(v)==String(o[0])?' selected':'')+'>'+o[1]+'</option>'}).join('')+'</select>'};
+ openOvl('<div class="row" style="margin-bottom:6px"><h2 style="margin:0">Generar reporte</h2><span class="sp"></span><button type="button" id="rpCancel">Cancelar</button><button class="p" id="rpGo" type="button">Generar</button></div><span class="mu" id="rpMsg"></span>'+
+  '<label>Nombre del reporte<input id="rpName" value="'+esc('Reporte_'+stampName())+'"></label>'+
+  '<div class="row" style="margin:6px 0 10px"><span class="mu">Sugerencias:</span>'+['Reporte','Posiciones','Cierre_semanal','Cierre_mensual'].map(function(s){return '<button type="button" class="chipbtn" data-rpchip="'+s+'">'+s+'</button>'}).join('')+'</div>'+
+  '<div class="rp-grid"><section><h3>Secciones</h3>'+sec+'<label class="rp-note"'+(RPO.sec.nota?'':' hidden')+'><span class="lt">Texto de la nota</span><textarea id="rpNote" rows="3">'+esc(RPO.note||'')+'</textarea></label>'+
+  '<label class="rp-movn"'+(RPO.sec.movs?'':' hidden')+'><span class="lt">Cuántos movimientos</span>'+sel('rpMovN',[[10,'10'],[20,'20'],[50,'50'],[9999,'Todos']],RPO.movsN)+'</label>'+
+  '<h3 style="margin-top:14px">Formato</h3><div class="rp-fmt">'+
+  '<label><span class="lt">Tamaño</span>'+sel('rpSize',[['letter','Carta'],['A4','A4'],['legal','Oficio']],RPO.size)+'</label>'+
+  '<label><span class="lt">Orientación</span>'+sel('rpOrient',[['portrait','Vertical'],['landscape','Horizontal']],RPO.orient)+'</label>'+
+  '<label><span class="lt">Estilo</span>'+sel('rpStyle',[['color','A color'],['classic','Clásico (blanco y negro)']],RPO.style)+'</label>'+
+  '<label><span class="lt">Letra</span>'+sel('rpDensity',[['normal','Normal'],['compact','Compacta'],['large','Grande']],RPO.density)+'</label>'+
+  '<label><span class="lt">Gráficos por renglón</span>'+sel('rpCols',[[1,'1'],[2,'2'],[3,'3']],RPO.cols)+'</label></div></section>'+
+  '<section><h3>Gráficos <span class="mu" style="font-weight:400;font-size:12px">· toca los que quieras incluir</span> <button type="button" class="x sm" data-rpall="1">Todos</button> <button type="button" class="x sm" data-rpnone="1">Ninguno</button></h3><div class="rp-thumbs">'+ch+'</div></section></div>'+
+  '<p class="mu" style="margin:10px 0 0;font-size:12px">Antes de generarlo se consultan el dólar y los precios de ese momento; el reporte queda en el historial (pestaña Reportes).</p>',true);
+ $('#rpName').addEventListener('input',function(){var el=this,pos=el.selectionStart,v=sanitizeLive(el.value);if(v!==el.value){el.value=v;el.setSelectionRange(pos,pos)}});
+}
+document.addEventListener('click',function(e){
+ var th=e.target.closest&&e.target.closest('[data-rpch]');
+ if(th&&!e.target.closest('select')){var k=th.getAttribute('data-rpch');RPO.ch[k]=RPO.ch[k]?0:1;saveRpo();th.classList.toggle('on',!!RPO.ch[k]);th.setAttribute('aria-pressed',!!RPO.ch[k]);th.querySelector('.rp-tick').textContent=RPO.ch[k]?'✓':'';return}
+ var all=e.target.closest&&e.target.closest('[data-rpall],[data-rpnone]');
+ if(all){var v=all.hasAttribute('data-rpall')?1:0;RP_CH.forEach(function(c){RPO.ch[c[0]]=v});saveRpo();document.querySelectorAll('[data-rpch]').forEach(function(x){x.classList.toggle('on',!!v);x.querySelector('.rp-tick').textContent=v?'✓':''});return}
+});
+document.addEventListener('keydown',function(e){var th=e.target.closest&&e.target.closest('[data-rpch]');if(th&&e.target===th&&(e.key=='Enter'||e.key==' ')){e.preventDefault();th.click()}});
+document.addEventListener('change',function(e){
+ var t=e.target;if(!t.closest||!t.closest('#ovlBox'))return;
+ if(t.getAttribute('data-rpsec')){RPO.sec[t.getAttribute('data-rpsec')]=t.checked?1:0;var nb=document.querySelector('.rp-note');if(nb)nb.hidden=!RPO.sec.nota;var mb=document.querySelector('.rp-movn');if(mb)mb.hidden=!RPO.sec.movs}
+ if(t.getAttribute('data-rptype')){var k=t.getAttribute('data-rptype');RPO.types[k]=t.value;var box=t.closest('[data-rpch]');if(box)box.querySelector('.rp-prev').innerHTML=rpChart(k,FX,RPT,true)}
+ var map={rpSize:'size',rpOrient:'orient',rpStyle:'style',rpDensity:'density',rpCols:'cols',rpMovN:'movsN'};if(map[t.id])RPO[map[t.id]]=(t.id=='rpCols'||t.id=='rpMovN')?+t.value:t.value;
+ if(t.id=='rpNote')RPO.note=t.value;
+ saveRpo();
+});
+/* piezas nuevas del reporte */
+function rpCyclesHtml(){
+ var act=cycles().filter(function(x){return x.st!='cerrado'});if(!act.length)return '<div class="rsec"><h2>Ciclos activos</h2><p>No hay ciclos activos.</p></div>';
+ return '<div class="rsec"><h2>Ciclos activos ('+act.length+')</h2><table><thead><tr><th>Folio</th><th>Moneda</th><th>Tipo</th><th>Broker</th><th class="r">Precio apertura</th><th class="r">Hoy</th><th class="r">Pendiente</th><th class="r">Si cierras hoy</th></tr></thead><tbody>'+
+  act.map(function(x){var o=x.o;return '<tr><td>'+folio(o.id)+'</td><td>'+esc(o.coin)+'</td><td>'+(o.action=='VENTA'?'Espera recompra':'Espera venta')+'</td><td>'+esc(o.plat||'')+'</td><td class="r">'+px(x.op)+'</td><td class="r">'+px(x.p)+'</td><td class="r">'+(x.byQ?n(x.rem,6)+' '+esc(o.coin):n(x.rem,2)+' USD')+'</td><td class="r">'+(x.gain!=null?(x.gain>=0?'+':'')+n(x.gain,x.gainUnit=='USD'?2:6)+' '+esc(x.gainUnit):'—')+'</td></tr>'}).join('')+'</tbody></table></div>';
+}
+function rpMovsHtml(N){
+ var mv=M.slice().sort(function(a,b){return a.time<b.time?1:-1}).slice(0,N||20);
+ return '<div class="rsec"><h2>Movimientos recientes</h2><table><thead><tr><th>Fecha</th><th>Folio</th><th>Acción</th><th>Moneda</th><th class="r">Cantidad</th><th class="r">Precio</th><th class="r">USD</th><th>Broker</th></tr></thead><tbody>'+
+  mv.map(function(m){return '<tr><td>'+fmtDT(m.time)+'</td><td>'+folio(m.ciclo)+'</td><td>'+m.action+'</td><td>'+esc(m.coin)+'</td><td class="r">'+(m.qty?n(m.qty,6):'—')+'</td><td class="r">'+(m.price?px(m.price):'—')+'</td><td class="r">'+n(m.usdt,2)+'</td><td>'+esc(m.plat)+'</td></tr>'}).join('')+'</tbody></table></div>';
+}
+function rpChartsHtml(fx){
+ var sel=RP_CH.filter(function(c){return RPO.ch[c[0]]});if(!sel.length)return '';
+ return '<div class="rsec"><h2>Resumen gráfico</h2><div class="rcharts rc'+(RPO.cols||2)+'">'+sel.map(function(c){return '<div class="chartbox'+(/heat|scat|hist/.test(c[0])&&(RPO.cols||2)>1?' rwide':'')+'"><h3>'+c[1]+(c[2]?' · '+(RP_TYPES.filter(function(t){return t[0]==(RPO.types[c[0]]||'donut')})[0]||['',''])[1]:'')+'</h3>'+rpChart(c[0],fx,RPT,false)+'</div>'}).join('')+'</div></div>';
+}
+function rpWrap(html){
+ var css='<style>@page{size:'+RPO.size+' '+RPO.orient+';margin:12mm}</style>';
+ return css+html.replace('<div class="rep">','<div class="rep rep-'+RPO.style+' rep-'+RPO.density+'">');
+}
+
 function withTimeout(p,ms){return Promise.race([p,new Promise(function(res){setTimeout(function(){res(null)},ms)})])}
 function generateReport(name,charts){
  $('#rpMsg').textContent='Consultando dólar y precios de mercado…';$('#rpGo').disabled=true;
@@ -2098,7 +2353,7 @@ function generateReport(name,charts){
   var when=new Date();
   var b=reportBuild({fx:FX,fxOk:ok,fxTime:when,fxSrc:ok?FXSRC:'',charts:charts,when:when,pricesAt:mktTime});
   var id=REPORTS.reduce(function(a,r){return Math.max(a,r.id)},0)+1;
-  var rec={id:id,name:uniqueName(name),time:isoNow(),fx:FX,fxOk:ok,charts:!!charts,usd:b.usd,mxn:b.mxn,html:b.html};
+  var rec={id:id,name:uniqueName(name),time:isoNow(),fx:FX,fxOk:ok,charts:RP_CH.filter(function(c){return RPO.ch[c[0]]}).length,fmt:{size:RPO.size,orient:RPO.orient,style:RPO.style},usd:b.usd,mxn:b.mxn,html:b.html};
   REPORTS.push(rec);saveReports();
   if(tab==8)renderReports();
   viewReport(rec.id,true);
@@ -2111,7 +2366,7 @@ function viewReport(id,autoPrint){
 }
 function renderReports(){
  var rows=REPORTS.slice().sort(function(a,b){return b.id-a.id}).map(function(r){
-  return '<tr><td>RP-'+String(r.id).padStart(4,'0')+'</td><td>'+esc(r.name)+'</td><td>'+fmtDT(r.time)+'</td><td class="num">'+n(r.fx,4)+(r.fxOk?'':' <span class="mu">(no actualizado)</span>')+'</td><td>'+(r.charts?'Con gráficos':'Sin gráficos')+'</td><td class="num">'+n(r.usd,2)+' USD</td><td class="num">'+n(r.mxn,2)+' MXN</td>'+
+  return '<tr><td>RP-'+String(r.id).padStart(4,'0')+'</td><td>'+esc(r.name)+'</td><td>'+fmtDT(r.time)+'</td><td class="num">'+n(r.fx,4)+(r.fxOk?'':' <span class="mu">(no actualizado)</span>')+'</td><td>'+(r.charts?'Con gráficos'+(r.charts>1||r.charts===1&&r.fmt?' ('+r.charts+')':''):'Sin gráficos')+(r.fmt?'<div class="mu" style="font-size:12px">'+(r.fmt.orient=='landscape'?'Horizontal':'Vertical')+' · '+(r.fmt.style=='classic'?'clásico':'color')+'</div>':'')+'</td><td class="num">'+n(r.usd,2)+' USD</td><td class="num">'+n(r.mxn,2)+' MXN</td>'+
    '<td><button class="x" data-rpview="'+r.id+'">Ver / imprimir</button><button class="x" data-rprename="'+r.id+'">Renombrar</button><button class="x" data-rpdel="'+r.id+'">Eliminar</button></td></tr>'}).join('');
  $('#v8').innerHTML='<div class="card"><div class="row"><h2 style="margin:0">Historial de reportes</h2><span class="sp"></span><button class="p" type="button" data-rpnew="1">Generar reporte</button></div>'+
   '<p class="mu" style="margin:6px 0 10px">Cada reporte queda guardado tal como se generó (con el dólar y los precios de ese momento). Nombre sugerido: <b>Reporte_AAAA_MM_DD_HH_MM_SS</b> (sin espacios).</p>'+
@@ -2122,9 +2377,9 @@ document.addEventListener('click',function(e){
  if(t.id=='ovl'||t.id=='rpCancel'){closeOvl();return}
  var chip=g('data-rpchip');if(chip){$('#rpName').value=chip+'_'+stampName();return}
  if(t.id=='rpGo'){
-  var name=sanitizeName($('#rpName').value)||('Reporte_'+stampName()),ch=$('#rpCharts').checked;
-  try{localStorage.setItem(KRPC,ch?'1':'0')}catch(err){}
-  generateReport(name,ch);return;
+  var name=sanitizeName($('#rpName').value)||('Reporte_'+stampName());
+  var nt=$('#rpNote');if(nt)RPO.note=nt.value;saveRpo();
+  generateReport(name);return;
  }
  if(g('data-rpnew')){openReportDialog();return}
  var v=g('data-rpview');if(v){viewReport(+v,false);return}
@@ -2599,6 +2854,8 @@ function renderBrokers(){
  if(sk.length){var sp=Object.keys(snapPlat).sort();
   charts+=box('Valor de la cuenta según los estados mensuales (USDT)','Saldo total el día 1 de cada mes'+(P?'':' ('+sp.join(', ')+')'),lineSvg(sk.map(monthLbl),sp.map(function(p,i){return{name:p,color:PAL[i%PAL.length],area:sp.length==1,vals:sk.map(function(k){return snapM[k][p]!=null?snapM[k][p]:null})}}),{unit:'USDT',w:brkW(),h:300}),true);
  }
+ if(ords.length){charts+='<div class="chartbox wide">'+heatHtml('bHeat'+(P||''),ords.map(function(o){return{t:o.t,v:o.v}}),'Qué días')+'</div>';
+  charts+='<div class="chartbox wide">'+scatterHtml('bScat'+(P||''),ords.map(function(o){return{t:o.t,v:o.v,k:o.sd,c:o.b,d:o.p+' · '+n(o.qt,6)+' '+o.b+' a '+px(o.pr)}}),'Cada movimiento',brkW())+'</div>'}
  if(ords.length)charts+=box('Compras y ventas por mes (USD)','Valor operado en spot',colsSvg(lbls,[{name:'Compras',color:'#1F8A7E',vals:buy},{name:'Ventas',color:'#C8553D',vals:sell}],{unit:'USD',w:brkW(),h:310}),true);
  if(fut.length&&futM.some(function(v){return v})){var acc=0,cum=futM.map(function(v){acc+=v;return +acc.toFixed(2)});
   charts+=box('Futuros: resultado neto por mes (USDT)','Incluye comisiones y funding · acumulado en el periodo: '+(acc>=0?'+':'')+n(acc,2)+' USDT',colsSvg(lbls,[{name:'Neto',signed:true,color:'#1F8A7E',vals:futM}],{unit:'USDT'}));
@@ -2963,7 +3220,7 @@ var KSIM='registro-cripto.sim';
 var SIM={rows:[],chg:0};try{var _s=JSON.parse(localStorage.getItem(KSIM)||'null');if(_s&&Array.isArray(_s.rows))SIM=_s}catch(e){}
 function saveSim(){try{localStorage.setItem(KSIM,JSON.stringify(SIM))}catch(e){}}
 var KLINES={},klBusy=false;
-function fetchKlines(coins){
+function fetchKlines90(coins){
  if(klBusy)return Promise.resolve();klBusy=true;
  var todo=coins.filter(function(c){return !KLINES[c]||Date.now()-KLINES[c].t>30*60e3});
  return Promise.all(todo.map(function(c){
@@ -3066,11 +3323,11 @@ function renderDecisions(){
  var chart=SIM.rows.length?colsSvg(chartKeys,[{name:'Antes',color:'#8C9BAB',vals:chartKeys.map(function(k){var b=S.before[k];return b.p?+(b.qty*b.p*S.f).toFixed(2):0})},{name:'Después',color:'#1F8A7E',vals:chartKeys.map(function(k){var a=S.after[k];return a.p?+(a.qty*a.p*S.f).toFixed(2):0})}],{unit:'USD',w:Math.max(620,Math.min(1600,(el.clientWidth||1000)-80)),h:280}):'';
  el.innerHTML='<div class="card dec-head"><div class="row"><h2 style="margin:0">Decisiones de compra</h2><span class="cy-pill warn">Modo prueba</span><span class="sp"></span><button type="button" class="sm" id="decRefresh">Actualizar precios</button></div>'+
   '<p class="mu" style="margin:6px 0 0">Todo en esta pestaña usa tus datos reales y los precios de hoy, pero <b>nada de lo que hagas aquí cambia tus registros</b>. Es información para decidir, no una recomendación.</p></div>'+
-  '<div class="card"><h2>Efectivo disponible para comprar</h2>'+(cashHtml.length>30?cashHtml:'<p class="mu">Sin saldos de USDT capturados.</p>')+'</div>'+
-  '<div class="card"><h2>Tus monedas hoy</h2><p class="mu" style="margin:0 0 8px;font-size:13px">La barra de rango va del mínimo al máximo de los últimos 90 días (Binance): <span class="rleg rp"></span> precio de hoy · <span class="rleg ra"></span> tu precio promedio de entrada.</p>'+
+  '<div class="card" data-dsec="cash"><h2>Efectivo disponible para comprar</h2>'+(cashHtml.length>30?cashHtml:'<p class="mu">Sin saldos de USDT capturados.</p>')+'</div>'+
+  '<div class="card" data-dsec="coins"><h2>Tus monedas hoy</h2><p class="mu" style="margin:0 0 8px;font-size:13px">La barra de rango va del mínimo al máximo de los últimos 90 días (Binance): <span class="rleg rp"></span> precio de hoy · <span class="rleg ra"></span> tu precio promedio de entrada.</p>'+
    (coins.length?'<div class="wrap"><table class="ptable dec-table"><thead><tr><th>Moneda</th><th>Tienes</th><th>Precio hoy</th><th>Tu promedio</th><th>Rango 90 días</th><th>Tendencia</th><th>Último movimiento</th><th>Para tomar en cuenta</th><th></th></tr></thead><tbody>'+rows+'</tbody></table></div>':'<p class="mu">Aún no hay monedas.</p>')+'</div>'+
-  '<div class="card"><h2>Recompras pendientes</h2>'+pendHtml+'</div>'+
-  '<div class="card sim-card"><div class="row"><h2 style="margin:0">Simulador de compras</h2><span class="cy-pill warn">Prueba</span><span class="sp"></span><button type="button" class="sm" id="simAdd">+ Agregar compra</button>'+(SIM.rows.length?'<button type="button" class="sm x" id="simClear">Limpiar</button>':'')+'</div>'+
+  '<div class="card" data-dsec="pend"><h2>Recompras pendientes</h2>'+pendHtml+'</div>'+
+  '<div class="card sim-card" data-dsec="sim"><div class="row"><h2 style="margin:0">Simulador de compras</h2><span class="cy-pill warn">Prueba</span><span class="sp"></span><button type="button" class="sm" id="simAdd">+ Agregar compra</button>'+(SIM.rows.length?'<button type="button" class="sm x" id="simClear">Limpiar</button>':'')+'</div>'+
    '<p class="mu" style="margin:6px 0 10px;font-size:13px">Agrega varias compras y mira cómo quedaría tu portafolio. El precio vacío usa el de hoy; la comisión es la maker de cada broker y se cobra en la moneda que recibes. Se guarda solo en este navegador como prueba.</p>'+
    (SIM.rows.length?'<div class="wrap"><table class="ptable sim-table"><thead><tr><th>Moneda</th><th>Broker</th><th>Monto (USDT)</th><th>Precio de compra</th><th>Recibirías</th><th></th></tr></thead><tbody>'+simRows+'</tbody></table></div>':'<p class="mu empty">Agrega una compra con el botón, o con "Simular compra" en la tabla de arriba.</p>')+
    (S.warn.length?'<div class="sim-warn">⚠ No te alcanza el USDT: '+S.warn.map(esc).join(' · ')+'</div>':'')+
@@ -3080,8 +3337,9 @@ function renderDecisions(){
     tile('Ganancia/pérdida abierta',(plA>=0?'+':'')+n(plA,2)+' USD','antes: '+(plB>=0?'+':'')+n(plB,2)+(S.ta.cost?' · '+(plA>=0?'+':'')+n(plA/S.ta.cost*100,1)+'%':''),col(plA))+'</div>'+
    (SIM.rows.length?'<div class="chartbox" style="margin-top:12px"><h3>Valor por moneda: antes y después (USD'+(S.chg?', con '+(S.chg>0?'+':'')+S.chg+'%':'')+')</h3>'+chart+'</div>':'')+
    '<div class="wrap" style="margin-top:12px"><table class="ptable"><thead><tr><th>Moneda</th><th>Cantidad antes</th><th>Después</th><th>Promedio antes</th><th>Después</th><th>% portafolio antes</th><th>Después</th><th>Ganancia/pérdida después</th></tr></thead><tbody>'+resRows+'</tbody></table></div></div>';
+ decArrange(el,pos);
  var need=coins.concat(SIM.rows.map(function(r){return r.coin})).filter(function(c,i,a){return c&&a.indexOf(c)==i&&!KLINES[c]});
- if(need.length)fetchKlines(need).then(function(){if(tab==10)renderDecisions()});
+ if(need.length)fetchKlines90(need).then(function(){if(tab==10)renderDecisions()});
 }
 $('#v10').addEventListener('click',function(e){
  var b=e.target.closest&&e.target.closest('button');if(!b)return;
@@ -3097,6 +3355,115 @@ $('#v10').addEventListener('change',function(e){var t=e.target,f=t.getAttribute&
  r[f]=(f=='amt'||f=='price')?(t.value===''?'':+t.value):t.value;saveSim();renderDecisions()});
 $('#v10').addEventListener('input',function(e){if(e.target.id!='simChg')return;SIM.chg=+e.target.value;var v=$('#simChgV');if(v)v.textContent=(SIM.chg>0?'+':'')+SIM.chg+'%'});
 $('#v10').addEventListener('change',function(e){if(e.target.id!='simChg')return;saveSim();renderDecisions()});
+
+/* --- Decisiones personalizable (bloques como en el Dashboard) --- */
+var KDECB='registro-cripto.decb';
+var DEC_W={cash:{n:'Efectivo disponible',w:12,single:1},coins:{n:'Tus monedas hoy',w:12,single:1},pend:{n:'Recompras pendientes',w:12,single:1},sim:{n:'Simulador de compras',w:12,single:1},
+ opps:{n:'Mejores oportunidades',w:6,single:1},alloc:{n:'Composición actual',w:6,single:1},note:{n:'Nota',w:4}};
+var DECB_DEF=[{t:'cash',w:12},{t:'coins',w:12},{t:'pend',w:12},{t:'sim',w:12}];
+var DECB={items:null,edit:false};
+try{var _db=JSON.parse(localStorage.getItem(KDECB)||'null');if(_db&&Array.isArray(_db.items))DECB.items=_db.items}catch(e){}
+if(!DECB.items)DECB.items=DECB_DEF.map(function(x){return{id:dUid(),t:x.t,w:x.w,o:{}}});
+function saveDecb(){try{localStorage.setItem(KDECB,JSON.stringify({items:DECB.items}))}catch(e){}}
+function decExtra(it,pos){
+ if(it.t=='opps'){
+  var list=[];Object.keys(pos.coins).forEach(function(k){var o=pos.coins[k];if(o.avg&&o.p)list.push({k:k,d:(o.p/o.avg-1)*100,t:'bajo tu promedio'})});
+  cycles().filter(function(x){return x.st!='cerrado'&&cycFav(x)!=null}).forEach(function(x){list.push({k:x.o.coin,d:-cycFav(x),t:folio(x.o.id)+' · '+(x.o.action=='VENTA'?'recompra':'venta')+' a favor'})});
+  list.sort(function(a,b){return a.d-b.d});
+  return '<h2>Mejores oportunidades</h2><p class="mu" style="margin:0 0 8px;font-size:12px">Lo que hoy está más abajo de tu precio de referencia.</p>'+(list.length?list.slice(0,8).map(function(x){return '<div class="drow"><span>'+coinIcon(x.k,16)+'<b>'+esc(x.k)+'</b> <span class="mu">'+esc(x.t)+'</span></span><b class="num" style="color:'+col(-x.d)+'">'+(x.d>=0?'+':'')+n(x.d,1)+'%</b></div>'}).join(''):'<p class="mu">Sin datos de precio.</p>');
+ }
+ if(it.t=='alloc'){var d=portfolio(FX,'val');return '<h2>Composición actual</h2>'+donutSvg(d.asset)}
+ if(it.t=='note'){return '<h2>Nota</h2><textarea class="dnote" data-dnote="'+it.id+'" placeholder="Tus reglas o ideas de compra…">'+esc((it.o&&it.o.text)||'')+'</textarea>'}
+ return '';
+}
+function decArrange(el,pos){
+ var grid=document.createElement('div');grid.className='dash-grid'+(DECB.edit?' editing':'');grid.id='decGrid';
+ var secs={};el.querySelectorAll('[data-dsec]').forEach(function(c){secs[c.getAttribute('data-dsec')]=c;c.remove()});
+ DECB.items.forEach(function(it){
+  var W=DEC_W[it.t];if(!W)return;var c=secs[it.t];
+  if(!c){c=document.createElement('div');c.className='card';c.innerHTML=decExtra(it,pos)}
+  c.classList.add('dw','w'+(it.w||W.w));c.setAttribute('data-did',it.id);
+  if(DECB.edit)c.insertAdjacentHTML('afterbegin','<div class="wtools"><span class="whandle" data-dhandle="'+it.id+'" title="Arrastra para mover">⠿</span><b class="wname">'+W.n+'</b><span class="sp"></span><select data-dwidth="'+it.id+'">'+WIDTHS.map(function(x){return '<option value="'+x[0]+'"'+(it.w==x[0]?' selected':'')+'>'+x[1]+'</option>'}).join('')+'</select><button type="button" class="wbtn" data-ddel="'+it.id+'" title="Quitar">✕</button></div>');
+  grid.appendChild(c);
+ });
+ el.appendChild(grid);
+ var head=el.querySelector('.dec-head .row');
+ if(head){head.insertAdjacentHTML('beforeend','<button type="button" class="sm'+(DECB.edit?' p':'')+'" id="decEdit">'+(DECB.edit?'Listo':'Personalizar')+'</button>');
+  if(DECB.edit){var add=Object.keys(DEC_W).map(function(t){var W=DEC_W[t],has=W.single&&DECB.items.some(function(x){return x.t==t});return '<button type="button" class="dadd" data-dadd2="'+t+'"'+(has?' disabled':'')+'><b>'+W.n+'</b></button>'}).join('');
+   el.querySelector('.dec-head').insertAdjacentHTML('beforeend','<div class="dash-tools" style="margin:10px 0 0"><p class="mu" style="margin:0 0 8px;font-size:13px">Arrastra desde <b>⠿</b>, cambia el ancho o quita con <b>✕</b>. Agrega bloques:</p><div class="dadd-grid">'+add+'</div><div class="row" style="margin-top:8px"><span class="sp"></span><button type="button" class="sm" id="decReset">Restablecer</button></div></div>')}}
+}
+$('#v10').addEventListener('click',function(e){
+ var b=e.target.closest&&e.target.closest('#decEdit,#decReset,[data-dadd2],[data-ddel]');if(!b)return;
+ if(b.id=='decEdit')DECB.edit=!DECB.edit;
+ else if(b.id=='decReset'){if(!confirm('¿Volver Decisiones a como venía?'))return;DECB.items=DECB_DEF.map(function(x){return{id:dUid(),t:x.t,w:x.w,o:{}}})}
+ else if(b.hasAttribute('data-dadd2')){var t=b.getAttribute('data-dadd2');DECB.items.unshift({id:dUid(),t:t,w:DEC_W[t].w,o:{}})}
+ else if(b.hasAttribute('data-ddel')){var id=b.getAttribute('data-ddel');DECB.items=DECB.items.filter(function(x){return x.id!=id})}
+ saveDecb();renderDecisions();
+});
+$('#v10').addEventListener('change',function(e){var t=e.target;if(!t.getAttribute||!t.getAttribute('data-dwidth'))return;var it=DECB.items.filter(function(x){return x.id==t.getAttribute('data-dwidth')})[0];if(it){it.w=+t.value;saveDecb();renderDecisions()}});
+var _dnT=null;$('#v10').addEventListener('input',function(e){var t=e.target;if(!t.getAttribute||!t.getAttribute('data-dnote'))return;var it=DECB.items.filter(function(x){return x.id==t.getAttribute('data-dnote')})[0];if(!it)return;it.o=it.o||{};it.o.text=t.value;clearTimeout(_dnT);_dnT=setTimeout(saveDecb,600)});
+(function(){var drag=null;
+ $('#v10').addEventListener('pointerdown',function(e){var h=e.target.closest&&e.target.closest('[data-dhandle]');if(!h||!DECB.edit)return;drag=h.closest('.dw');drag.classList.add('dragging');e.preventDefault();try{h.setPointerCapture(e.pointerId)}catch(err){}});
+ $('#v10').addEventListener('pointermove',function(e){if(!drag)return;var g=$('#decGrid');drag.style.visibility='hidden';var u=document.elementFromPoint(e.clientX,e.clientY);drag.style.visibility='';var tg=u&&u.closest&&u.closest('.dw');if(!tg||tg==drag||tg.parentNode!=g)return;var r=tg.getBoundingClientRect(),before=(e.clientY<r.top+r.height/2&&(e.clientX<r.left+r.width/2||r.width>g.clientWidth*.6))||(e.clientY<r.top+r.height*.25);g.insertBefore(drag,before?tg:tg.nextSibling)});
+ function end(){if(!drag)return;drag.classList.remove('dragging');var ord=[].slice.call(document.querySelectorAll('#decGrid .dw')).map(function(x){return x.getAttribute('data-did')});
+  DECB.items=ord.map(function(id){return DECB.items.filter(function(x){return x.id==id})[0]}).filter(Boolean);drag=null;saveDecb()}
+ $('#v10').addEventListener('pointerup',end);$('#v10').addEventListener('pointercancel',end);})();
+
+
+/* ================= Gráficas: "Qué días" (mapa de calor) y "Cada movimiento" (dispersión logarítmica) ================= */
+var CHV={},CHPTS={};
+var MESES=['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'],DSEM=['L','M','M','J','V','S','D'],DSEML=['Lunes','Martes','Miércoles','Jueves','Viernes','Sábado','Domingo'];
+function chState(id){return CHV[id]||(CHV[id]={table:false,metric:'count'})}
+function chHead(id,title,sub,extra){var st=chState(id);return '<div class="ch-head"><div><h3 class="ch-t">'+title+'</h3><div class="mu ch-s">'+sub+'</div></div><span class="sp"></span>'+(extra||'')+'<button type="button" class="sm" data-chtable="'+id+'">'+(st.table?'Ver gráfica':'Ver tabla')+'</button></div>'}
+function heatHtml(id,events,title){
+ var st=chState(id),now=new Date(),months=[];
+ for(var i=11;i>=0;i--){var d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'))}
+ var grid={};events.forEach(function(e){var d=new Date(e.t);if(isNaN(d))return;var mk=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');if(months.indexOf(mk)<0)return;var wd=(d.getDay()+6)%7,k=wd+'|'+mk,g=grid[k]||(grid[k]={c:0,v:0});g.c++;g.v+=e.v||0});
+ var val=function(g){return g?(st.metric=='usd'?g.v:g.c):0},mx=0;Object.keys(grid).forEach(function(k){mx=Math.max(mx,val(grid[k]))});
+ var seg='<div class="seg sm-seg" role="group"><button type="button" data-chmetric="'+id+'" data-v="count" aria-pressed="'+(st.metric=='count')+'">Operaciones</button><button type="button" data-chmetric="'+id+'" data-v="usd" aria-pressed="'+(st.metric=='usd')+'">Monto</button></div>';
+ var head=chHead(id,title||'Qué días','día de la semana × mes · '+(st.metric=='usd'?'monto en USD':'número de operaciones'),seg);
+ if(st.table){
+  return head+'<div class="wrap"><table class="ptable" style="min-width:640px"><thead><tr><th>Día</th>'+months.map(function(m){return '<th>'+MESES[+m.slice(5)-1]+' '+m.slice(2,4)+'</th>'}).join('')+'<th>Total</th></tr></thead><tbody>'+
+   DSEML.map(function(dn,wd){var tot=0;return '<tr><td>'+dn+'</td>'+months.map(function(m){var v=val(grid[wd+'|'+m]);tot+=v;return '<td class="num">'+(v?n(v,st.metric=='usd'?0:0):'')+'</td>'}).join('')+'<td class="num"><b>'+n(tot,0)+'</b></td></tr>'}).join('')+'</tbody></table></div>';
+ }
+ var cw=40,ch=22,gap=5,lm=28,tm=6,W=lm+months.length*(cw+gap),H=tm+7*(ch+gap)+24,out='';
+ DSEM.forEach(function(d,wd){out+='<text x="'+(lm-12)+'" y="'+(tm+wd*(ch+gap)+ch/2+4)+'" text-anchor="middle" style="font-size:12px;fill:var(--mu)">'+d+'</text>'});
+ months.forEach(function(m,ci){
+  for(var wd=0;wd<7;wd++){var g=grid[wd+'|'+m],v=val(g),f=mx?v/mx:0;
+   out+='<rect x="'+(lm+ci*(cw+gap))+'" y="'+(tm+wd*(ch+gap))+'" width="'+cw+'" height="'+ch+'" rx="5" fill="var(--hm)" fill-opacity="'+(v?(0.18+0.82*f).toFixed(2):0.06)+'"><title>'+DSEML[wd]+' · '+MESES[+m.slice(5)-1]+' '+m.slice(0,4)+': '+(g?g.c+' operación'+(g.c==1?'':'es')+' · '+n(g.v,2)+' USD':'sin operaciones')+'</title></rect>'}
+  if(ci%2==0)out+='<text x="'+(lm+ci*(cw+gap)+cw/2)+'" y="'+(H-6)+'" text-anchor="middle" style="font-size:11px;fill:var(--mu)">'+MESES[+m.slice(5)-1]+' '+m.slice(2,4)+'</text>';
+ });
+ return head+'<svg class="heat" viewBox="0 0 '+W+' '+H+'" style="max-width:'+W*1.4+'px">'+out+'</svg><div class="heat-leg mu"><span>menos</span><i></i><span>más</span></div>';
+}
+function scatterHtml(id,pts,title,wpx){
+ var st=chState(id);CHPTS[id]=pts;
+ var head=chHead(id,title||'Cada movimiento','escala logarítmica · clic en un punto para verlo',
+  '<span class="sc-leg"><i style="background:var(--sc-buy)"></i>Compra <i style="background:var(--sc-sell)"></i>Venta</span>');
+ if(!pts.length)return head+'<p class="mu empty">Sin movimientos.</p>';
+ if(st.table)return head+'<div class="wrap" style="max-height:420px;overflow:auto"><table class="ptable" style="min-width:560px"><thead><tr><th>Fecha</th><th>Acción</th><th>Moneda</th><th>Monto (USD)</th><th>Detalle</th></tr></thead><tbody>'+
+  pts.slice().sort(function(a,b){return a.t<b.t?1:-1}).map(function(p){return '<tr><td>'+fd(p.t)+'</td><td class="'+(p.k=='SELL'?'VENTA':'COMPRA')+'"><b>'+(p.k=='SELL'?'VENTA':'COMPRA')+'</b></td><td>'+coinIcon(p.c,16)+esc(p.c)+'</td><td class="num">'+n(p.v,2)+'</td><td class="mu">'+esc(p.d||'')+'</td></tr>'}).join('')+'</tbody></table></div>';
+ var W=Math.max(560,wpx||900),H=260,lm=52,rm=12,tm=12,bm=28,pw=W-lm-rm,ph=H-tm-bm;
+ var ts=pts.map(function(p){return new Date(p.t).getTime()}),t0=Math.min.apply(null,ts),t1=Math.max.apply(null,ts);if(t1==t0)t1=t0+864e5;
+ var vs=pts.map(function(p){return Math.max(p.v,0.5)}),lo=Math.floor(Math.log10(Math.min.apply(null,vs))),hi=Math.ceil(Math.log10(Math.max.apply(null,vs)));if(hi==lo)hi=lo+1;
+ var X=function(t){return lm+(t-t0)/(t1-t0)*pw},Y=function(v){return tm+(hi-Math.log10(Math.max(v,0.5)))/(hi-lo)*ph},out='';
+ for(var e=lo;e<=hi;e++){var y=Y(Math.pow(10,e)).toFixed(1),lab=e>=3?'$'+(Math.pow(10,e-3)).toFixed(e>=4?0:1)+'k':'$'+Math.pow(10,e);
+  out+='<line x1="'+lm+'" y1="'+y+'" x2="'+(W-rm)+'" y2="'+y+'" stroke="var(--ln)"/><text x="'+(lm-8)+'" y="'+(+y+4)+'" text-anchor="end" style="font-size:11px;fill:var(--mu)">'+lab+'</text>'}
+ var d=new Date(t0);d=new Date(d.getFullYear(),d.getMonth()+1,1);var months=[];while(d.getTime()<=t1){months.push(new Date(d));d=new Date(d.getFullYear(),d.getMonth()+1,1)}
+ var every=Math.ceil(months.length/12);months.forEach(function(m,i){if(i%every)return;var x=X(m.getTime()).toFixed(1);out+='<text x="'+x+'" y="'+(H-8)+'" text-anchor="middle" style="font-size:11px;fill:var(--mu)">'+MESES[m.getMonth()]+' '+String(m.getFullYear()).slice(2)+'</text>'});
+ pts.forEach(function(p,i){out+='<circle class="sc-pt" data-sp="'+id+'|'+i+'" cx="'+X(new Date(p.t).getTime()).toFixed(1)+'" cy="'+Y(p.v).toFixed(1)+'" r="4.5" fill="'+(p.k=='SELL'?'var(--sc-sell)':'var(--sc-buy)')+'" stroke="var(--sf)" stroke-width="1"><title>'+fd(p.t).slice(0,16)+' · '+(p.k=='SELL'?'Venta':'Compra')+' '+esc(p.c)+' · '+n(p.v,2)+' USD</title></circle>'});
+ return head+'<svg class="chart2 scat" viewBox="0 0 '+W+' '+H+'">'+out+'</svg><div class="sc-detail" id="scd-'+id+'"></div>';
+}
+document.addEventListener('click',function(e){
+ var b=e.target.closest&&e.target.closest('[data-chtable],[data-chmetric]');
+ if(b){var id=b.getAttribute('data-chtable')||b.getAttribute('data-chmetric'),st=chState(id);
+  if(b.hasAttribute('data-chtable'))st.table=!st.table;else st.metric=b.getAttribute('data-v');
+  if(tab==3)renderCharts();if(tab==9)renderBrokers();return}
+ var p=e.target.closest&&e.target.closest('[data-sp]');
+ if(p){var a=p.getAttribute('data-sp').split('|'),pt=(CHPTS[a[0]]||[])[+a[1]],box=$('#scd-'+a[0]);if(!pt||!box)return;
+  document.querySelectorAll('.sc-pt.on').forEach(function(x){x.classList.remove('on')});p.classList.add('on');
+  box.innerHTML='<div class="sc-card"><b class="'+(pt.k=='SELL'?'VENTA':'COMPRA')+'">'+(pt.k=='SELL'?'VENTA':'COMPRA')+'</b> '+coinIcon(pt.c,16)+'<b>'+esc(pt.c)+'</b> · <b class="num">'+n(pt.v,2)+' USD</b> · '+fd(pt.t)+(pt.d?' · <span class="mu">'+esc(pt.d)+'</span>':'')+(pt.mid?' <button type="button" class="sm" data-edit="'+pt.mid+'">Editar</button>':'')+' <button type="button" class="x sm" data-scclose="'+a[0]+'">Cerrar</button></div>'}
+ var c=e.target.closest&&e.target.closest('[data-scclose]');if(c){var bx=$('#scd-'+c.getAttribute('data-scclose'));if(bx)bx.innerHTML='';document.querySelectorAll('.sc-pt.on').forEach(function(x){x.classList.remove('on')})}
+});
 
 /* ================= Nube: Supabase personal (misma cuenta y tabla que tus otras apps) =================
    Cada dato guardado en este navegador (movimientos, tenencias, ingresos/retiros, estados de cuenta, reportes…)
