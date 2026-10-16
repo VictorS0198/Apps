@@ -747,7 +747,7 @@ document.addEventListener('change',function(e){
  if(t.id=='prefDayStart')PREF.dayStart=t.value||'07:00';if(t.id=='prefNightStart')PREF.nightStart=t.value||'19:00';
  if(t.id=='prefFont')PREF.font=+t.value;if(t.id=='prefDensity')PREF.density=t.value;
  if(t.id=='prefTitle'){PREF.title=t.value.trim();var h=document.querySelector('.topbar h1');if(h)h.textContent=PREF.title||'Registro de actividad'}
- savePref();applyAll();renderPrefCards();
+ savePref();applyAll();if(t.type!='time'&&t.type!='text'&&t.id!='prefTitle')renderPrefCards();else{var nt=document.querySelector('#prefWrap .card:nth-child(2) p.mu');if(nt)nt.innerHTML='Ahora es '+(isDay()?'de día ☀':'de noche ☾')+'.'}
 });
 
 applyAll();applyLogo();
@@ -1954,7 +1954,7 @@ function renderThemeGrid(){
   return '<button type="button" class="themebtn'+(t[0]==theme?' on':'')+'" data-theme="'+t[0]+'" aria-pressed="'+(t[0]==theme)+'"><span class="sw">'+t[2].map(function(c){return '<i style="background:'+c+'"></i>'}).join('')+'</span>'+t[1]+'</button>'}).join('');
 }
 $('#v5').addEventListener('click',function(e){
- var b=e.target.closest&&e.target.closest('[data-theme]');
+ var b=e.target.closest&&e.target.closest('#themeGrid .themebtn[data-theme]');
  if(b){theme=b.getAttribute('data-theme');try{localStorage.setItem(KTHEME,theme)}catch(err){}if(PREF.hourly){PREF.hourly=false;savePref()}applyAll();renderThemeGrid();renderPrefCards()}
 });
 
