@@ -3,62 +3,78 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<meta name="theme-color" content="#1C2430">
 <title>Mi cuarto · Inventario</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<meta name="theme-color" content="#1C2430">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&display=swap" rel="stylesheet">
 <style>
+:root{padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+img{max-width:100%}
+/* Layout: barra superior "chrome" fija oscura + vistas en una columna (teléfono) o con barra lateral (escritorio).
+   Los colores se derivan de un tono de paleta (--h/--hs) y un color de acento (--tag) que el usuario elige en Ajustes. */
 :root{
-  --bg:#EEF1F4; --surface:#FFFFFF; --surface2:#F6F8FA; --ink:#1C2430; --ink2:#4A5566; --ink3:#7A8494;
-  --line:#D9DEE5; --tag:#F2C230; --tag-ink:#2A2100; --ok:#2E7D5B; --warn:#B7791F; --bad:#C2413A; --info:#2F6FB3;
-  --radius-s:6px; --radius-m:10px; --radius-l:16px;
+  --h:215; --hs:14%;
+  --bg:hsl(var(--h) var(--hs) 94%); --surface:hsl(var(--h) 30% 100%); --surface2:hsl(var(--h) var(--hs) 97%);
+  --ink:hsl(var(--h) 26% 14%); --ink2:hsl(var(--h) 14% 33%); --ink3:hsl(var(--h) 9% 50%); --line:hsl(var(--h) 16% 86%);
+  --chrome:hsl(var(--h) 28% 15%); --chrome2:hsl(var(--h) 22% 22%); --chrome-ink:#FFFFFF; --chrome-ink2:hsl(var(--h) 18% 80%);
+  --tag:#F2C230; --tag-ink:#231C00;
+  --ok:#2E7D5B; --warn:#A66A12; --bad:#C2413A; --info:#2F6FB3; --c2:hsl(var(--h) 30% 55%);
+  --radius-s:6px; --radius-m:10px; --radius-l:16px; --scale:1;
   --font:"Archivo", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
-  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
   color-scheme:light;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --bg:#11151B; --surface:#1A2029; --surface2:#222A35; --ink:#E7EBF0; --ink2:#B4BDC9; --ink3:#8792A1;
-    --line:#2E3744; --ok:#5DBB8E; --warn:#E3AE52; --bad:#EE7A72; --info:#79A9E0; color-scheme:dark;
+    --bg:hsl(var(--h) var(--hs) 8%); --surface:hsl(var(--h) var(--hs) 12%); --surface2:hsl(var(--h) var(--hs) 16%);
+    --ink:hsl(var(--h) 22% 92%); --ink2:hsl(var(--h) 14% 75%); --ink3:hsl(var(--h) 10% 58%); --line:hsl(var(--h) 14% 22%);
+    --chrome:hsl(var(--h) 26% 5%); --chrome2:hsl(var(--h) 20% 13%);
+    --ok:#5DBB8E; --warn:#E3AE52; --bad:#EE7A72; --info:#79A9E0; --c2:hsl(var(--h) 30% 62%); color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --bg:#11151B; --surface:#1A2029; --surface2:#222A35; --ink:#E7EBF0; --ink2:#B4BDC9; --ink3:#8792A1;
-  --line:#2E3744; --ok:#5DBB8E; --warn:#E3AE52; --bad:#EE7A72; --info:#79A9E0; color-scheme:dark;
+  --bg:hsl(var(--h) var(--hs) 8%); --surface:hsl(var(--h) var(--hs) 12%); --surface2:hsl(var(--h) var(--hs) 16%);
+  --ink:hsl(var(--h) 22% 92%); --ink2:hsl(var(--h) 14% 75%); --ink3:hsl(var(--h) 10% 58%); --line:hsl(var(--h) 14% 22%);
+  --chrome:hsl(var(--h) 26% 5%); --chrome2:hsl(var(--h) 20% 13%);
+  --ok:#5DBB8E; --warn:#E3AE52; --bad:#EE7A72; --info:#79A9E0; --c2:hsl(var(--h) 30% 62%); color-scheme:dark;
 }
+:root.amoled[data-theme="dark"]{ --bg:#000; --surface:hsl(var(--h) var(--hs) 7%); --surface2:hsl(var(--h) var(--hs) 11%); --line:hsl(var(--h) 12% 17%); --chrome:#000; --chrome2:hsl(var(--h) 14% 10%) }
 *,*::before,*::after{box-sizing:border-box}
-html{scroll-padding-top:env(safe-area-inset-top,0px); height:100%}
+html{height:100%}
 body{margin:0; background:var(--bg); color:var(--ink); font-family:var(--font); font-size:15px; line-height:1.45; min-height:100%; -webkit-tap-highlight-color:transparent}
+body::before{content:""; position:fixed; inset:0 0 auto; height:env(safe-area-inset-top,0px); z-index:40; background:var(--chrome)}
 button,input,select,textarea{font:inherit; color:inherit}
-img{max-width:100%}
 :focus-visible{outline:2px solid var(--info); outline-offset:2px}
 .num{font-variant-numeric:tabular-nums}
 
 /* Layout */
 .app{display:grid; grid-template-columns:1fr; min-height:100%}
-.topbar{position:sticky; top:env(safe-area-inset-top,0px); z-index:20; background:var(--ink); color:#fff; display:flex; align-items:center; gap:10px; padding:10px 16px}
+.topbar{position:sticky; top:env(safe-area-inset-top,0px); z-index:20; background:var(--chrome); color:var(--chrome-ink); display:flex; align-items:center; gap:6px; padding-block:10px; padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(10px, env(safe-area-inset-right,0px))}
 .brand{display:flex; align-items:center; gap:10px; font-weight:800; font-stretch:112%; font-size:18px; letter-spacing:-.01em}
-.brand .tagmini{background:var(--tag); color:var(--tag-ink); font-size:11px; font-weight:800; padding:2px 7px 2px 12px; border-radius:3px; position:relative}
-.brand .tagmini::before{content:""; position:absolute; left:4px; top:50%; width:4px; height:4px; margin-top:-2px; border-radius:50%; background:var(--ink)}
+.tagmini{background:var(--tag); color:var(--tag-ink); font-size:11px; font-weight:800; padding:2px 7px 2px 12px; border-radius:3px; position:relative}
+.tagmini::before{content:""; position:absolute; left:4px; top:50%; width:4px; height:4px; margin-top:-2px; border-radius:50%; background:var(--chrome)}
 .topbar .spacer{flex:1}
-.cloud{font-size:12px; color:#C9D2DE; display:flex; align-items:center; gap:6px}
-.cloud i{width:8px; height:8px; border-radius:50%; background:#7A8494; display:inline-block}
+.cloud{font-size:12px; color:var(--chrome-ink2); display:flex; align-items:center; gap:6px; margin-right:4px}
+.cloud i{width:8px; height:8px; border-radius:50%; background:#7A8494; display:inline-block; flex:none}
 .cloud.on i{background:#5DBB8E} .cloud.busy i{background:var(--tag)} .cloud.err i{background:#EE7A72}
-.iconbtn{background:transparent; border:0; color:inherit; padding:6px; border-radius:8px; cursor:pointer; display:inline-flex}
-.iconbtn:hover{background:rgba(255,255,255,.1)}
+@media (max-width:420px){ .cloud span{display:none} }
+.iconbtn{background:transparent; border:0; color:inherit; padding:7px; border-radius:8px; cursor:pointer; display:inline-flex}
+.iconbtn:hover{background:var(--chrome2)}
+.iconbtn svg{width:21px; height:21px; stroke:currentColor; fill:none; stroke-width:1.8}
 .side{display:none}
-main{padding:16px 16px 110px; max-width:1180px; width:100%; margin:0 auto}
-.bottomnav{position:fixed; left:0; right:0; bottom:0; z-index:30; background:var(--surface); border-top:1px solid var(--line); display:flex; padding-bottom:env(safe-area-inset-bottom,0px)}
-.bottomnav button{flex:1; background:none; border:0; padding:9px 4px 8px; display:flex; flex-direction:column; align-items:center; gap:2px; font-size:11px; color:var(--ink3); cursor:pointer}
-.bottomnav button[aria-current="page"]{color:var(--ink); font-weight:700}
+main{padding-block:16px 120px; padding-left:max(16px, env(safe-area-inset-left,0px)); padding-right:max(16px, env(safe-area-inset-right,0px)); max-width:1180px; width:100%; margin:0 auto; zoom:var(--scale); min-width:0}
+.bottomnav{position:fixed; left:0; right:0; bottom:0; z-index:30; background:var(--surface); border-top:1px solid var(--line); display:flex; padding-bottom:env(safe-area-inset-bottom,0px); padding-left:env(safe-area-inset-left,0px); padding-right:env(safe-area-inset-right,0px)}
+.bottomnav button{flex:1; background:none; border:0; padding:9px 2px 8px; display:flex; flex-direction:column; align-items:center; gap:2px; font-size:11px; color:var(--ink3); cursor:pointer; min-width:0}
+.bottomnav button[aria-current="page"]{color:var(--ink); font-weight:750}
 .bottomnav button[aria-current="page"] svg{stroke:var(--ink)}
+.bottomnav button[aria-current="page"]::after{content:""; width:18px; height:3px; border-radius:2px; background:var(--tag); margin-top:1px}
 .bottomnav svg{width:22px; height:22px; stroke:var(--ink3); fill:none; stroke-width:1.8}
-.fab{position:fixed; right:18px; bottom:calc(76px + env(safe-area-inset-bottom,0px)); z-index:31; background:var(--tag); color:var(--tag-ink); border:0; border-radius:28px; padding:14px 20px; font-weight:800; display:flex; align-items:center; gap:8px; box-shadow:0 6px 18px rgba(20,24,32,.25); cursor:pointer}
+.fab{position:fixed; right:calc(18px + env(safe-area-inset-right,0px)); bottom:calc(78px + env(safe-area-inset-bottom,0px)); z-index:31; background:var(--tag); color:var(--tag-ink); border:0; border-radius:28px; padding:14px 20px; font-weight:800; display:flex; align-items:center; gap:8px; box-shadow:0 6px 18px rgba(10,14,20,.28); cursor:pointer}
 .fab svg{width:20px;height:20px;stroke:currentColor;stroke-width:2.4;fill:none}
 
-body.desk .app{grid-template-columns:220px 1fr}
+body.desk .app{grid-template-columns:230px minmax(0,1fr)}
 body.desk .topbar{grid-column:1 / -1}
 body.desk .side{display:flex; flex-direction:column; gap:2px; padding:16px 10px; position:sticky; top:52px; align-self:start; height:calc(100vh - 52px)}
 body.desk .side button{display:flex; align-items:center; gap:10px; text-align:left; background:none; border:0; padding:10px 12px; border-radius:8px; cursor:pointer; color:var(--ink2); font-weight:600}
@@ -66,66 +82,103 @@ body.desk .side button svg{width:20px;height:20px;stroke:currentColor;fill:none;
 body.desk .side button:hover{background:var(--surface)}
 body.desk .side button[aria-current="page"]{background:var(--surface); color:var(--ink); box-shadow:inset 3px 0 0 var(--tag)}
 body.desk .side .add{margin-top:10px; background:var(--tag); color:var(--tag-ink); font-weight:800; justify-content:center}
+body.desk .side .add:hover{background:var(--tag)}
 body.desk .bottomnav, body.desk .fab{display:none}
-body.desk main{padding:22px 28px 60px}
+body.desk main{padding-block:22px 60px; padding-left:28px; padding-right:max(28px, env(safe-area-inset-right,0px))}
 
 /* Generic */
-h1{font-size:26px; font-stretch:110%; font-weight:800; letter-spacing:-.015em; margin:4px 0 14px; line-height:1.15}
-h2{font-size:17px; font-weight:750; margin:0 0 10px}
-h3{font-size:14px; font-weight:700; margin:0 0 8px; color:var(--ink2)}
-.panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-m); padding:14px}
+h1{font-size:26px; font-stretch:110%; font-weight:800; letter-spacing:-.015em; margin:4px 0 14px; line-height:1.15; text-wrap:balance}
+h2{font-size:17px; font-weight:750; margin:0 0 10px; text-wrap:balance}
+h3{font-size:12px; font-weight:750; margin:0 0 8px; color:var(--ink3); text-transform:uppercase; letter-spacing:.06em}
+.panel{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-m); padding:14px; min-width:0}
+.panel .head{display:flex; align-items:baseline; justify-content:space-between; gap:8px; margin-bottom:10px}
+.panel .head h2{margin:0}
 .muted{color:var(--ink3)} .small{font-size:12.5px}
 .row{display:flex; gap:8px; align-items:center; flex-wrap:wrap}
 .grid{display:grid; gap:12px}
-.btn{display:inline-flex; align-items:center; justify-content:center; gap:6px; border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:8px; padding:9px 14px; font-weight:650; cursor:pointer; min-height:40px}
+.btn{display:inline-flex; align-items:center; justify-content:center; gap:6px; border:1px solid var(--line); background:var(--surface); color:var(--ink); border-radius:8px; padding:9px 14px; font-weight:650; cursor:pointer; min-height:40px; text-decoration:none}
 .btn:hover{border-color:var(--ink3)}
-.btn.primary{background:var(--ink); color:var(--surface); border-color:var(--ink)}
-:root[data-theme="dark"] .btn.primary{background:var(--tag); color:var(--tag-ink); border-color:var(--tag)}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.primary{background:var(--tag); color:var(--tag-ink); border-color:var(--tag)}}
+.btn.primary{background:var(--tag); color:var(--tag-ink); border-color:var(--tag)}
+.btn.dark{background:var(--ink); color:var(--bg); border-color:var(--ink)}
 .btn.danger{color:var(--bad); border-color:color-mix(in srgb,var(--bad) 40%, var(--line))}
 .btn.ghost{background:transparent; border-color:transparent}
-.btn.sm{padding:6px 10px; min-height:32px; font-size:13px}
+.btn.sm{padding:5px 10px; min-height:32px; font-size:13px}
 .btn svg{width:17px;height:17px;stroke:currentColor;fill:none;stroke-width:2}
-input[type=text],input[type=number],input[type=date],input[type=search],select,textarea{width:100%; background:var(--surface2); border:1px solid var(--line); border-radius:8px; padding:9px 11px; min-height:42px}
+input[type=text],input[type=number],input[type=date],input[type=search],select,textarea{width:100%; background:var(--surface2); border:1px solid var(--line); border-radius:8px; padding:9px 11px; min-height:42px; min-width:0}
 textarea{min-height:80px; resize:vertical}
-label.f{display:flex; flex-direction:column; gap:4px; font-size:13px; font-weight:600; color:var(--ink2)}
-label.f .hint{font-weight:400; color:var(--ink3); font-size:12px}
+.f{display:flex; flex-direction:column; gap:4px; font-size:13px; font-weight:600; color:var(--ink2); min-width:0}
+.f .hint{font-weight:400; color:var(--ink3); font-size:12px}
 .check{display:flex; align-items:center; gap:8px; font-weight:600; font-size:14px; min-height:42px}
-.check input{width:20px; height:20px; accent-color:var(--ink)}
+.check input{width:20px; height:20px; accent-color:var(--tag); flex:none}
 .tag{display:inline-block; background:var(--tag); color:var(--tag-ink); font-weight:800; font-size:11.5px; padding:2px 8px 2px 15px; border-radius:3px; position:relative; white-space:nowrap; font-variant-numeric:tabular-nums}
 .tag::before{content:""; position:absolute; left:5px; top:50%; width:5px; height:5px; margin-top:-2.5px; border-radius:50%; background:var(--surface)}
-.badge{display:inline-flex; align-items:center; gap:4px; font-size:11.5px; font-weight:650; padding:2px 7px; border-radius:20px; border:1px solid var(--line); color:var(--ink2); white-space:nowrap}
+.badge{display:inline-flex; align-items:center; gap:4px; font-size:11.5px; font-weight:650; padding:2px 7px; border-radius:20px; border:1px solid var(--line); color:var(--ink2); white-space:nowrap; background:var(--surface)}
 .badge.ok{color:var(--ok); border-color:color-mix(in srgb,var(--ok) 40%,transparent)}
 .badge.warn{color:var(--warn); border-color:color-mix(in srgb,var(--warn) 45%,transparent)}
 .badge.bad{color:var(--bad); border-color:color-mix(in srgb,var(--bad) 45%,transparent)}
-.badge.star{background:var(--ink); color:var(--tag); border-color:var(--ink)}
-.empty{text-align:center; padding:34px 16px; color:var(--ink2)}
+.badge.info{color:var(--info); border-color:color-mix(in srgb,var(--info) 45%,transparent)}
+.badge.star{background:var(--chrome); color:var(--tag); border-color:var(--chrome)}
+.empty{text-align:center; padding:30px 16px; color:var(--ink2)}
 .empty b{display:block; font-size:17px; color:var(--ink); margin-bottom:4px}
+.seg{display:inline-flex; border:1px solid var(--line); border-radius:9px; padding:3px; background:var(--surface2); gap:2px; flex-wrap:wrap}
+.seg button{border:0; background:transparent; padding:6px 12px; border-radius:6px; font-weight:650; font-size:13.5px; cursor:pointer; color:var(--ink2)}
+.seg button[aria-pressed="true"]{background:var(--surface); color:var(--ink); box-shadow:0 1px 3px rgba(0,0,0,.14)}
+.chips{display:flex; gap:6px; flex-wrap:wrap}
+.chip{border:1px solid var(--line); background:var(--surface); border-radius:20px; padding:6px 12px; font-size:13px; font-weight:650; cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink); color:var(--bg); border-color:var(--ink)}
+.chip .n{opacity:.7; font-weight:600; margin-left:3px}
 
-/* Dashboard */
-.hero{background:var(--ink); color:#fff; border-radius:var(--radius-l); padding:20px 18px 18px; position:relative; overflow:hidden}
-.hero .lbl{font-size:13.5px; color:#C9D2DE}
+/* Inicio / hero */
+.hero{background:var(--chrome); color:var(--chrome-ink); border-radius:var(--radius-l); padding:20px 18px 18px; position:relative; overflow:hidden}
+.hero .lbl{font-size:13.5px; color:var(--chrome-ink2)}
 .hero .big{font-size:clamp(34px, 9vw, 54px); font-weight:800; font-stretch:118%; letter-spacing:-.02em; line-height:1.05; margin:4px 0 12px}
 .hero .stats{display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:10px 18px}
-.hero .stats div{border-top:1px solid rgba(255,255,255,.18); padding-top:8px}
+.hero .stats div{border-top:1px solid color-mix(in srgb, var(--chrome-ink) 20%, transparent); padding-top:8px}
 .hero .stats b{display:block; font-size:19px; font-weight:750}
-.hero .stats span{font-size:12.5px; color:#C9D2DE}
+.hero .stats span{font-size:12.5px; color:var(--chrome-ink2)}
 .hero .hole{position:absolute; right:18px; top:18px; width:16px; height:16px; border-radius:50%; background:var(--bg); box-shadow:0 0 0 5px var(--tag)}
-.dash{display:grid; gap:12px; margin-top:12px; grid-template-columns:1fr}
-@media (min-width:760px){ .dash{grid-template-columns:1fr 1fr} .dash .wide{grid-column:1 / -1} }
+.dash{display:grid; gap:12px; margin-top:12px; grid-template-columns:minmax(0,1fr)}
+@media (min-width:760px){ .dash{grid-template-columns:repeat(2,minmax(0,1fr))} .dash .wide{grid-column:1 / -1} }
+@media (min-width:1100px){ .dash.three{grid-template-columns:repeat(3,minmax(0,1fr))} }
+.quick{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px}
+@media (min-width:760px){ .quick{grid-template-columns:repeat(4,minmax(0,1fr))} }
+.quick button{display:flex; flex-direction:column; align-items:flex-start; gap:2px; text-align:left; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-m); padding:12px; cursor:pointer}
+.quick button b{font-size:14.5px} .quick button span{font-size:12px; color:var(--ink3)}
+.quick button svg{width:22px;height:22px;stroke:var(--ink2);fill:none;stroke-width:1.8;margin-bottom:4px}
+
+/* Charts */
+.kpis{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px}
+@media (min-width:760px){ .kpis{grid-template-columns:repeat(3,minmax(0,1fr))} }
+@media (min-width:1100px){ .kpis{grid-template-columns:repeat(6,minmax(0,1fr))} }
+.kpi{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-m); padding:12px; min-width:0}
+.kpi span{display:block; font-size:12px; color:var(--ink3)}
+.kpi b{display:block; font-size:21px; font-weight:800; font-stretch:110%; margin-top:2px; overflow-wrap:anywhere}
+.kpi small{font-size:11.5px; color:var(--ink2)}
 .bars{display:flex; flex-direction:column; gap:8px}
-.bar{display:grid; grid-template-columns:minmax(90px,38%) 1fr auto; gap:8px; align-items:center; font-size:13px}
-.bar .track{height:10px; background:var(--surface2); border-radius:5px; overflow:hidden}
-.bar .fill{height:100%; background:var(--ink); border-radius:5px}
-.bar .fill.alt{background:var(--tag)}
+.bar{display:grid; grid-template-columns:minmax(80px,38%) minmax(0,1fr) auto; gap:8px; align-items:center; font-size:13px}
+.bar > span:first-child{overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.bar .track{height:10px; background:var(--surface2); border-radius:5px; overflow:hidden; display:flex}
+.bar .fill{height:100%; background:var(--ink2)}
+.bar .fill.alt{background:var(--tag)} .bar .fill.c2{background:var(--c2)} .bar .fill.warn{background:var(--warn)} .bar .fill.bad{background:var(--bad)} .bar .fill.info{background:var(--info)}
 .bar .n{white-space:nowrap; color:var(--ink2)}
-.cols{display:flex; align-items:flex-end; gap:6px; height:150px; padding-top:8px}
-.cols .c{flex:1; display:flex; flex-direction:column; align-items:center; gap:4px; height:100%; justify-content:flex-end; min-width:0}
-.cols .c .v{width:100%; max-width:46px; background:var(--ink); border-radius:4px 4px 0 0; min-height:2px}
-.cols .c span{font-size:11px; color:var(--ink3)}
+.cols{position:relative; display:flex; align-items:stretch; gap:4px; height:170px; padding-top:16px}
+.cols::before{content:""; position:absolute; left:0; right:0; top:16px; bottom:20px; background:repeating-linear-gradient(to bottom, var(--line) 0 1px, transparent 1px 25%); opacity:.7; pointer-events:none}
+.cols .c{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px; justify-content:flex-end; min-width:0; position:relative}
+.cols .c .stack{width:100%; max-width:42px; display:flex; flex-direction:column-reverse; border-radius:4px 4px 0 0; overflow:hidden}
+.cols .c .stack i{display:block; width:100%; background:var(--ink2)}
+.cols .c .stack i.alt{background:var(--tag)} .cols .c .stack i.c2{background:var(--c2)} .cols .c .stack i.warn{background:var(--warn)}
+.cols .c .vl{font-size:10px; color:var(--ink2); white-space:nowrap}
+.cols .c .lb{font-size:10.5px; color:var(--ink3); height:16px; white-space:nowrap; overflow:hidden; text-overflow:clip; max-width:100%}
+.cols .c.hi .stack i{background:var(--tag)}
+.legend{display:flex; gap:12px; flex-wrap:wrap; font-size:12px; color:var(--ink2); margin-top:8px}
+.legend i{display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:5px; vertical-align:-1px; background:var(--ink2)}
+.legend i.alt{background:var(--tag)} .legend i.c2{background:var(--c2)} .legend i.warn{background:var(--warn)} .legend i.bad{background:var(--bad)} .legend i.info{background:var(--info)}
+.donutwrap{display:flex; gap:16px; align-items:center; flex-wrap:wrap}
+.donutwrap svg{width:130px; height:130px; flex:none}
 .toplist{list-style:none; margin:0; padding:0}
-.toplist li{display:grid; grid-template-columns:auto 44px 1fr auto; gap:10px; align-items:center; padding:8px 0; border-top:1px solid var(--line); cursor:pointer}
+.toplist li{display:grid; grid-template-columns:auto 44px minmax(0,1fr) auto; gap:10px; align-items:center; padding:8px 0; border-top:1px solid var(--line); cursor:pointer}
 .toplist li:first-child{border-top:0}
+.toplist li > span:nth-child(3){min-width:0; overflow:hidden; text-overflow:ellipsis}
 .toplist .rk{font-weight:800; color:var(--ink3); width:20px; text-align:right}
 .thumb{width:44px; height:44px; border-radius:8px; background:var(--surface2); object-fit:cover; display:flex; align-items:center; justify-content:center; color:var(--ink3); font-weight:800; font-size:15px; overflow:hidden}
 .alert{display:flex; gap:10px; align-items:flex-start; padding:9px 0; border-top:1px solid var(--line); font-size:14px; cursor:pointer}
@@ -134,57 +187,99 @@ label.f .hint{font-weight:400; color:var(--ink3); font-size:12px}
 
 /* List */
 .toolbar{display:grid; gap:8px; margin-bottom:12px}
-.toolbar .filters{display:grid; grid-template-columns:repeat(2,1fr); gap:8px}
-@media (min-width:760px){ .toolbar .filters{grid-template-columns:repeat(5,1fr)} }
-.chips{display:flex; gap:6px; flex-wrap:wrap}
-.chip{border:1px solid var(--line); background:var(--surface); border-radius:20px; padding:6px 12px; font-size:13px; font-weight:650; cursor:pointer}
-.chip[aria-pressed="true"]{background:var(--ink); color:var(--surface); border-color:var(--ink)}
+.toolbar .filters{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px}
+@media (min-width:760px){ .toolbar .filters{grid-template-columns:repeat(4,minmax(0,1fr))} }
 .summary{font-size:13px; color:var(--ink2); margin:2px 0 10px}
-.cards{display:grid; gap:10px; grid-template-columns:repeat(auto-fill,minmax(260px,1fr))}
-.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-m); overflow:hidden; display:flex; flex-direction:column; cursor:pointer; text-align:left; padding:0}
-.card .ph{aspect-ratio:4/3; background:var(--surface2); position:relative; display:flex; align-items:center; justify-content:center; color:var(--ink3); font-weight:800; font-size:34px; font-stretch:115%}
+.cards{display:grid; gap:10px; grid-template-columns:repeat(auto-fill,minmax(min(100%,250px),1fr))}
+.card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-m); overflow:hidden; display:flex; flex-direction:column; cursor:pointer; text-align:left; padding:0; min-width:0}
+.card .ph{aspect-ratio:4/3; max-width:100%; background:var(--surface2); position:relative; display:flex; align-items:center; justify-content:center; color:var(--ink3); font-weight:800; font-size:34px; font-stretch:115%}
 .card .ph img{width:100%; height:100%; object-fit:cover; position:absolute; inset:0}
 .card .ph .tag{position:absolute; left:10px; top:10px}
 .card .ph .badge.star{position:absolute; right:10px; top:10px}
-.card .bd{padding:10px 12px 12px; display:flex; flex-direction:column; gap:4px}
+.card .bd{padding:10px 12px 12px; display:flex; flex-direction:column; gap:4px; min-width:0}
 .card .nm{font-weight:750; font-size:15.5px; line-height:1.25}
 .card .mm{font-size:12.5px; color:var(--ink3)}
 .card .pr{display:flex; justify-content:space-between; align-items:baseline; margin-top:4px}
 .card .pr b{font-size:17px; font-weight:800}
 .card .bdg{display:flex; gap:4px; flex-wrap:wrap; margin-top:4px}
+body.compact .card .ph{aspect-ratio:16/9; font-size:26px}
+body.compact .panel{padding:11px}
+body.compact .dash,body.compact .grid{gap:9px}
 .tablewrap{overflow-x:auto; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-m)}
 table.t{border-collapse:collapse; width:100%; font-size:13.5px; min-width:860px}
-table.t th{text-align:left; font-weight:700; color:var(--ink2); background:var(--surface2); padding:9px 10px; border-bottom:1px solid var(--line); white-space:nowrap; cursor:pointer; user-select:none}
+table.t th{text-align:left; font-weight:700; color:var(--ink2); background:var(--surface2); padding:9px 10px; border-bottom:1px solid var(--line); white-space:nowrap}
 table.t td{padding:8px 10px; border-bottom:1px solid var(--line); vertical-align:middle}
+table.t tbody tr{cursor:pointer}
 table.t tr:hover td{background:var(--surface2)}
 table.t td.r, table.t th.r{text-align:right}
-table.t tbody tr{cursor:pointer}
+
+/* Compras */
+.wl{display:flex; flex-direction:column; gap:8px}
+.wi{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-m); padding:12px; display:grid; grid-template-columns:4px minmax(0,1fr) auto; gap:12px; align-items:start}
+.wi .pri{align-self:stretch; border-radius:2px; background:var(--ink3)}
+.wi .pri.Alta{background:var(--bad)} .wi .pri.Media{background:var(--warn)} .wi .pri.Baja{background:var(--info)}
+.wi .nm{font-weight:750; font-size:15.5px}
+.wi .mt{font-size:12.5px; color:var(--ink3); display:flex; gap:6px; flex-wrap:wrap; align-items:center; margin-top:3px}
+.wi .pr{font-weight:800; font-size:17px; text-align:right; white-space:nowrap}
+.wi .acts{grid-column:2 / -1; display:flex; gap:6px; flex-wrap:wrap}
+.wi.done{opacity:.72}
+
+/* Desplegables */
+.lists{display:grid; gap:12px; grid-template-columns:minmax(0,1fr)}
+@media (min-width:900px){ .lists{grid-template-columns:repeat(2,minmax(0,1fr))} }
+.li-row{display:grid; grid-template-columns:auto minmax(0,1fr) auto auto; gap:6px; align-items:center; padding:5px 0; border-top:1px solid var(--line)}
+.li-row.cat{grid-template-columns:auto minmax(0,1fr) 72px auto auto}
+.li-row:first-of-type{border-top:0}
+.li-row input{min-height:36px; padding:6px 9px}
+.li-row .cnt{font-size:12px; color:var(--ink3); white-space:nowrap; min-width:48px; text-align:right}
+.mv{display:flex; flex-direction:column}
+.mv button{background:none; border:0; padding:0 4px; cursor:pointer; color:var(--ink3); font-size:11px; line-height:1.1}
+.mv button:hover{color:var(--ink)}
+.xbtn{background:none; border:0; width:32px; height:32px; border-radius:6px; cursor:pointer; color:var(--ink3); font-size:18px}
+.xbtn:hover{background:var(--surface2); color:var(--bad)}
+.addrow{display:flex; gap:6px; margin-top:8px}
+
+/* Apariencia */
+.swatches{display:flex; gap:8px; flex-wrap:wrap}
+.sw{width:38px; height:38px; border-radius:50%; border:2px solid var(--line); cursor:pointer; position:relative; padding:0}
+.sw[aria-pressed="true"]{box-shadow:0 0 0 3px var(--bg), 0 0 0 5px var(--ink)}
+.pal{display:flex; flex-direction:column; align-items:center; gap:4px; background:none; border:0; cursor:pointer; font-size:12px; color:var(--ink2); font-weight:600}
+.pal i{display:block; width:54px; height:38px; border-radius:8px; border:2px solid var(--line); overflow:hidden; position:relative}
+.pal[aria-pressed="true"] i{box-shadow:0 0 0 3px var(--bg), 0 0 0 5px var(--ink)}
+.pal i b{position:absolute; left:0; right:0; top:0; height:40%}
+.setrow{display:grid; gap:6px; padding:10px 0; border-top:1px solid var(--line)}
+.setrow:first-of-type{border-top:0; padding-top:0}
+.setrow > span{font-size:13px; font-weight:650; color:var(--ink2)}
+.colorinput{width:44px; height:38px; border:1px solid var(--line); border-radius:8px; padding:2px; background:var(--surface2)}
 
 /* Modal */
-dialog{border:0; padding:0; background:transparent; max-width:100vw; max-height:100vh; width:100%; height:100%; margin:0}
-dialog::backdrop{background:rgba(10,14,20,.55)}
-.sheet{background:var(--bg); width:100%; height:100%; display:flex; flex-direction:column; padding-top:env(safe-area-inset-top,0px)}
+dialog{border:0; padding:0; background:transparent; max-width:100vw; max-height:100vh; width:100%; height:100%; margin:0; color:var(--ink)}
+dialog::backdrop{background:rgba(6,9,14,.6)}
+.sheet{background:var(--bg); width:100%; height:100%; display:flex; flex-direction:column; padding-top:env(safe-area-inset-top,0px); zoom:var(--scale)}
 @media (min-width:760px){ dialog{width:min(820px,94vw); height:auto; max-height:92vh; margin:auto; border-radius:var(--radius-l)} .sheet{height:auto; max-height:92vh; border-radius:var(--radius-l); padding-top:0} }
+dialog.small{width:min(460px,94vw); height:auto; margin:auto; border-radius:var(--radius-l)}
+dialog.small .sheet{height:auto; max-height:88vh; border-radius:var(--radius-l); padding-top:0}
 .sheet header{display:flex; align-items:center; gap:10px; padding:12px 14px; border-bottom:1px solid var(--line); background:var(--surface)}
-.sheet header h2{margin:0; flex:1; font-size:17px}
+.sheet header h2{margin:0; flex:1; font-size:17px; min-width:0}
 .sheet .body{overflow:auto; padding:14px; flex:1}
 .sheet footer{display:flex; gap:8px; justify-content:flex-end; padding:10px 14px calc(10px + env(safe-area-inset-bottom,0px)); border-top:1px solid var(--line); background:var(--surface); flex-wrap:wrap}
-fieldset{border:1px solid var(--line); border-radius:var(--radius-m); padding:12px; margin:0 0 12px; background:var(--surface)}
+.sheet .closer{color:var(--ink)}
+.sheet .closer:hover{background:var(--surface2)}
+fieldset{border:1px solid var(--line); border-radius:var(--radius-m); padding:12px; margin:0 0 12px; background:var(--surface); min-width:0}
 legend{font-weight:750; padding:0 6px; font-size:14px}
-.fg{display:grid; gap:10px; grid-template-columns:1fr 1fr}
-.fg .s2{grid-column:1 / -1}
-@media (min-width:760px){ .fg{grid-template-columns:repeat(3,1fr)} .fg .s2{grid-column:span 2} .fg .s3{grid-column:1 / -1} }
-.fg .s3{grid-column:1 / -1}
-.photos{display:grid; grid-template-columns:repeat(auto-fill,minmax(96px,1fr)); gap:8px}
-.photo{position:relative; border-radius:8px; overflow:hidden; background:var(--surface2); aspect-ratio:1}
+.fg{display:grid; gap:10px; grid-template-columns:repeat(2,minmax(0,1fr))}
+.fg .s2,.fg .s3{grid-column:1 / -1}
+@media (min-width:760px){ .fg{grid-template-columns:repeat(3,minmax(0,1fr))} .fg .s2{grid-column:span 2} }
+.modebar{display:flex; justify-content:space-between; align-items:center; gap:10px; margin-bottom:12px; flex-wrap:wrap}
+.photos{display:grid; grid-template-columns:repeat(auto-fill,minmax(92px,1fr)); gap:8px}
+.photo{position:relative; border-radius:8px; overflow:hidden; background:var(--surface2); aspect-ratio:1; max-width:100%}
 .photo img{width:100%; height:100%; object-fit:cover; display:block}
-.photo select{position:absolute; left:4px; bottom:4px; right:30px; min-height:26px; padding:2px 4px; font-size:11px; background:rgba(255,255,255,.92); color:#1C2430; border:0; border-radius:5px}
+.photo select{position:absolute; left:4px; bottom:4px; right:30px; width:auto; min-height:26px; padding:2px 4px; font-size:11px; background:rgba(255,255,255,.92); color:#1C2430; border:0; border-radius:5px}
 .photo .x{position:absolute; right:4px; top:4px; width:26px; height:26px; border-radius:50%; border:0; background:rgba(0,0,0,.6); color:#fff; cursor:pointer; font-size:15px; line-height:1}
-.photo .lb{position:absolute; left:4px; bottom:4px; background:rgba(0,0,0,.6); color:#fff; font-size:10.5px; padding:1px 6px; border-radius:4px}
-.addph{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; border:1.5px dashed var(--ink3); border-radius:8px; aspect-ratio:1; cursor:pointer; color:var(--ink2); font-size:12px; font-weight:650; background:transparent}
+.addph{display:flex; flex-direction:column; align-items:center; justify-content:center; gap:4px; border:1.5px dashed var(--ink3); border-radius:8px; aspect-ratio:1; max-width:100%; cursor:pointer; color:var(--ink2); font-size:12px; font-weight:650; background:transparent}
 .addph svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8}
-.dl{display:grid; grid-template-columns:1fr 1fr; gap:10px 14px; margin:0}
-@media (min-width:760px){ .dl{grid-template-columns:repeat(3,1fr)} }
+.dl{display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px 14px; margin:0}
+@media (min-width:760px){ .dl{grid-template-columns:repeat(3,minmax(0,1fr))} }
 .dl div{min-width:0}
 .dl dt{font-size:12px; color:var(--ink3)}
 .dl dd{margin:0; font-weight:600; overflow-wrap:anywhere}
@@ -197,35 +292,30 @@ legend{font-weight:750; padding:0 6px; font-size:14px}
 .detail-head .vals{display:flex; gap:18px}
 .detail-head .vals b{display:block; font-size:22px; font-weight:800; font-stretch:112%}
 .detail-head .vals span{font-size:12px; color:var(--ink3)}
-.toast{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(140px + env(safe-area-inset-bottom,0px)); background:var(--ink); color:var(--surface); padding:10px 16px; border-radius:10px; font-weight:600; z-index:100; box-shadow:0 6px 18px rgba(0,0,0,.25); max-width:90vw; text-align:center}
+.verify{display:flex; gap:10px; align-items:center; justify-content:space-between; flex-wrap:wrap; background:color-mix(in srgb, var(--info) 10%, var(--surface)); border:1px solid color-mix(in srgb, var(--info) 35%, var(--line)); border-radius:var(--radius-m); padding:10px 12px; margin-bottom:12px; font-size:13.5px}
+.picklist{display:flex; flex-direction:column}
+.pick{display:grid; grid-template-columns:auto minmax(0,1fr) auto; gap:10px; align-items:center; padding:9px 0; border-top:1px solid var(--line); font-size:13.5px}
+.pick:first-child{border-top:0}
+.pick input{width:20px; height:20px; accent-color:var(--tag)}
+.pick small{display:block; color:var(--ink3)}
+.toast{position:fixed; left:50%; transform:translateX(-50%); bottom:calc(146px + env(safe-area-inset-bottom,0px)); background:var(--ink); color:var(--bg); padding:10px 16px; border-radius:10px; font-weight:600; z-index:100; box-shadow:0 6px 18px rgba(0,0,0,.25); max-width:90vw; text-align:center}
 body.desk .toast{bottom:28px}
 .zoom{position:fixed; inset:0; background:rgba(0,0,0,.9); z-index:200; display:flex; align-items:center; justify-content:center; padding:16px}
 .zoom img{max-width:100%; max-height:100%; border-radius:8px}
-
-/* Report / labels */
-.report h1{margin-bottom:4px}
-.report table.t{min-width:720px}
-.report .rthumb{width:52px; height:52px; object-fit:cover; border-radius:6px; display:block; background:var(--surface2)}
 .labels{display:grid; grid-template-columns:repeat(auto-fill,minmax(190px,1fr)); gap:10px}
-.label{border:1.5px solid var(--ink); border-radius:8px; padding:8px; display:grid; grid-template-columns:76px 1fr; gap:8px; align-items:center; background:#fff; color:#1C2430; break-inside:avoid}
+.label{border:1.5px solid #1C2430; border-radius:8px; padding:8px; display:grid; grid-template-columns:76px 1fr; gap:8px; align-items:center; background:#fff; color:#1C2430}
 .label .qr canvas,.label .qr img{width:76px!important; height:76px!important}
 .label b{display:block; font-size:13px; line-height:1.2}
-.label .c{background:var(--tag); color:var(--tag-ink); font-weight:800; font-size:11px; padding:1px 6px; border-radius:3px; display:inline-block; margin-bottom:3px}
+.label .c{background:#F2C230; color:#231C00; font-weight:800; font-size:11px; padding:1px 6px; border-radius:3px; display:inline-block; margin-bottom:3px}
 .label small{font-size:10.5px; color:#4A5566; display:block}
-
-@media print{
-  body{background:#fff; color:#000}
-  .topbar,.side,.bottomnav,.fab,.noprint,dialog{display:none!important}
-  body.desk .app,.app{display:block}
-  main{padding:0; max-width:none}
-  .view:not(.printing){display:none!important}
-  .tablewrap{border:0; overflow:visible}
-  table.t{min-width:0; font-size:11px}
-  table.t th{background:#eee}
-  .label{border-color:#000}
-}
+.report .rthumb{width:52px; height:52px; object-fit:cover; border-radius:6px; display:block; background:var(--surface2)}
+.menu{display:grid; gap:8px}
+.menu button{display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-m); padding:14px; text-align:left; cursor:pointer; font-weight:700; font-size:15.5px}
+.menu button span{display:block; font-weight:400; font-size:12.5px; color:var(--ink3)}
+.menu svg{width:24px;height:24px;stroke:var(--ink2);fill:none;stroke-width:1.8;flex:none}
 @media (prefers-reduced-motion: reduce){ *{transition:none!important; animation:none!important} }
 </style>
+
 </head>
 <body>
 <div class="app">
@@ -233,33 +323,25 @@ body.desk .toast{bottom:28px}
     <div class="brand"><span class="tagmini">CTO</span>Mi cuarto</div>
     <div class="spacer"></div>
     <div class="cloud" id="cloud" title="Estado de la copia en la nube"><i></i><span>Solo en este dispositivo</span></div>
-    <button class="iconbtn" id="viewToggle" title="Cambiar vista teléfono/escritorio" aria-label="Cambiar vista">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="2" y="4" width="14" height="11" rx="1.5"/><rect x="17" y="8" width="5" height="12" rx="1"/><path d="M6 19h6"/></svg>
-    </button>
+    <button class="iconbtn" id="privToggle" title="Ocultar o mostrar montos" aria-label="Ocultar montos"></button>
+    <button class="iconbtn" id="viewToggle" title="Cambiar vista teléfono/escritorio" aria-label="Cambiar vista"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="14" height="11" rx="1.5"/><rect x="17" y="8" width="5" height="12" rx="1"/><path d="M6 19h6"/></svg></button>
   </header>
-  <nav class="side" aria-label="Secciones">
-    <button data-nav="inicio"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Inicio</button>
-    <button data-nav="objetos"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Objetos</button>
-    <button data-nav="reporte"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h8"/></svg>Reportes</button>
-    <button data-nav="ajustes"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg>Ajustes y respaldo</button>
-    <button class="add" data-action="new">+ Agregar objeto</button>
-  </nav>
+  <nav class="side" id="sidenav" aria-label="Secciones"></nav>
   <main>
     <section class="view" id="v-inicio"></section>
+    <section class="view" id="v-dash" hidden></section>
     <section class="view" id="v-objetos" hidden></section>
+    <section class="view" id="v-compras" hidden></section>
     <section class="view" id="v-reporte" hidden></section>
+    <section class="view" id="v-listas" hidden></section>
     <section class="view" id="v-ajustes" hidden></section>
   </main>
 </div>
-<button class="fab" data-action="new" aria-label="Agregar objeto"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Agregar</button>
-<nav class="bottomnav" aria-label="Secciones">
-  <button data-nav="inicio"><svg viewBox="0 0 24 24"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Inicio</button>
-  <button data-nav="objetos"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>Objetos</button>
-  <button data-nav="reporte"><svg viewBox="0 0 24 24"><path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h8"/></svg>Reportes</button>
-  <button data-nav="ajustes"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/></svg>Ajustes</button>
-</nav>
+<button class="fab" id="fab" aria-label="Agregar"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Agregar</span></button>
+<nav class="bottomnav" id="bottomnav" aria-label="Secciones"></nav>
 
 <dialog id="dlg"><div class="sheet" id="sheet"></div></dialog>
+<dialog id="dlg2" class="small"><div class="sheet" id="sheet2"></div></dialog>
 <input type="file" id="fileImport" accept=".json,.csv,.xlsx,.xls,application/json,text/csv" hidden>
 <input type="file" id="filePhoto" accept="image/*" multiple hidden>
 <input type="file" id="fileCam" accept="image/*" capture="environment" hidden>
@@ -270,15 +352,31 @@ body.desk .toast{bottom:28px}
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
 const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
-const money = n => (n == null || isNaN(n)) ? "—" : new Intl.NumberFormat("es-MX",{style:"currency",currency:"MXN",maximumFractionDigits: n % 1 ? 2 : 0}).format(n);
-const moneyShort = n => { if (!n) return "$0"; if (Math.abs(n) >= 1e6) return "$" + (n/1e6).toFixed(1) + " M"; if (Math.abs(n) >= 1e4) return "$" + Math.round(n/1e3) + " mil"; return money(n); };
-const today = () => new Date().toISOString().slice(0,10);
+const HIDE = "$ •••";
+function money(n){
+  if (n == null || n === "" || isNaN(n)) return "—";
+  if (S.settings.privado) return HIDE;
+  const dec = S.settings.centavos === "nunca" ? 0 : (n % 1 ? 2 : 0);
+  return new Intl.NumberFormat("es-MX",{style:"currency",currency:"MXN",minimumFractionDigits:dec, maximumFractionDigits:dec}).format(n);
+}
+function moneyShort(n){
+  if (S.settings.privado) return HIDE;
+  if (!n) return "$0"; if (Math.abs(n) >= 1e6) return "$" + (n/1e6).toFixed(1) + " M"; if (Math.abs(n) >= 1e4) return "$" + Math.round(n/1e3) + " mil"; return money(Math.round(n));
+}
+function moneyK(n){
+  if (S.settings.privado) return "•";
+  if (!n) return ""; if (n >= 1e6) return "$" + (n/1e6).toFixed(1) + "M"; if (n >= 1e3) return "$" + (n/1e3).toFixed(n >= 1e4 ? 0 : 1) + "k"; return "$" + Math.round(n);
+}
+const today = () => { const d = new Date(); return new Date(d.getTime() - d.getTimezoneOffset()*60000).toISOString().slice(0,10); };
 const nowISO = () => new Date().toISOString();
-const uid = () => "i" + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
-const norm = s => String(s ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim();
+const uid = (p = "i") => p + Date.now().toString(36) + Math.random().toString(36).slice(2,8);
+const norm = s => String(s ?? "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g,"").trim();
 const parseNum = v => { if (v == null || v === "") return null; if (typeof v === "number") return v; const n = parseFloat(String(v).replace(/[^0-9.\-]/g,"")); return isNaN(n) ? null : n; };
-const fmtDate = d => { if (!d) return "—"; const [y,m,dd] = d.split("-"); const meses=["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"]; return `${+dd} ${meses[+m-1]} ${y}`; };
+const MESES = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+const fmtDate = d => { if (!d) return "—"; const [y,m,dd] = d.split("-"); return `${+dd} ${MESES[+m-1]} ${y}`; };
 const daysBetween = (a, b) => Math.round((new Date(b) - new Date(a)) / 86400000);
+const addDays = (d, n) => { const x = new Date(d + "T12:00:00"); x.setDate(x.getDate() + n); return x.toISOString().slice(0,10); };
+const addMonths = (d, n) => { const x = new Date(d + "T12:00:00"); x.setMonth(x.getMonth() + n); return x.toISOString().slice(0,10); };
 function ageText(d){
   if (!d) return "—";
   const days = daysBetween(d, today());
@@ -289,36 +387,79 @@ function ageText(d){
   const y = Math.floor(months / 12), m = months % 12;
   return y + (y === 1 ? " año" : " años") + (m ? ` ${m} m` : "");
 }
-function toast(msg, ms = 2600){ const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; document.body.appendChild(t); setTimeout(() => t.remove(), ms); }
+function toast(msg, ms = 2600){ const t = document.createElement("div"); t.className = "toast"; t.textContent = msg; t.setAttribute("role","status"); (dlg2.open ? dlg2 : dlg.open ? dlg : document.body).appendChild(t); setTimeout(() => t.remove(), ms); }
 function debounce(fn, ms){ let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; }
+
+/* ================= Íconos ================= */
+const IC = {
+  inicio:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
+  dash:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+  objetos:'<rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>',
+  compras:'<path d="M3 4h2l2.4 11.2a1 1 0 0 0 1 .8h9.2a1 1 0 0 0 1-.8L20 8H6"/><circle cx="9.5" cy="20" r="1.3"/><circle cx="17" cy="20" r="1.3"/>',
+  reporte:'<path d="M6 2h9l5 5v15H6z"/><path d="M14 2v6h6M9 13h8M9 17h8"/>',
+  listas:'<path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 5l1.5 1.5L3 8M3 11l1.5 1.5L3 14M3 17l1.5 1.5L3 20"/>',
+  ajustes:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
+  mas:'<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
+  eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+  eyeoff:'<path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7a9.6 9.6 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>'
+};
+const svg = k => `<svg viewBox="0 0 24 24">${IC[k]}</svg>`;
+const VIEWS = [
+  ["inicio","Inicio","Resumen y pendientes"],["dash","Dashboard","Gráficas de tu inventario"],["objetos","Objetos","Todo lo que tienes"],["compras","Compras","Lo que planeas comprar"],
+  ["reporte","Reportes","Listas para seguro, Excel y QR"],["listas","Desplegables","Categorías, zonas, métodos y más"],["ajustes","Ajustes","Tema, colores y respaldo"]
+];
+const BOTTOM = ["inicio","objetos","compras","dash","mas"];
+const MAS = ["reporte","listas","ajustes"];
 
 /* ================= Valores por defecto ================= */
 const DEFAULT_SETTINGS = {
   categorias: [
     ["Computación",4],["Celulares y tablets",3],["Electrónica",5],["Audio",5],["Videojuegos",5],["Fotografía",6],
-    ["Muebles",10],["Electrodomésticos",7],["Ropa y calzado",3],["Relojes y joyería",15],["Herramientas",8],
+    ["Muebles",10],["Electrodomésticos",7],["Ropa y calzado",3],["Accesorios personales",3],["Relojes y joyería",15],["Herramientas",8],
     ["Deportes",5],["Libros",10],["Instrumentos musicales",10],["Decoración",10],["Coleccionables",20],["Documentos",50],["Otros",5]
   ].map(([nombre, vida]) => ({nombre, vida})),
   zonas: ["Escritorio","Clóset","Buró","Cama","Librero","Cajonera","Repisa","Pared","Bajo la cama","Piso","Baño","Otro"],
-  metodos: ["Efectivo","Banamex TDC Costco","Banamex MiCuenta","BBVA TDC Azul","Transferencia","Regalo","Otro"],
+  metodos: ["Efectivo","Banamex Costco","Banamex MiCuenta","BBVA Azul","BBVA Libretón","RappiCard","Mercado Pago","Nu","PayPal","Transferencia","Regalo","Otro"],
   condiciones: ["Nuevo","Como nuevo","Bueno","Regular","Dañado"],
-  umbral: 5000, residual: 15, vista: "auto", tema: "auto", ultimoRespaldo: null, updatedAt: null
+  tiendas: ["Amazon","Mercado Libre","Liverpool","Costco","Best Buy","Cyberpuerta","Temu","Walmart","Elektra","Coppel"],
+  etiquetas: ["por verificar","importado","trabajo","viaje","regalo"],
+  umbral: 5000, residual: 15, vista: "auto", tema: "auto", paleta: "grafito", acento: "#F2C230", escala: 1, densidad: "comoda",
+  inicio: "inicio", formModo: "rapido", centavos: "auto", privado: false, dueno: "Victor Manuel Salazar Castro",
+  ultimoRespaldo: null, updatedAt: null
 };
+const LISTAS = [
+  ["categorias","Categorías","Con su vida útil en años, que se usa para calcular cuánto vale hoy cada objeto.","categoria"],
+  ["zonas","Zonas del cuarto","Dónde está cada cosa.","zona"],
+  ["metodos","Métodos de pago","Tus tarjetas, cuentas y otras formas de pago.","metodoPago"],
+  ["tiendas","Tiendas","Dónde compras. Se usa en objetos y en compras planeadas.","tienda"],
+  ["condiciones","Condiciones","Cómo está el objeto.","condicion"],
+  ["etiquetas","Etiquetas","Para agrupar objetos. Un objeto puede tener varias.","etiquetas"]
+];
 const ESTADOS = ["Activo","Vendido","Regalado","Descompuesto","Perdido/Robado","Desechado","Prestado"];
 const TIPOS_FOTO = ["Objeto","Ticket/factura","Número de serie","Caja/empaque","Daño"];
+const PRIORIDADES = ["Alta","Media","Baja"];
+const C_ESTADOS = ["Pendiente","Pospuesto","Comprado","Descartado"];
+const PALETAS = {grafito:["Grafito",215,14], marino:["Marino",222,42], bosque:["Bosque",155,22], vino:["Vino",345,26], arena:["Arena",32,26], lavanda:["Lavanda",262,30], neutro:["Neutro",0,0]};
+const ACENTOS = [["#F2C230","Amarillo etiqueta"],["#F08A24","Naranja"],["#E5567F","Rosa"],["#8E6CEF","Morado"],["#3D8BEA","Azul"],["#22B5B0","Turquesa"],["#3FB57A","Verde"],["#E2E8F0","Gris claro"]];
+const VERIFY = "por verificar";
+
+/* Adquisiciones identificadas en tu archivo de Cobranzas (16 oct 2026) */
+const SEED = [{"src":"cob-01","nombre":"Fire TV Stick 4K Max","marca":"Amazon","modelo":"Fire TV Stick 4K Max (Wi‑Fi 6)","categoria":"Electrónica","zona":"","precio":1199.0,"fechaCompra":"2023-03-21","tienda":"Amazon","metodoPago":"BBVA Libretón","folio":"702-8601402-9325862","link":"https://www.amazon.com.mx/gp/your-account/order-details?orderID=702-8601402-9325862","altoValor":false,"notas":"Importado de tus compras de Amazon (pedido 702-8601402-9325862). Revisa que siga en tu cuarto."},{"src":"cob-02","nombre":"Memoria microSD 256 GB","marca":"Kingston","modelo":"Canvas Select Plus 256GB","categoria":"Computación","zona":"Escritorio","precio":329.0,"fechaCompra":"2023-08-05","tienda":"Amazon","metodoPago":"Tarjeta ····2636","folio":"701-5200636-3630619","link":"https://www.amazon.com.mx/gp/your-account/order-details?orderID=701-5200636-3630619","altoValor":false,"notas":"Importado de tus compras de Amazon (pedido 701-5200636-3630619). Revisa que siga en tu cuarto."},{"src":"cob-03","nombre":"Power bank 10,000 mAh 20 W","marca":"","modelo":"Con pantalla LED","categoria":"Electrónica","zona":"","precio":335.75,"fechaCompra":"2023-08-05","tienda":"Amazon","metodoPago":"Tarjeta ····2636","folio":"701-5200636-3630619","link":"https://www.amazon.com.mx/gp/your-account/order-details?orderID=701-5200636-3630619","altoValor":false,"notas":"Importado de tus compras de Amazon (pedido 701-5200636-3630619). Revisa que siga en tu cuarto."},{"src":"cob-04","nombre":"Foco inteligente RGB Wi‑Fi 12 W","marca":"","modelo":"Compatible con Alexa / Google Home","categoria":"Decoración","zona":"","precio":480.87,"fechaCompra":"2023-02-12","tienda":"Mercado Libre","metodoPago":"BBVA Azul","folio":"2000004207526605","link":"https://myaccount.mercadolibre.com.mx/my_purchases/2000004207526605/detail","altoValor":false,"notas":"Importado de tus compras de Mercado Libre (pedido 2000004207526605). Revisa que siga en tu cuarto."},{"src":"cob-05","nombre":"Focos con sensor de movimiento 12 W","marca":"ONEVER","modelo":"PIR","categoria":"Decoración","zona":"","precio":367.89,"fechaCompra":"2023-09-01","tienda":"Amazon","metodoPago":"BBVA Azul","folio":"702-7042262-5901061","link":"https://www.amazon.com.mx/gp/your-account/order-details?orderID=702-7042262-5901061","altoValor":false,"notas":"Importado de tus compras de Amazon (pedido 702-7042262-5901061). Revisa que siga en tu cuarto."},{"src":"cob-06","nombre":"Funda para Galaxy Tab S9 Ultra","marca":"JETech","modelo":"Trifold con soporte S Pen","categoria":"Celulares y tablets","zona":"","precio":428.0,"fechaCompra":"2024-01-01","tienda":"Amazon","metodoPago":"BBVA Libretón","folio":"701-2280489-0801000","link":"https://www.amazon.com.mx/gp/your-account/order-details?orderID=701-2280489-0801000","altoValor":false,"notas":"Importado de tus compras de Amazon (pedido 701-2280489-0801000). Revisa que siga en tu cuarto."},{"src":"cob-07","nombre":"LEGO Speed Champions Porsche 963","marca":"LEGO","modelo":"76916 · 280 piezas","categoria":"Coleccionables","zona":"Repisa","precio":477.0,"fechaCompra":"2024-05-19","tienda":"Amazon","metodoPago":"Tarjeta ····5887","folio":"701-0384505-1280212","link":"https://www.amazon.com.mx/gp/your-account/order-details?orderID=701-0384505-1280212","altoValor":false,"notas":"Importado de tus compras de Amazon (pedido 701-0384505-1280212). Revisa que siga en tu cuarto."},{"src":"cob-08","nombre":"Tiras LED RGB Wi‑Fi 30 m (x3)","marca":"","modelo":"2×15 m, 24 V, Alexa","categoria":"Decoración","zona":"Pared","precio":873.0,"fechaCompra":"2024-05-19","tienda":"Mercado Libre","metodoPago":"BBVA Azul","folio":"2000005785431875","link":"https://myaccount.mercadolibre.com.mx/my_purchases/2000005785431875/detail","altoValor":false,"notas":"Importado de tus compras de Mercado Libre (pedido 2000005785431875). Revisa que siga en tu cuarto."},{"src":"cob-09","nombre":"Skateboard split / driftboard","marca":"","modelo":"Roller Road Skates","categoria":"Deportes","zona":"","precio":560.29,"fechaCompra":"2024-07-23","tienda":"Mercado Libre","metodoPago":"BBVA Azul","folio":"2000006073466049","link":"https://myaccount.mercadolibre.com.mx/my_purchases/2000006073466049/detail","altoValor":false,"notas":"Importado de tus compras de Mercado Libre (pedido 2000006073466049). Revisa que siga en tu cuarto."},{"src":"cob-10","nombre":"Mini proyector 1080p","marca":"GTEQY","modelo":"3000 lm LCD","categoria":"Electrónica","zona":"","precio":557.52,"fechaCompra":"2024-12-07","tienda":"Temu","metodoPago":"PayPal","folio":"PO-128-13886807575593645","link":"","altoValor":false,"notas":"Importado de tus compras de Temu (pedido PO-128-13886807575593645). Revisa que siga en tu cuarto."},{"src":"cob-11","nombre":"Mouse inalámbrico ergonómico","marca":"UGREEN","modelo":"Bluetooth + 2.4 GHz, 5 botones","categoria":"Computación","zona":"Escritorio","precio":469.0,"fechaCompra":"2025-01-05","tienda":"Amazon","metodoPago":"RappiCard","folio":"701-0386520-4925042","link":"https://www.amazon.com.mx/gp/your-account/order-details?orderID=701-0386520-4925042","altoValor":false,"notas":"Importado de tus compras de Amazon (pedido 701-0386520-4925042). Revisa que siga en tu cuarto."},{"src":"cob-12","nombre":"Capturadora de video HDMI 4K","marca":"UGREEN","modelo":"1080p 60 fps USB‑A/C","categoria":"Computación","zona":"Escritorio","precio":407.94,"fechaCompra":"2025-01-12","tienda":"Amazon","metodoPago":"RappiCard","folio":"701-2757838-8085816","link":"https://www.amazon.com.mx/gp/your-account/order-details?orderID=701-2757838-8085816","altoValor":false,"notas":"Importado de tus compras de Amazon (pedido 701-2757838-8085816). Revisa que siga en tu cuarto."},{"src":"cob-13","nombre":"Carcasa para disco duro 3.5\"","marca":"UGREEN","modelo":"USB 3.0 con eliminador 12 V","categoria":"Computación","zona":"Escritorio","precio":658.0,"fechaCompra":"2025-03-25","tienda":"Amazon","metodoPago":"Banamex Costco","folio":"701-6872027-4349820","link":"https://www.amazon.com.mx/gp/your-account/order-details?orderID=701-6872027-4349820","altoValor":false,"notas":"Importado de tus compras de Amazon (pedido 701-6872027-4349820). Revisa que siga en tu cuarto."},{"src":"cob-14","nombre":"Prensas esquineras 90° (x2 juegos)","marca":"","modelo":"4 pzas c/u","categoria":"Herramientas","zona":"","precio":509.12,"fechaCompra":"2025-06-09","tienda":"Mercado Libre","metodoPago":"Banamex Costco","folio":"2000008129461685","link":"https://myaccount.mercadolibre.com.mx/my_purchases/2000008129461685/detail","altoValor":false,"notas":"Importado de tus compras de Mercado Libre (pedido 2000008129461685). Revisa que siga en tu cuarto."},{"src":"cob-15","nombre":"Power bank 145 W 25,000 mAh","marca":"UGREEN","modelo":"145W 3 puertos","categoria":"Electrónica","zona":"","precio":1299.0,"fechaCompra":"2025-06-14","tienda":"Amazon","metodoPago":"Banamex Costco","folio":"701-3326653-8353834","link":"https://www.amazon.com.mx/gp/your-account/order-details?orderID=701-3326653-8353834","altoValor":false,"notas":"Importado de tus compras de Amazon (pedido 701-3326653-8353834). Revisa que siga en tu cuarto."},{"src":"cob-16","nombre":"Power bank magnético 10,000 mAh","marca":"UGREEN","modelo":"Inalámbrico PD 20 W","categoria":"Electrónica","zona":"","precio":699.0,"fechaCompra":"2025-06-28","tienda":"Amazon","metodoPago":"Banamex Costco","folio":"701-1272421-7157056","link":"https://www.amazon.com.mx/gp/your-account/order-details?orderID=701-1272421-7157056","altoValor":false,"notas":"Importado de tus compras de Amazon (pedido 701-1272421-7157056). Revisa que siga en tu cuarto."},{"src":"cob-17","nombre":"Mochila antirrobo para laptop","marca":"DOXUNGOO","modelo":"Impermeable","categoria":"Ropa y calzado","zona":"Clóset","precio":377.0,"fechaCompra":"2025-08-28","tienda":"Amazon","metodoPago":"RappiCard","folio":"701-6898794-0451420","link":"https://www.amazon.com.mx/gp/your-account/order-details?orderID=701-6898794-0451420","altoValor":false,"notas":"Importado de tus compras de Amazon (pedido 701-6898794-0451420). Revisa que siga en tu cuarto."},{"src":"cob-18","nombre":"Lápices de colores Premier (150)","marca":"Prismacolor","modelo":"M1799879","categoria":"Otros","zona":"Escritorio","precio":1599.0,"fechaCompra":"2025-11-16","tienda":"Amazon","metodoPago":"Banamex Costco","folio":"701-5908547-2411457","link":"https://www.amazon.com.mx/gp/your-account/order-details?orderID=701-5908547-2411457","altoValor":false,"notas":"Importado de tus compras de Amazon (pedido 701-5908547-2411457). Revisa que siga en tu cuarto."},{"src":"cob-19","nombre":"Cargador Nexode 200 W (4 puertos)","marca":"UGREEN","modelo":"GaN 140 W máx por puerto","categoria":"Computación","zona":"Escritorio","precio":1399.0,"fechaCompra":"2026-01-12","tienda":"Amazon","metodoPago":"Banamex Costco","folio":"701-5757310-3129027","link":"https://www.amazon.com.mx/gp/your-account/order-details?orderID=701-5757310-3129027","altoValor":false,"notas":"Importado de tus compras de Amazon (pedido 701-5757310-3129027). Revisa que siga en tu cuarto."},{"src":"cob-20","nombre":"Tenis Charged Surge 4 blancos","marca":"Under Armour","modelo":"Charged Surge 4","categoria":"Ropa y calzado","zona":"Clóset","precio":1200.0,"fechaCompra":"2026-01-13","tienda":"Amazon","metodoPago":"Banamex Costco","folio":"701-7055046-4237002","link":"https://www.amazon.com.mx/gp/your-account/order-details?orderID=701-7055046-4237002","altoValor":false,"notas":"Importado de tus compras de Amazon (pedido 701-7055046-4237002). Revisa que siga en tu cuarto."},{"src":"cob-21","nombre":"Tenis Charged Surge 4 negros","marca":"Under Armour","modelo":"Charged Surge 4 · talla 27","categoria":"Ropa y calzado","zona":"Clóset","precio":799.5,"fechaCompra":"2026-01-16","tienda":"Amazon","metodoPago":"Banamex Costco","folio":"701-6607011-6258605","link":"https://www.amazon.com.mx/gp/your-account/order-details?orderID=701-6607011-6258605","altoValor":false,"notas":"Importado de tus compras de Amazon (pedido 701-6607011-6258605). Revisa que siga en tu cuarto."},{"src":"cob-22","nombre":"Tenis Charged Assert 10 negros","marca":"Under Armour","modelo":"3026175-004 · 8.5","categoria":"Ropa y calzado","zona":"Clóset","precio":662.03,"fechaCompra":"2026-04-23","tienda":"Amazon","metodoPago":"Banamex Costco","folio":"702-9468565-0177833","link":"https://www.amazon.com.mx/gp/your-account/order-details?orderID=702-9468565-0177833","altoValor":false,"notas":"Importado de tus compras de Amazon (pedido 702-9468565-0177833). Revisa que siga en tu cuarto."},{"src":"cob-23","nombre":"Bocina Sound Outdoor","marca":"Xiaomi","modelo":"Bluetooth 5.4 · negra","categoria":"Audio","zona":"","precio":920.0,"fechaCompra":"2026-08-04","tienda":"Amazon","metodoPago":"BBVA Azul","folio":"702-4853534-4267458","link":"https://www.amazon.com.mx/gp/your-account/order-details?orderID=702-4853534-4267458","altoValor":false,"notas":"Importado de tus compras de Amazon (pedido 702-4853534-4267458). Revisa que siga en tu cuarto."},{"src":"cob-24","nombre":"Hub USB‑C 12 en 1 Revodok Pro","marca":"UGREEN","modelo":"Dual HDMI + DP 4K","categoria":"Computación","zona":"Escritorio","precio":999.97,"fechaCompra":"2026-09-26","tienda":"Amazon","metodoPago":"RappiCard","folio":"701-2453721-0829047","link":"https://www.amazon.com.mx/gp/your-account/order-details?orderID=701-2453721-0829047","altoValor":false,"notas":"Importado de tus compras de Amazon (pedido 701-2453721-0829047). Revisa que siga en tu cuarto."},{"src":"cob-25","nombre":"Lentes (Ópticas Lux)","marca":"","modelo":"","categoria":"Accesorios personales","zona":"","precio":5680.0,"fechaCompra":"2026-04-26","tienda":"Ópticas Lux","metodoPago":"Banamex Costco","folio":"","link":"","altoValor":true,"notas":"Importado de tus movimientos: el cargo no dice qué artículo fue. Cambia el nombre y completa marca y modelo."},{"src":"cob-26","nombre":"Cartera de hardware Ledger","marca":"Ledger","modelo":"","categoria":"Electrónica","zona":"Cajonera","precio":1364.16,"fechaCompra":"2025-10-17","tienda":"Ledger (PayPal)","metodoPago":"Banamex Costco","folio":"","link":"","altoValor":true,"notas":"Cargo PAYPAL *LEDGER del 17 oct 2025 (el primer cargo del 29 sep se reembolsó). Confirma el modelo (Nano S Plus / Nano X…)."},{"src":"cob-27","nombre":"Samsung Galaxy “S11 Ultra”","marca":"Samsung","modelo":"","categoria":"Celulares y tablets","zona":"","precio":15000.0,"fechaCompra":"2025-12-11","tienda":"Julio César (particular)","metodoPago":"Transferencia","folio":"","link":"","altoValor":true,"notas":"Según tus registros: deuda de $15,000 con Julio César por el Samsung “S11 Ultra” (dic 2025). Confirma el modelo exacto y el IMEI."},{"src":"cob-28","nombre":"Compra en Liverpool por identificar","marca":"","modelo":"","categoria":"Otros","zona":"","precio":9519.44,"fechaCompra":"2022-11-22","tienda":"Liverpool","metodoPago":"BBVA Libretón","folio":"","link":"","altoValor":true,"notas":"Importado de tus movimientos: el cargo no dice qué artículo fue. Cambia el nombre y completa marca y modelo."},{"src":"cob-29","nombre":"Compra en Best Buy por identificar","marca":"","modelo":"","categoria":"Electrónica","zona":"","precio":2697.3,"fechaCompra":"2020-11-17","tienda":"Best Buy","metodoPago":"BBVA Libretón","folio":"","link":"","altoValor":false,"notas":"Importado de tus movimientos: el cargo no dice qué artículo fue. Cambia el nombre y completa marca y modelo."},{"src":"cob-30","nombre":"Compra en Cyberpuerta por identificar","marca":"","modelo":"","categoria":"Computación","zona":"","precio":1867.0,"fechaCompra":"2020-09-07","tienda":"Cyberpuerta","metodoPago":"BBVA Libretón","folio":"","link":"","altoValor":false,"notas":"Importado de tus movimientos: el cargo no dice qué artículo fue. Cambia el nombre y completa marca y modelo."},{"src":"cob-31","nombre":"Compra en Elektra por identificar","marca":"","modelo":"","categoria":"Electrónica","zona":"","precio":2889.0,"fechaCompra":"2024-12-25","tienda":"Elektra","metodoPago":"BBVA Azul","folio":"","link":"","altoValor":false,"notas":"Importado de tus movimientos: el cargo no dice qué artículo fue. Cambia el nombre y completa marca y modelo."},{"src":"cob-32","nombre":"Compra en Zegucom por identificar","marca":"","modelo":"","categoria":"Computación","zona":"","precio":2541.26,"fechaCompra":"2025-03-23","tienda":"Zegucom","metodoPago":"Banamex Costco","folio":"","link":"","altoValor":false,"notas":"Importado de tus movimientos: el cargo no dice qué artículo fue. Cambia el nombre y completa marca y modelo."},{"src":"cob-33","nombre":"Tablet Samsung Galaxy Tab S9 Ultra","marca":"Samsung","modelo":"Galaxy Tab S9 Ultra 14.6\"","categoria":"Celulares y tablets","zona":"","precio":null,"fechaCompra":"","tienda":"","metodoPago":"","folio":"","link":"","altoValor":true,"notas":"No aparece la compra, pero compraste accesorios para este equipo. Si es tuyo, completa precio y fecha; si no, elimínalo."},{"src":"cob-34","nombre":"iPad Pro 11\" M4","marca":"Apple","modelo":"iPad Pro 11 (2024)","categoria":"Celulares y tablets","zona":"","precio":null,"fechaCompra":"","tienda":"","metodoPago":"","folio":"","link":"","altoValor":true,"notas":"No aparece la compra, pero compraste accesorios para este equipo. Si es tuyo, completa precio y fecha; si no, elimínalo."}];
 
 /* ================= Estado ================= */
 const S = {
-  items: [], settings: structuredClone(DEFAULT_SETTINGS), view: "inicio",
-  f: { q: "", cat: "", zona: "", estado: "Activo", alto: false, orden: "precio-desc", modo: "cards", rep: "alto" }
+  items: [], compras: [], settings: structuredClone(DEFAULT_SETTINGS), view: "inicio",
+  f: { q: "", cat: "", zona: "", estado: "Activo", alto: false, verif: false, orden: "precio-desc", modo: "cards", rep: "alto", cf: "activas" }
 };
 const live = () => S.items.filter(i => !i.deleted);
+const liveC = () => S.compras.filter(c => !c.deleted);
 const activos = () => live().filter(i => (i.estado || "Activo") === "Activo" || i.estado === "Prestado");
 const catVida = c => (S.settings.categorias.find(x => x.nombre === c) || {}).vida || 5;
 const isAlto = i => !!i.altoValor || (i.precio || 0) >= (S.settings.umbral || 0);
+const porVerificar = i => (i.etiquetas || []).includes(VERIFY);
 function valorActual(i){
   if (i.valorActualManual != null && i.valorActualManual !== "") return +i.valorActualManual;
-  const p = i.precio || 0; if (!p) return 0;
+  const p = (i.precio || 0) ; if (!p) return 0;
   if (!i.fechaCompra) return p;
   const vida = +i.vidaUtil || catVida(i.categoria);
   const res = (S.settings.residual ?? 15) / 100;
@@ -351,7 +492,7 @@ function idb(){
 async function kvGet(k){ const d = await idb(); return new Promise((res, rej) => { const r = d.transaction("kv").objectStore("kv").get(k); r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error); }); }
 async function kvSet(k, v){ const d = await idb(); return new Promise((res, rej) => { const tx = d.transaction("kv","readwrite"); tx.objectStore("kv").put(v, k); tx.oncomplete = res; tx.onerror = () => rej(tx.error); }); }
 const persist = debounce(async () => {
-  try { await kvSet("items", S.items); await kvSet("settings", S.settings); }
+  try { await kvSet("items", S.items); await kvSet("compras", S.compras); await kvSet("settings", S.settings); }
   catch (e) { storageOK = false; toast("No se pudo guardar en el dispositivo. Exporta un respaldo."); }
 }, 250);
 
@@ -408,9 +549,10 @@ function cloudWrite(id, data, item){
   });
 }
 const syncItem = i => cloudWrite(i.id, cloudDoc(i), i);
+const syncCompra = c => cloudWrite(c.id, {...structuredClone(c), kind: "compra"});
 const syncSettings = () => cloudWrite("_ajustes", {settings: S.settings});
 function mergeRemote(rows, full){
-  const map = new Map(S.items.map(i => [i.id, i]));
+  const map = new Map(S.items.map(i => [i.id, i])), cmap = new Map(S.compras.map(c => [c.id, c]));
   const remoteIds = new Set(); let changed = false;
   for (const r of rows){
     const data = r.data; if (!data) continue;
@@ -420,6 +562,13 @@ function mergeRemote(rows, full){
       continue;
     }
     remoteIds.add(r.id);
+    if (data.kind === "compra"){
+      const lc = cmap.get(r.id); const n = structuredClone(data); delete n.kind;
+      if (!lc){ S.compras.push(n); changed = true; }
+      else if ((n.updatedAt || "") > (lc.updatedAt || "")){ Object.assign(lc, n); changed = true; }
+      else if (full && (lc.updatedAt || "") > (n.updatedAt || "")) syncCompra(lc);
+      continue;
+    }
     const loc = map.get(r.id);
     if (!loc){ S.items.push(structuredClone(data)); changed = true; }
     else if ((data.updatedAt || "") > (loc.updatedAt || "")){
@@ -430,6 +579,7 @@ function mergeRemote(rows, full){
   }
   if (full){
     for (const i of S.items) if (!remoteIds.has(i.id)) syncItem(i);
+    for (const c of S.compras) if (!remoteIds.has(c.id)) syncCompra(c);
     if (!rows.find(r => r.id === "_ajustes")) syncSettings();
   }
   if (changed){ persist(); if (!dlg.open) render(); }
@@ -488,7 +638,8 @@ async function initCloud(){
   render();
 }
 async function cloudLogout(){
-  if (!confirm("¿Cerrar sesión? Tus datos se quedan guardados en la nube.")) return;
+  const ok = await ask({title: "Cerrar sesión", html: '<p style="margin:0">Tus datos se quedan guardados en la nube. Al volver a entrar se descargan otra vez.</p>', buttons: [{label:"Cancelar", value:false},{label:"Cerrar sesión", value:true, cls:"danger"}]});
+  if (!ok) return;
   await cloud.sb.auth.signOut(); location.reload();
 }
 async function cloudLogin(){ try { localStorage.removeItem("inventario-solo-local"); } catch(e){} location.reload(); }
@@ -511,20 +662,34 @@ async function saveFile(filename, data, mime){
   try { const a = document.createElement("a"); a.href = URL.createObjectURL(blob); a.download = filename; document.body.appendChild(a); a.click(); setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1500); return true; }
   catch (e) { toast("No se pudo guardar el archivo en este navegador."); return false; }
 }
-
 function loadScript(src){
   return new Promise((res, rej) => { if ($(`script[src="${src}"]`)) return res(); const s = document.createElement("script"); s.src = src; s.onload = res; s.onerror = () => rej(new Error("No cargó " + src)); document.head.appendChild(s); });
 }
 const loadXLSX = () => loadScript("https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js");
 const loadQR = () => loadScript("https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js");
 
-/* ================= Vista / tema ================= */
+/* ================= Apariencia ================= */
+function inkFor(hex){
+  const m = /^#?([0-9a-f]{6})$/i.exec(hex || ""); if (!m) return "#231C00";
+  const n = parseInt(m[1], 16), r = (n >> 16) / 255, g = (n >> 8 & 255) / 255, b = (n & 255) / 255;
+  const L = c => c <= .03928 ? c / 12.92 : Math.pow((c + .055) / 1.055, 2.4);
+  return (0.2126*L(r) + 0.7152*L(g) + 0.0722*L(b)) > 0.33 ? "#1A1608" : "#FFFFFF";
+}
 function applyLayout(){
-  const v = S.settings.vista || "auto";
+  const st = S.settings, root = document.documentElement;
+  const v = st.vista || "auto";
   const desk = v === "escritorio" || (v === "auto" && window.matchMedia("(min-width: 900px)").matches);
   document.body.classList.toggle("desk", desk);
-  const t = S.settings.tema || "auto";
-  if (t === "auto") document.documentElement.removeAttribute("data-theme"); else document.documentElement.setAttribute("data-theme", t === "oscuro" ? "dark" : "light");
+  document.body.classList.toggle("compact", st.densidad === "compacta");
+  const t = st.tema || "auto";
+  if (t === "auto") root.removeAttribute("data-theme"); else root.setAttribute("data-theme", t === "claro" ? "light" : "dark");
+  root.classList.toggle("amoled", t === "negro");
+  const p = PALETAS[st.paleta] || PALETAS.grafito;
+  root.style.setProperty("--h", p[1]); root.style.setProperty("--hs", p[2] + "%");
+  root.style.setProperty("--tag", st.acento || "#F2C230"); root.style.setProperty("--tag-ink", inkFor(st.acento));
+  root.style.setProperty("--scale", st.escala || 1);
+  $("#privToggle").innerHTML = svg(st.privado ? "eyeoff" : "eye");
+  $("#privToggle").setAttribute("aria-pressed", !!st.privado);
 }
 window.addEventListener("resize", debounce(applyLayout, 150));
 $("#viewToggle").addEventListener("click", () => {
@@ -532,25 +697,64 @@ $("#viewToggle").addEventListener("click", () => {
   S.settings.vista = order[(order.indexOf(cur) + 1) % 3]; touchSettings(); applyLayout();
   toast("Vista: " + ({auto:"automática", telefono:"teléfono", escritorio:"escritorio"}[S.settings.vista]));
 });
+$("#privToggle").addEventListener("click", () => { S.settings.privado = !S.settings.privado; touchSettings(); applyLayout(); render(); toast(S.settings.privado ? "Montos ocultos" : "Montos visibles"); });
 function touchSettings(){ S.settings.updatedAt = nowISO(); persist(); syncSettings(); }
 
 /* ================= Navegación ================= */
+function buildNav(){
+  $("#sidenav").innerHTML = VIEWS.map(([k,t]) => `<button data-nav="${k}">${svg(k)}${t}</button>`).join("") + `<button class="add" data-action="new">+ Agregar objeto</button>`;
+  $("#bottomnav").innerHTML = BOTTOM.map(k => `<button data-nav="${k}">${svg(k)}${k === "mas" ? "Más" : VIEWS.find(v => v[0] === k)[1]}</button>`).join("");
+}
 function setView(v){
+  if (v === "mas"){ openMas(); return; }
   S.view = v;
   $$(".view").forEach(s => s.hidden = s.id !== "v-" + v);
-  $$("[data-nav]").forEach(b => b.setAttribute("aria-current", b.dataset.nav === v ? "page" : "false"));
+  $$("[data-nav]").forEach(b => b.setAttribute("aria-current", (b.dataset.nav === v || (b.dataset.nav === "mas" && MAS.includes(v))) ? "page" : "false"));
+  const fab = $("#fab"); fab.hidden = ["ajustes","listas","reporte"].includes(v);
+  $("span", fab).textContent = v === "compras" ? "Nueva compra" : "Agregar";
   render(); window.scrollTo(0, 0);
 }
+function openMas(){
+  openSheet(`<header>${closeBtn}<h2>Más secciones</h2></header><div class="body"><div class="menu">${MAS.map(k => { const v = VIEWS.find(x => x[0] === k); return `<button data-nav="${k}">${svg(k)}<div>${v[1]}<span>${v[2]}</span></div></button>`; }).join("")}</div></div>`);
+}
+$("#fab").addEventListener("click", () => S.view === "compras" ? openCompraForm() : openForm());
 document.addEventListener("click", e => {
-  const n = e.target.closest("[data-nav]"); if (n){ setView(n.dataset.nav); return; }
+  const n = e.target.closest("[data-nav]"); if (n){ if (dlg.open && n.dataset.nav !== "mas") closeSheet(); setView(n.dataset.nav); return; }
   const a = e.target.closest("[data-action]"); if (!a) return;
   const act = a.dataset.action, id = a.dataset.id;
   if (act === "new") openForm();
+  else if (act === "new-compra") openCompraForm();
   else if (act === "open") openDetail(id);
-  else if (act === "goto-filter"){ Object.assign(S.f, JSON.parse(a.dataset.f)); setView("objetos"); }
+  else if (act === "open-compra") openCompraForm(id);
+  else if (act === "goto-filter"){ S.f = {...S.f, q:"", cat:"", zona:"", alto:false, verif:false, estado:"Activo", ...JSON.parse(a.dataset.f)}; if (dlg.open) closeSheet(); setView("objetos"); }
+  else if (act === "goto-compras"){ S.f.cf = a.dataset.f || "activas"; setView("compras"); }
 });
 function render(){
-  ({inicio: renderInicio, objetos: renderObjetos, reporte: renderReporte, ajustes: renderAjustes})[S.view]();
+  ({inicio: renderInicio, dash: renderDash, objetos: renderObjetos, compras: renderCompras, reporte: renderReporte, listas: renderListas, ajustes: renderAjustes})[S.view]();
+}
+
+/* ================= Diálogos ================= */
+const dlg = $("#dlg"), sheet = $("#sheet"), dlg2 = $("#dlg2"), sheet2 = $("#sheet2");
+function openSheet(html){ sheet.innerHTML = html; if (!dlg.open) dlg.showModal(); sheet.querySelector(".body")?.scrollTo(0,0); }
+function closeSheet(){ if (dlg.open) dlg.close(); }
+dlg.addEventListener("click", e => { if (e.target === dlg) closeSheet(); });
+const closeBtn = `<button class="iconbtn closer" data-close aria-label="Cerrar"><svg viewBox="0 0 24 24" style="stroke-width:2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>`;
+sheet.addEventListener("click", e => { if (e.target.closest("[data-close]")) closeSheet(); });
+/* Confirmación dentro de la página (el visor no muestra confirm/prompt) */
+function ask({title, html = "", buttons, typeToConfirm}){
+  return new Promise(resolve => {
+    sheet2.innerHTML = `<header><h2>${esc(title)}</h2></header><div class="body">${html}${typeToConfirm ? `<label class="f" style="margin-top:10px">Escribe ${esc(typeToConfirm)} para confirmar<input type="text" id="askType" autocomplete="off"></label>` : ""}</div>
+      <footer>${buttons.map((b, n) => `<button class="btn ${b.cls || ""}" data-n="${n}">${esc(b.label)}</button>`).join("")}</footer>`;
+    const done = v => { dlg2.close(); resolve(v); };
+    $$("footer button", sheet2).forEach(b => b.onclick = () => {
+      const bt = buttons[+b.dataset.n];
+      if (typeToConfirm && bt.needsType && $("#askType").value.trim().toUpperCase() !== typeToConfirm){ toast(`Escribe ${typeToConfirm} para continuar`); return; }
+      done(bt.value);
+    });
+    dlg2.onclick = e => { if (e.target === dlg2) done(null); };
+    dlg2.oncancel = () => resolve(null);
+    dlg2.showModal();
+  });
 }
 
 /* ================= Inicio ================= */
@@ -559,32 +763,32 @@ function renderInicio(){
   if (!live().length){
     el.innerHTML = `<div class="hero"><span class="hole"></span><div class="lbl">Valor estimado de lo que hay en tu cuarto</div><div class="big num">$0</div></div>
     <div class="panel empty" style="margin-top:12px"><b>Empieza por lo más valioso</b>Toma una foto, escribe qué es y cuánto costó. Los detalles los completas después.<div style="margin-top:14px"><button class="btn primary" data-action="new">+ Agregar el primer objeto</button></div>
-    <p class="small muted" style="margin-top:14px">¿Ya tienes un respaldo o un Excel? Impórtalo en Ajustes y respaldo.</p></div>`;
+    <p class="small muted" style="margin-top:14px">¿Tienes un respaldo, un Excel o tu archivo de Cobranzas? Impórtalo en Ajustes.</p></div>`;
     return;
   }
   const pagado = act.reduce((s,i) => s + (i.precio || 0), 0);
   const actual = act.reduce((s,i) => s + valorActual(i), 0);
   const altos = act.filter(isAlto);
   const altoVal = altos.reduce((s,i) => s + valorActual(i), 0);
-  const group = key => { const m = {}; for (const i of act){ const k = i[key] || "Sin asignar"; (m[k] = m[k] || {n:0, v:0}); m[k].n++; m[k].v += valorActual(i); } return Object.entries(m).sort((a,b) => b[1].v - a[1].v); };
-  const bars = (arr, field, alt) => { const max = Math.max(1, ...arr.map(x => x[1].v)); return `<div class="bars">${arr.slice(0,8).map(([k,o]) => `<div class="bar" data-action="goto-filter" data-f='${esc(JSON.stringify({[field]: k === "Sin asignar" ? "" : k, q:"", alto:false, estado:"Activo"}))}' style="cursor:pointer"><span>${esc(k)} <span class="muted">(${o.n})</span></span><div class="track"><div class="fill ${alt?"alt":""}" style="width:${Math.max(2, o.v/max*100)}%"></div></div><span class="n num">${moneyShort(o.v)}</span></div>`).join("")}</div>`; };
-  // compras por año
-  const years = {}; for (const i of live()) if (i.fechaCompra && i.precio){ const y = i.fechaCompra.slice(0,4); years[y] = (years[y] || 0) + i.precio; }
-  const ys = Object.keys(years).sort().slice(-8); const ymax = Math.max(1, ...ys.map(y => years[y]));
-  const top = [...act].sort((a,b) => valorActual(b) - valorActual(a)).slice(0,10);
-  // alertas
+  const top = [...act].sort((a,b) => valorActual(b) - valorActual(a)).slice(0,6);
   const alerts = [];
+  const verif = act.filter(porVerificar);
+  if (verif.length) alerts.push({c:"var(--info)", t:`<b>${verif.length} objeto(s) importados de tus compras</b> por verificar: confirma que siguen en tu cuarto y asigna su zona`, f:{verif:true}});
   for (const i of act){ const g = garantia(i); if (g && g.d >= 0 && g.d <= 60) alerts.push({c:"var(--warn)", t:`Garantía de <b>${esc(i.nombre)}</b> vence en ${g.d} días (${fmtDate(i.garantiaHasta)})`, id:i.id}); }
-  const sinFoto = altos.filter(i => !fotoPrincipal(i)); const sinSerie = altos.filter(i => !i.serie && !["Ropa y calzado","Muebles","Libros","Decoración"].includes(i.categoria));
-  const sinTicket = altos.filter(i => !(i.fotos||[]).some(f => f.tipo === "Ticket/factura" && f.data));
+  const sinFoto = altos.filter(i => !fotoPrincipal(i));
+  const sinSerie = altos.filter(i => !i.serie && !["Ropa y calzado","Muebles","Libros","Decoración","Accesorios personales"].includes(i.categoria));
   const sinDatos = act.filter(i => !i.precio || !i.fechaCompra);
-  if (sinFoto.length) alerts.push({c:"var(--bad)", t:`${sinFoto.length} objeto(s) de alto valor sin foto`, f:{q:"", alto:true}});
+  const sinZona = act.filter(i => !i.zona);
+  if (sinFoto.length) alerts.push({c:"var(--bad)", t:`${sinFoto.length} objeto(s) de alto valor sin foto`, f:{alto:true}});
   if (sinSerie.length) alerts.push({c:"var(--warn)", t:`${sinSerie.length} objeto(s) de alto valor sin número de serie`, f:{alto:true}});
-  if (sinTicket.length) alerts.push({c:"var(--info)", t:`${sinTicket.length} objeto(s) de alto valor sin foto del ticket o factura`, f:{alto:true}});
   if (sinDatos.length) alerts.push({c:"var(--ink3)", t:`${sinDatos.length} objeto(s) sin precio o sin fecha de compra`});
+  if (sinZona.length) alerts.push({c:"var(--ink3)", t:`${sinZona.length} objeto(s) sin zona del cuarto`});
+  const vencidas = liveC().filter(c => c.estado === "Pendiente" && c.fechaObjetivo && c.fechaObjetivo < today());
+  if (vencidas.length) alerts.push({c:"var(--warn)", t:`${vencidas.length} compra(s) planeadas ya pasaron su fecha objetivo`, cf:"activas"});
   const lr = S.settings.ultimoRespaldo; const dr = lr ? daysBetween(lr.slice(0,10), today()) : null;
   if (dr == null || dr > 14) alerts.unshift({c:"var(--bad)", t: lr ? `Tu último respaldo fue hace ${dr} días. Exporta uno nuevo.` : "Aún no has exportado un respaldo. Hazlo desde Ajustes.", nav:"ajustes"});
-
+  const pend = liveC().filter(c => c.estado === "Pendiente").sort(compraSort).slice(0,4);
+  const pendTot = liveC().filter(c => c.estado === "Pendiente").reduce((s,c) => s + (c.precio||0), 0);
   el.innerHTML = `
   <div class="hero"><span class="hole"></span>
     <div class="lbl">Valor estimado de lo que hay en tu cuarto</div>
@@ -596,12 +800,96 @@ function renderInicio(){
       <div><b class="num">${pagado ? Math.round((1 - actual/pagado)*100) : 0}%</b><span>depreciación acumulada</span></div>
     </div>
   </div>
+  <div class="quick" style="margin-top:12px">
+    <button data-action="new">${svg("objetos")}<b>Agregar objeto</b><span>Foto, nombre y precio</span></button>
+    <button data-action="new-compra">${svg("compras")}<b>Planear compra</b><span>${pend.length ? moneyShort(pendTot) + " pendiente" : "Lista de deseos"}</span></button>
+    <button data-nav="dash">${svg("dash")}<b>Dashboard</b><span>Gráficas y totales</span></button>
+    <button data-nav="reporte">${svg("reporte")}<b>Reporte</b><span>Para seguro o Excel</span></button>
+  </div>
   <div class="dash">
-    ${alerts.length ? `<div class="panel wide"><h2>Pendientes</h2>${alerts.slice(0,8).map(a => `<div class="alert" ${a.id ? `data-action="open" data-id="${a.id}"` : a.nav ? `data-nav="${a.nav}"` : a.f ? `data-action="goto-filter" data-f='${esc(JSON.stringify(a.f))}'` : ""}><span class="dot" style="background:${a.c}"></span><span>${a.t}</span></div>`).join("")}</div>` : ""}
-    <div class="panel"><h2>Lo más valioso</h2><ol class="toplist">${top.map((i,n) => { const f = fotoPrincipal(i); return `<li data-action="open" data-id="${i.id}"><span class="rk num">${n+1}</span>${f ? `<img class="thumb" src="${f.data}" alt="">` : `<span class="thumb">${esc((i.nombre||"?")[0].toUpperCase())}</span>`}<span><b>${esc(i.nombre)}</b><br><span class="small muted">${esc([i.marca, i.zona].filter(Boolean).join(" · ") || i.categoria || "")}</span></span><b class="num">${moneyShort(valorActual(i))}</b></li>`; }).join("")}</ol></div>
-    <div class="panel"><h2>Por categoría</h2>${bars(group("categoria"), "cat")}</div>
-    <div class="panel"><h2>Por zona del cuarto</h2>${bars(group("zona"), "zona", true)}</div>
-    <div class="panel"><h2>Compras por año</h2>${ys.length ? `<div class="cols">${ys.map(y => `<div class="c" title="${y}: ${money(years[y])}"><span class="num">${moneyShort(years[y])}</span><div class="v" style="height:${Math.max(2, years[y]/ymax*100)}%"></div><span>${y}</span></div>`).join("")}</div>` : `<p class="muted small">Agrega fechas de compra para ver esta gráfica.</p>`}</div>
+    ${alerts.length ? `<div class="panel wide"><h2>Pendientes</h2>${alerts.slice(0,9).map(a => `<div class="alert" ${a.id ? `data-action="open" data-id="${a.id}"` : a.nav ? `data-nav="${a.nav}"` : a.cf ? `data-action="goto-compras" data-f="${a.cf}"` : a.f ? `data-action="goto-filter" data-f='${esc(JSON.stringify(a.f))}'` : ""}><span class="dot" style="background:${a.c}"></span><span>${a.t}</span></div>`).join("")}</div>` : ""}
+    <div class="panel"><div class="head"><h2>Lo más valioso</h2><button class="btn ghost sm" data-action="goto-filter" data-f='{"orden":"valor-desc"}'>Ver todo</button></div><ol class="toplist">${top.map((i,n) => topLi(i, n)).join("")}</ol></div>
+    <div class="panel"><div class="head"><h2>Próximas compras</h2><button class="btn ghost sm" data-action="goto-compras">Ver todas</button></div>
+      ${pend.length ? `<ol class="toplist">${pend.map(c => `<li data-action="open-compra" data-id="${c.id}"><span class="rk">·</span><span class="thumb">${esc(c.prioridad[0])}</span><span><b>${esc(c.nombre)}</b><br><span class="small muted">${esc([c.prioridad, c.fechaObjetivo ? "para " + fmtDate(c.fechaObjetivo) : ""].filter(Boolean).join(" · "))}</span></span><b class="num">${moneyShort(c.precio)}</b></li>`).join("")}</ol>` : `<p class="muted small" style="margin:0">Agrega lo que piensas comprar y aquí verás lo más próximo.</p><button class="btn sm" style="margin-top:10px" data-action="new-compra">+ Nueva compra</button>`}
+    </div>
+  </div>`;
+}
+function topLi(i, n){
+  const f = fotoPrincipal(i);
+  return `<li data-action="open" data-id="${i.id}"><span class="rk num">${n+1}</span>${f ? `<img class="thumb" src="${f.data}" alt="">` : `<span class="thumb">${esc((i.nombre||"?")[0].toUpperCase())}</span>`}<span><b>${esc(i.nombre)}</b><br><span class="small muted">${esc([i.marca, i.zona].filter(Boolean).join(" · ") || i.categoria || "")}</span></span><b class="num">${moneyShort(valorActual(i))}</b></li>`;
+}
+
+/* ================= Gráficas ================= */
+function hbars(arr, opts = {}){
+  // arr: [[label, {v, n?, parts?:[{v,cls}]}]]
+  if (!arr.length) return `<p class="muted small" style="margin:0">Sin datos todavía.</p>`;
+  const max = Math.max(1, ...arr.map(x => x[1].v));
+  return `<div class="bars">${arr.slice(0, opts.limit || 8).map(([k,o]) => {
+    const parts = o.parts || [{v:o.v, cls: opts.cls || ""}];
+    const attr = opts.field ? ` data-action="goto-filter" data-f='${esc(JSON.stringify({[opts.field]: k === "Sin asignar" ? "" : k}))}' style="cursor:pointer"` : "";
+    return `<div class="bar"${attr} title="${esc(k)}: ${esc(money(o.v))}"><span>${esc(k)}${o.n != null ? ` <span class="muted">(${o.n})</span>` : ""}</span><div class="track">${parts.map(p => `<div class="fill ${p.cls||""}" style="width:${Math.max(p.v ? 1.5 : 0, p.v/max*100)}%"></div>`).join("")}</div><span class="n num">${(opts.fmt || moneyShort)(o.v)}</span></div>`;
+  }).join("")}</div>`;
+}
+function colChart(data, opts = {}){
+  // data: [{label, parts:[{v, cls}], title, hi}]
+  if (!data.some(d => d.parts.some(p => p.v))) return `<p class="muted small" style="margin:0">${opts.empty || "Sin datos todavía."}</p>`;
+  const tot = d => d.parts.reduce((s,p) => s + (p.v||0), 0);
+  const max = Math.max(1, ...data.map(tot));
+  const showV = data.length <= 8 || !window.matchMedia("(max-width:520px)").matches;
+  return `<div class="cols">${data.map(d => { const t = tot(d); return `<div class="c ${d.hi ? "hi" : ""}" title="${esc(d.title || d.label)}: ${esc(money(t))}">${showV && t ? `<span class="vl num">${moneyK(t)}</span>` : ""}<div class="stack" style="height:calc((100% - 34px) * ${t/max})">${d.parts.map(p => `<i class="${p.cls||""}" style="height:${t ? p.v/t*100 : 0}%"></i>`).join("")}</div><span class="lb">${esc(d.label)}</span></div>`; }).join("")}</div>`;
+}
+function donut(parts){
+  const tot = parts.reduce((s,p) => s + p.v, 0) || 1; let off = 25;
+  const col = {alt:"var(--tag)", c2:"var(--c2)", "":"var(--ink2)", warn:"var(--warn)", info:"var(--info)", bad:"var(--bad)"};
+  return `<svg viewBox="0 0 42 42" role="img" aria-label="Gráfica de dona"><circle cx="21" cy="21" r="15.915" fill="none" stroke="var(--surface2)" stroke-width="6"/>${parts.map(p => { const pct = p.v/tot*100; const s = `<circle cx="21" cy="21" r="15.915" fill="none" stroke="${col[p.cls||""]}" stroke-width="6" stroke-dasharray="${pct} ${100-pct}" stroke-dashoffset="${off}"/>`; off -= pct; return s; }).join("")}<text x="21" y="22.5" text-anchor="middle" font-size="6" font-weight="800" fill="var(--ink)">${Math.round(parts[0].v/tot*100)}%</text></svg>`;
+}
+function group(arr, key, val = valorActual){
+  const m = {};
+  for (const i of arr){ const ks = key === "etiquetas" ? (i.etiquetas?.length ? i.etiquetas : ["Sin asignar"]) : [i[key] || "Sin asignar"]; for (const k of ks){ (m[k] = m[k] || {n:0, v:0}); m[k].n++; m[k].v += val(i); } }
+  return Object.entries(m).sort((a,b) => b[1].v - a[1].v);
+}
+function renderDash(){
+  const el = $("#v-dash"); const act = activos(); const all = live();
+  if (!all.length){ el.innerHTML = `<h1>Dashboard</h1><div class="panel empty"><b>Aún no hay datos para graficar</b>Agrega objetos o importa tus compras desde Ajustes.</div>`; return; }
+  const pagado = act.reduce((s,i) => s + (i.precio||0), 0), actual = act.reduce((s,i) => s + valorActual(i), 0);
+  const altos = act.filter(isAlto), altoV = altos.reduce((s,i) => s + valorActual(i), 0);
+  const enGar = act.filter(i => { const g = garantia(i); return g && g.d >= 0; }).length;
+  const t = today(), y0 = t.slice(0,4);
+  const gastoAnio = all.filter(i => (i.fechaCompra||"").startsWith(y0)).reduce((s,i) => s + (i.precio||0), 0);
+  const pendC = liveC().filter(c => c.estado === "Pendiente" || c.estado === "Pospuesto"), pendTot = pendC.reduce((s,c) => s + (c.precio||0), 0);
+  // últimos 12 meses
+  const months = []; { const d = new Date(t + "T12:00:00"); d.setDate(1); for (let n = 11; n >= 0; n--){ const x = new Date(d); x.setMonth(d.getMonth() - n); months.push(x.toISOString().slice(0,7)); } }
+  const byMonth = Object.fromEntries(months.map(m => [m, {alto:0, resto:0}]));
+  for (const i of all) if (i.fechaCompra && i.precio){ const m = i.fechaCompra.slice(0,7); if (byMonth[m]) byMonth[m][isAlto(i) ? "alto" : "resto"] += i.precio; }
+  const years = {}; for (const i of all) if (i.fechaCompra && i.precio){ const y = i.fechaCompra.slice(0,4); years[y] = (years[y] || 0) + i.precio; }
+  const ys = Object.keys(years).sort().slice(-8);
+  // antigüedad
+  const ages = [["< 1 año",0,1],["1–2 años",1,2],["2–3 años",2,3],["3–5 años",3,5],["5+ años",5,99]].map(([l,a,b]) => { const g = act.filter(i => { if (!i.fechaCompra) return false; const e = daysBetween(i.fechaCompra, t)/365.25; return e >= a && e < b; }); return [l, {n:g.length, v:g.reduce((s,i) => s + (i.precio||0), 0)}]; });
+  const sinFecha = act.filter(i => !i.fechaCompra).length;
+  // depreciación por categoría
+  const dep = Object.entries(act.reduce((m,i) => { const k = i.categoria || "Sin asignar"; m[k] = m[k] || {p:0, a:0, n:0}; m[k].p += i.precio||0; m[k].a += valorActual(i); m[k].n++; return m; }, {})).sort((a,b) => b[1].p - a[1].p).map(([k,o]) => [k, {v:o.p, n:o.n, parts:[{v:o.a, cls:"alt"},{v:o.p - o.a, cls:"c2"}]}]);
+  el.innerHTML = `
+  <h1>Dashboard</h1>
+  <div class="kpis">
+    <div class="kpi"><span>Valor actual</span><b class="num">${moneyShort(actual)}</b><small>${act.length} objetos activos</small></div>
+    <div class="kpi"><span>Pagado</span><b class="num">${moneyShort(pagado)}</b><small>${pagado ? Math.round((1 - actual/pagado)*100) : 0}% depreciado</small></div>
+    <div class="kpi"><span>Alto valor</span><b class="num">${moneyShort(altoV)}</b><small>${altos.length} objetos · ${actual ? Math.round(altoV/actual*100) : 0}% del total</small></div>
+    <div class="kpi"><span>Comprado en ${y0}</span><b class="num">${moneyShort(gastoAnio)}</b><small>${all.filter(i => (i.fechaCompra||"").startsWith(y0)).length} objetos</small></div>
+    <div class="kpi"><span>En garantía</span><b class="num">${enGar}</b><small>con fecha registrada</small></div>
+    <div class="kpi" data-action="goto-compras" style="cursor:pointer"><span>Compras por hacer</span><b class="num">${moneyShort(pendTot)}</b><small>${pendC.length} en tu lista</small></div>
+  </div>
+  <div class="dash">
+    <div class="panel wide"><div class="head"><h2>Compras de los últimos 12 meses</h2><span class="small muted num">${moneyShort(months.reduce((s,m) => s + byMonth[m].alto + byMonth[m].resto, 0))}</span></div>
+      ${colChart(months.map(m => ({label: MESES[+m.slice(5)-1], title: MESES[+m.slice(5)-1] + " " + m.slice(0,4), parts:[{v:byMonth[m].resto, cls:""},{v:byMonth[m].alto, cls:"alt"}]})), {empty:"No registraste compras en los últimos 12 meses."})}
+      <div class="legend"><span><i></i>Normal</span><span><i class="alt"></i>Alto valor</span></div></div>
+    <div class="panel"><h2>Valor por categoría</h2>${hbars(group(act, "categoria"), {field:"cat"})}</div>
+    <div class="panel"><h2>Por zona del cuarto</h2>${hbars(group(act, "zona"), {field:"zona", cls:"alt"})}</div>
+    <div class="panel"><h2>Pagado vs. valor actual</h2>${hbars(dep)}<div class="legend"><span><i class="alt"></i>Valor actual</span><span><i class="c2"></i>Depreciación</span></div></div>
+    <div class="panel"><h2>Alto valor vs. resto</h2><div class="donutwrap">${donut([{v:altoV, cls:"alt"},{v:Math.max(0, actual - altoV), cls:""}])}<div class="legend" style="flex-direction:column; gap:6px; margin:0"><span><i class="alt"></i>Alto valor · <b class="num">${moneyShort(altoV)}</b></span><span><i></i>Resto · <b class="num">${moneyShort(actual - altoV)}</b></span><span class="muted">Alto valor = marcado ★ o desde ${money(S.settings.umbral)}</span></div></div></div>
+    <div class="panel"><h2>Compras por año</h2>${colChart(ys.map(y => ({label:y, parts:[{v:years[y]}], hi: y === y0})))}</div>
+    <div class="panel"><h2>Antigüedad de tus cosas</h2>${hbars(ages, {fmt: v => moneyShort(v), cls:"c2"})}${sinFecha ? `<p class="small muted" style="margin:8px 0 0">${sinFecha} objeto(s) sin fecha de compra.</p>` : ""}</div>
+    <div class="panel"><h2>Por método de pago</h2>${hbars(group(all, "metodoPago", i => i.precio||0), {cls:"info"})}</div>
+    <div class="panel"><h2>Por tienda</h2>${hbars(group(all, "tienda", i => i.precio||0), {cls:"c2"})}</div>
   </div>`;
 }
 
@@ -614,7 +902,8 @@ function filtered(){
     if (f.cat && i.categoria !== f.cat) return false;
     if (f.zona && i.zona !== f.zona) return false;
     if (f.alto && !isAlto(i)) return false;
-    if (q){ const hay = norm([i.code,i.nombre,i.marca,i.modelo,i.serie,i.categoria,i.zona,i.tienda,i.notas,(i.etiquetas||[]).join(" ")].join(" ")); if (!q.split(/\s+/).every(w => hay.includes(w))) return false; }
+    if (f.verif && !porVerificar(i)) return false;
+    if (q){ const hay = norm([i.code,i.nombre,i.marca,i.modelo,i.serie,i.categoria,i.zona,i.tienda,i.folio,i.notas,(i.etiquetas||[]).join(" ")].join(" ")); if (!q.split(/\s+/).every(w => hay.includes(w))) return false; }
     return true;
   });
   const by = {
@@ -631,27 +920,28 @@ function filtered(){
 function renderObjetos(){
   const el = $("#v-objetos"); const f = S.f; const st = S.settings;
   const opts = (arr, sel, all) => `<option value="">${all}</option>` + arr.map(x => `<option ${x === sel ? "selected" : ""}>${esc(x)}</option>`).join("");
+  const nVer = activos().filter(porVerificar).length;
   el.innerHTML = `
   <h1>Objetos</h1>
-  <div class="toolbar noprint">
-    <input type="search" id="q" placeholder="Buscar por nombre, marca, serie, código…" value="${esc(f.q)}" aria-label="Buscar">
+  <div class="toolbar">
+    <input type="search" id="q" placeholder="Buscar por nombre, marca, serie, folio…" value="${esc(f.q)}" aria-label="Buscar">
     <div class="filters">
       <select id="fcat" aria-label="Categoría">${opts(st.categorias.map(c => c.nombre), f.cat, "Todas las categorías")}</select>
       <select id="fzona" aria-label="Zona">${opts(st.zonas, f.zona, "Todas las zonas")}</select>
       <select id="festado" aria-label="Estado"><option value="Activo" ${f.estado==="Activo"?"selected":""}>En mi cuarto</option><option value="*" ${f.estado==="*"?"selected":""}>Todos (incluye bajas)</option>${ESTADOS.filter(e => e!=="Activo").map(e => `<option ${f.estado===e?"selected":""}>${e}</option>`).join("")}</select>
       <select id="forden" aria-label="Ordenar">${[["precio-desc","Mayor precio"],["valor-desc","Mayor valor actual"],["fecha-desc","Compra más reciente"],["fecha-asc","Compra más antigua"],["nombre","Nombre A-Z"],["codigo","Código"],["reciente","Agregado recientemente"]].map(([v,t]) => `<option value="${v}" ${f.orden===v?"selected":""}>${t}</option>`).join("")}</select>
-      <div class="chips"><button class="chip" id="falto" aria-pressed="${f.alto}">★ Alto valor</button><button class="chip" id="fmodo" aria-pressed="false">${f.modo === "cards" ? "Ver tabla" : "Ver tarjetas"}</button></div>
     </div>
+    <div class="chips"><button class="chip" id="falto" aria-pressed="${f.alto}">★ Alto valor</button>${nVer || f.verif ? `<button class="chip" id="fver" aria-pressed="${f.verif}">Por verificar<span class="n">${nVer}</span></button>` : ""}<button class="chip" id="fmodo" aria-pressed="false">${f.modo === "cards" ? "Ver tabla" : "Ver tarjetas"}</button></div>
   </div>
   <div id="list"></div>`;
-  const rerender = () => { drawList(); };
-  $("#q").addEventListener("input", debounce(e => { f.q = e.target.value; rerender(); }, 150));
-  $("#fcat").onchange = e => { f.cat = e.target.value; rerender(); };
-  $("#fzona").onchange = e => { f.zona = e.target.value; rerender(); };
-  $("#festado").onchange = e => { f.estado = e.target.value; rerender(); };
-  $("#forden").onchange = e => { f.orden = e.target.value; rerender(); };
-  $("#falto").onclick = e => { f.alto = !f.alto; e.currentTarget.setAttribute("aria-pressed", f.alto); rerender(); };
-  $("#fmodo").onclick = e => { f.modo = f.modo === "cards" ? "tabla" : "cards"; e.currentTarget.textContent = f.modo === "cards" ? "Ver tabla" : "Ver tarjetas"; rerender(); };
+  $("#q").addEventListener("input", debounce(e => { f.q = e.target.value; drawList(); }, 150));
+  $("#fcat").onchange = e => { f.cat = e.target.value; drawList(); };
+  $("#fzona").onchange = e => { f.zona = e.target.value; drawList(); };
+  $("#festado").onchange = e => { f.estado = e.target.value; drawList(); };
+  $("#forden").onchange = e => { f.orden = e.target.value; drawList(); };
+  $("#falto").onclick = e => { f.alto = !f.alto; e.currentTarget.setAttribute("aria-pressed", f.alto); drawList(); };
+  if ($("#fver")) $("#fver").onclick = e => { f.verif = !f.verif; e.currentTarget.setAttribute("aria-pressed", f.verif); drawList(); };
+  $("#fmodo").onclick = e => { f.modo = f.modo === "cards" ? "tabla" : "cards"; e.currentTarget.textContent = f.modo === "cards" ? "Ver tabla" : "Ver tarjetas"; drawList(); };
   drawList();
 }
 function drawList(){
@@ -660,10 +950,8 @@ function drawList(){
   if (!arr.length){ box.innerHTML = live().length ? `<div class="panel empty"><b>Nada coincide con estos filtros</b>Cambia la búsqueda o los filtros para ver más objetos.</div>` : `<div class="panel empty"><b>Tu inventario está vacío</b>Agrega tu primer objeto con el botón Agregar.</div>`; return; }
   const sum = `<div class="summary num">${arr.length} objeto(s) · pagado ${money(tot)} · valor actual ${money(totA)}</div>`;
   if (S.f.modo === "tabla"){
-    box.innerHTML = sum + `<div class="tablewrap"><table class="t"><thead><tr><th>Código</th><th>Objeto</th><th>Categoría</th><th>Marca / modelo</th><th>Serie</th><th>Zona</th><th>Compra</th><th>Antigüedad</th><th class="r">Precio</th><th class="r">Valor actual</th><th>Estado</th></tr></thead><tbody>${arr.map(i => `<tr data-action="open" data-id="${i.id}"><td><span class="tag">${esc(i.code)}</span></td><td><b>${esc(i.nombre)}</b> ${isAlto(i) ? '<span class="badge star">★</span>' : ""}</td><td>${esc(i.categoria||"")}</td><td>${esc([i.marca,i.modelo].filter(Boolean).join(" "))}</td><td>${esc(i.serie||"")}</td><td>${esc(i.zona||"")}</td><td class="num">${fmtDate(i.fechaCompra)}</td><td>${ageText(i.fechaCompra)}</td><td class="r num">${money(i.precio)}</td><td class="r num">${money(valorActual(i))}</td><td>${esc(i.estado||"Activo")}</td></tr>`).join("")}</tbody></table></div>`;
-  } else {
-    box.innerHTML = sum + `<div class="cards">${arr.map(cardHTML).join("")}</div>`;
-  }
+    box.innerHTML = sum + `<div class="tablewrap"><table class="t"><thead><tr><th>Código</th><th>Objeto</th><th>Categoría</th><th>Marca / modelo</th><th>Serie</th><th>Zona</th><th>Compra</th><th>Antigüedad</th><th class="r">Precio</th><th class="r">Valor actual</th><th>Estado</th></tr></thead><tbody>${arr.map(i => `<tr data-action="open" data-id="${i.id}"><td><span class="tag">${esc(i.code)}</span></td><td><b>${esc(i.nombre)}</b> ${isAlto(i) ? '<span class="badge star">★</span>' : ""}${porVerificar(i) ? ' <span class="badge info">verificar</span>' : ""}</td><td>${esc(i.categoria||"")}</td><td>${esc([i.marca,i.modelo].filter(Boolean).join(" "))}</td><td>${esc(i.serie||"")}</td><td>${esc(i.zona||"")}</td><td class="num">${fmtDate(i.fechaCompra)}</td><td>${ageText(i.fechaCompra)}</td><td class="r num">${money(i.precio)}</td><td class="r num">${money(valorActual(i))}</td><td>${esc(i.estado||"Activo")}</td></tr>`).join("")}</tbody></table></div>`;
+  } else box.innerHTML = sum + `<div class="cards">${arr.map(cardHTML).join("")}</div>`;
 }
 function cardHTML(i){
   const f = fotoPrincipal(i); const g = garantia(i); const est = i.estado || "Activo";
@@ -671,87 +959,110 @@ function cardHTML(i){
     <div class="ph">${f ? `<img src="${f.data}" alt="" loading="lazy">` : esc((i.nombre||"?").slice(0,2).toUpperCase())}<span class="tag">${esc(i.code)}</span>${isAlto(i) ? '<span class="badge star">★ Alto valor</span>' : ""}</div>
     <div class="bd"><span class="nm">${esc(i.nombre)}</span><span class="mm">${esc([i.marca, i.modelo].filter(Boolean).join(" ") || i.categoria || "")}${i.zona ? " · " + esc(i.zona) : ""}</span>
     <div class="pr"><b class="num">${money(i.precio)}</b><span class="small muted num">hoy ${moneyShort(valorActual(i))}</span></div>
-    <div class="bdg">${i.fechaCompra ? `<span class="badge">${ageText(i.fechaCompra)}</span>` : ""}${g ? `<span class="badge ${g.cls}">${g.txt}</span>` : ""}${est !== "Activo" ? `<span class="badge bad">${esc(est)}</span>` : ""}${!f ? '<span class="badge warn">Sin foto</span>' : ""}${i.asegurado ? '<span class="badge ok">Asegurado</span>' : ""}</div></div>
+    <div class="bdg">${porVerificar(i) ? '<span class="badge info">Por verificar</span>' : ""}${i.fechaCompra ? `<span class="badge">${ageText(i.fechaCompra)}</span>` : ""}${g ? `<span class="badge ${g.cls}">${g.txt}</span>` : ""}${est !== "Activo" ? `<span class="badge bad">${esc(est)}</span>` : ""}${!f ? '<span class="badge warn">Sin foto</span>' : ""}${i.asegurado ? '<span class="badge ok">Asegurado</span>' : ""}</div></div>
   </button>`;
 }
 
-/* ================= Diálogos ================= */
-const dlg = $("#dlg"), sheet = $("#sheet");
-function openSheet(html){ sheet.innerHTML = html; if (!dlg.open) dlg.showModal(); sheet.querySelector(".body")?.scrollTo(0,0); }
-function closeSheet(){ if (dlg.open) dlg.close(); }
-dlg.addEventListener("click", e => { if (e.target === dlg) closeSheet(); });
-const closeBtn = `<button class="iconbtn" data-close aria-label="Cerrar" style="color:var(--ink)"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 6l12 12M18 6L6 18"/></svg></button>`;
-sheet.addEventListener("click", e => { if (e.target.closest("[data-close]")) closeSheet(); });
+/* ================= Controles de formulario ================= */
+const NEW = "__nueva__";
+function selNew(name, list, val, empty = "Elegir…"){
+  const extra = val && !list.includes(val) ? `<option selected>${esc(val)}</option>` : "";
+  return `<select name="${name}" id="f-${name}" data-new="${name}"><option value="">${empty}</option>${list.map(x => `<option ${x === val ? "selected" : ""}>${esc(x)}</option>`).join("")}${extra}<option value="${NEW}">＋ Agregar nueva…</option></select><input type="text" name="${name}__n" id="f-${name}__n" placeholder="Escribe la nueva opción" hidden>`;
+}
+function wireSelNew(root){
+  $$("select[data-new]", root).forEach(s => s.addEventListener("change", () => { const inp = $(`[name="${s.dataset.new}__n"]`, root); inp.hidden = s.value !== NEW; if (!inp.hidden) inp.focus(); }));
+}
+const fdVal = (fd, k) => { const v = String(fd.get(k) ?? "").trim(); return v === NEW ? String(fd.get(k + "__n") ?? "").trim() : v; };
+function addToList(key, val){
+  if (!val) return false; const L = S.settings[key];
+  if (key === "categorias"){ if (L.some(c => c.nombre === val)) return false; L.push({nombre: val, vida: 5}); return true; }
+  if (L.includes(val)) return false; L.push(val); return true;
+}
+function modeBar(id, modo){
+  return `<div class="modebar"><div class="seg" role="group" aria-label="Tipo de formulario"><button type="button" data-fm="rapido" aria-pressed="${modo === "rapido"}">Rápido</button><button type="button" data-fm="detalles" aria-pressed="${modo === "detalles"}">Detalles</button></div><span class="small muted" id="${id}">${modo === "rapido" ? "Solo lo esencial. Usa Detalles para serie, garantía, pago y más." : "Todos los campos."}</span></div>`;
+}
+function wireModeBar(root, hintId, onChange){
+  $$("[data-fm]", root).forEach(b => b.onclick = () => {
+    const m = b.dataset.fm; $$("[data-fm]", root).forEach(x => x.setAttribute("aria-pressed", x === b));
+    $$(".det", root).forEach(x => x.hidden = m !== "detalles");
+    $("#" + hintId).textContent = m === "rapido" ? "Solo lo esencial. Usa Detalles para serie, garantía, pago y más." : "Todos los campos.";
+    if (S.settings.formModo !== m){ S.settings.formModo = m; touchSettings(); }
+    onChange && onChange(m);
+  });
+}
 
-/* ================= Formulario ================= */
+/* ================= Formulario de objeto ================= */
 let formFotos = [];
-function openForm(id, dup){
+function openForm(id, dup, preset){
   const src = id ? S.items.find(i => i.id === id) : null;
-  const it = src ? structuredClone(src) : {estado:"Activo", condicion:"Nuevo", fechaCompra: today()};
+  const it = src ? structuredClone(src) : {estado:"Activo", condicion:"Nuevo", fechaCompra: today(), ...(preset || {})};
   if (dup){ delete it.id; it.serie = ""; it.historial = []; }
   const isEdit = !!src && !dup;
   formFotos = (it.fotos || []).map(f => ({...f}));
   if (dup) formFotos = formFotos.map(f => ({...f, id: uid()}));
-  const st = S.settings;
-  const dl = (id, arr) => `<datalist id="${id}">${arr.map(x => `<option value="${esc(x)}">`).join("")}</datalist>`;
-  const sel = (name, arr, val) => `<select name="${name}">${arr.map(x => `<option ${x === val ? "selected" : ""}>${esc(x)}</option>`).join("")}</select>`;
+  const st = S.settings; const modo = st.formModo || "rapido"; const hid = modo === "rapido" ? "hidden" : "";
+  const sel = (name, arr, val) => `<select name="${name}" id="f-${name}">${arr.map(x => `<option ${x === val ? "selected" : ""}>${esc(x)}</option>`).join("")}</select>`;
   openSheet(`
   <header>${closeBtn}<h2>${isEdit ? "Editar " + esc(it.code) : dup ? "Duplicar objeto" : "Nuevo objeto"}</h2></header>
   <form class="body" id="frm" autocomplete="off">
-    <fieldset><legend>Fotos</legend>
+    ${modeBar("fmHint", modo)}
+    <fieldset><legend>Foto</legend>
       <div class="photos" id="phs"></div>
-      <p class="small muted" style="margin:8px 0 0">Para objetos valiosos toma: el objeto, el número de serie y el ticket o factura.</p>
+      <p class="small muted det" style="margin:8px 0 0" ${hid}>Para objetos valiosos toma el objeto, el número de serie y el ticket. También puedes pegar una imagen copiada.</p>
     </fieldset>
     <fieldset><legend>Lo básico</legend><div class="fg">
-      <label class="f s3">Qué es *<input type="text" name="nombre" required value="${esc(it.nombre||"")}" placeholder="Ej. Laptop, reloj, bocina"></label>
-      <label class="f">Categoría<input type="text" name="categoria" list="dlcat" value="${esc(it.categoria||"")}" placeholder="Elige o escribe"></label>
-      <label class="f">Zona del cuarto<input type="text" name="zona" list="dlzona" value="${esc(it.zona||"")}" placeholder="Dónde está"></label>
-      <label class="f">Precio de compra (MXN)<input type="number" inputmode="decimal" step="0.01" min="0" name="precio" value="${it.precio ?? ""}"></label>
-      <label class="f">Fecha de compra<input type="date" name="fechaCompra" value="${esc(it.fechaCompra||"")}"></label>
-      <label class="check s2"><input type="checkbox" name="altoValor" ${it.altoValor ? "checked" : ""}> Marcar como alto valor <span class="small muted">(automático desde ${money(st.umbral)})</span></label>
+      <label class="f s3">Qué es *<input type="text" name="nombre" id="f-nombre" required value="${esc(it.nombre||"")}" placeholder="Ej. Laptop, reloj, bocina"></label>
+      <label class="f">Precio (MXN)<input type="number" inputmode="decimal" step="0.01" min="0" name="precio" id="f-precio" value="${it.precio ?? ""}" placeholder="0"></label>
+      <label class="f">Fecha de compra<input type="date" name="fechaCompra" id="f-fechaCompra" value="${esc(it.fechaCompra||"")}"></label>
+      <label class="f">Categoría${selNew("categoria", st.categorias.map(c => c.nombre), it.categoria)}</label>
+      <label class="f">Zona del cuarto${selNew("zona", st.zonas, it.zona)}</label>
+      <label class="check s2"><input type="checkbox" name="altoValor" id="f-altoValor" ${it.altoValor ? "checked" : ""}> Alto valor <span class="small muted">(automático desde ${money(st.umbral)})</span></label>
     </div></fieldset>
+    <div class="det" ${hid}>
     <fieldset><legend>Identificación</legend><div class="fg">
-      <label class="f">Marca<input type="text" name="marca" value="${esc(it.marca||"")}"></label>
-      <label class="f">Modelo<input type="text" name="modelo" value="${esc(it.modelo||"")}"></label>
-      <label class="f">Número de serie / IMEI<input type="text" name="serie" value="${esc(it.serie||"")}"></label>
-      <label class="f">Color<input type="text" name="color" value="${esc(it.color||"")}"></label>
-      <label class="f">Cantidad<input type="number" min="1" step="1" name="cantidad" value="${it.cantidad || 1}"></label>
-      <label class="f">Etiquetas<input type="text" name="etiquetas" value="${esc((it.etiquetas||[]).join(", "))}" placeholder="separadas por coma"><span class="hint">Ej. trabajo, viaje, regalo</span></label>
+      <label class="f">Marca<input type="text" name="marca" id="f-marca" value="${esc(it.marca||"")}"></label>
+      <label class="f">Modelo<input type="text" name="modelo" id="f-modelo" value="${esc(it.modelo||"")}"></label>
+      <label class="f">Número de serie / IMEI<input type="text" name="serie" id="f-serie" value="${esc(it.serie||"")}"></label>
+      <label class="f">Color<input type="text" name="color" id="f-color" value="${esc(it.color||"")}"></label>
+      <label class="f">Cantidad<input type="number" min="1" step="1" name="cantidad" id="f-cantidad" value="${it.cantidad || 1}"></label>
+      <label class="f">Etiquetas<input type="text" name="etiquetas" id="f-etiquetas" list="dletq" value="${esc((it.etiquetas||[]).join(", "))}" placeholder="separadas por coma"><span class="hint">${esc(st.etiquetas.slice(0,5).join(", "))}</span></label>
     </div></fieldset>
     <fieldset><legend>Compra y garantía</legend><div class="fg">
-      <label class="f">Tienda / vendedor<input type="text" name="tienda" list="dltienda" value="${esc(it.tienda||"")}"></label>
-      <label class="f">Método de pago<input type="text" name="metodoPago" list="dlmet" value="${esc(it.metodoPago||"")}"></label>
-      <label class="f">Folio de ticket / factura<input type="text" name="folio" value="${esc(it.folio||"")}"></label>
-      <label class="f">Garantía hasta<input type="date" name="garantiaHasta" value="${esc(it.garantiaHasta||"")}"></label>
-      <label class="f">Meses sin intereses<input type="number" min="0" step="1" name="msi" value="${it.msi ?? ""}"><span class="hint">Si lo pagaste a plazos</span></label>
-      <label class="f">Link del producto<input type="text" inputmode="url" name="link" value="${esc(it.link||"")}"></label>
+      <label class="f">Tienda${selNew("tienda", st.tiendas, it.tienda)}</label>
+      <label class="f">Método de pago${selNew("metodoPago", st.metodos, it.metodoPago)}</label>
+      <label class="f">Folio de ticket / pedido<input type="text" name="folio" id="f-folio" value="${esc(it.folio||"")}"></label>
+      <label class="f">Garantía hasta<input type="date" name="garantiaHasta" id="f-garantiaHasta" value="${esc(it.garantiaHasta||"")}"></label>
+      <label class="f">Meses sin intereses<input type="number" min="0" step="1" name="msi" id="f-msi" value="${it.msi ?? ""}"></label>
+      <label class="f">Link del producto<input type="text" inputmode="url" name="link" id="f-link" value="${esc(it.link||"")}"></label>
     </div></fieldset>
     <fieldset><legend>Valor y estado</legend><div class="fg">
       <label class="f">Condición${sel("condicion", st.condiciones, it.condicion || "Bueno")}</label>
-      <label class="f">Vida útil (años)<input type="number" min="1" step="1" name="vidaUtil" value="${it.vidaUtil ?? ""}" placeholder="${catVida(it.categoria)}"><span class="hint">Vacío = según categoría</span></label>
-      <label class="f">Valor actual manual<input type="number" min="0" step="0.01" name="valorActualManual" value="${it.valorActualManual ?? ""}"><span class="hint">Vacío = cálculo automático</span></label>
-      <label class="f">Costo de reponerlo hoy<input type="number" min="0" step="0.01" name="valorReposicion" value="${it.valorReposicion ?? ""}"></label>
-      <label class="check"><input type="checkbox" name="asegurado" ${it.asegurado ? "checked" : ""}> Está asegurado</label>
+      <label class="f">Vida útil (años)<input type="number" min="1" step="1" name="vidaUtil" id="f-vidaUtil" value="${it.vidaUtil ?? ""}" placeholder="${catVida(it.categoria)}"><span class="hint">Vacío = según categoría</span></label>
+      <label class="f">Valor actual manual<input type="number" min="0" step="0.01" name="valorActualManual" id="f-valorActualManual" value="${it.valorActualManual ?? ""}"><span class="hint">Vacío = cálculo automático</span></label>
+      <label class="f">Costo de reponerlo hoy<input type="number" min="0" step="0.01" name="valorReposicion" id="f-valorReposicion" value="${it.valorReposicion ?? ""}"></label>
       <label class="f">Estado${sel("estado", ESTADOS, it.estado || "Activo")}</label>
+      <label class="check"><input type="checkbox" name="asegurado" id="f-asegurado" ${it.asegurado ? "checked" : ""}> Está asegurado</label>
     </div></fieldset>
     <fieldset><legend>Notas</legend><div class="fg">
-      <label class="f s3">Accesorios incluidos<input type="text" name="accesorios" value="${esc(it.accesorios||"")}" placeholder="Cargador, funda, caja…"></label>
-      <label class="f s3">Notas<textarea name="notas" placeholder="Reparaciones, dónde guardas la caja, detalles…">${esc(it.notas||"")}</textarea></label>
+      <label class="f s3">Accesorios incluidos<input type="text" name="accesorios" id="f-accesorios" value="${esc(it.accesorios||"")}" placeholder="Cargador, funda, caja…"></label>
+      <label class="f s3">Notas<textarea name="notas" id="f-notas" placeholder="Reparaciones, dónde guardas la caja, detalles…">${esc(it.notas||"")}</textarea></label>
     </div></fieldset>
-    ${dl("dlcat", st.categorias.map(c => c.nombre))}${dl("dlzona", st.zonas)}${dl("dlmet", st.metodos)}${dl("dltienda", [...new Set(live().map(i => i.tienda).filter(Boolean))])}
+    </div>
+    <datalist id="dletq">${st.etiquetas.map(x => `<option value="${esc(x)}">`).join("")}</datalist>
   </form>
   <footer><button class="btn" data-close>Cancelar</button><button class="btn primary" id="btnSave">${isEdit ? "Guardar cambios" : "Guardar objeto"}</button></footer>`);
   drawFormPhotos();
-  $("#btnSave").onclick = () => saveForm(isEdit ? src : null);
-  $("#frm").addEventListener("submit", e => { e.preventDefault(); saveForm(isEdit ? src : null); });
+  wireSelNew(sheet); wireModeBar(sheet, "fmHint");
+  $("#btnSave").onclick = () => saveForm(isEdit ? src : null, preset);
+  $("#frm").addEventListener("submit", e => { e.preventDefault(); saveForm(isEdit ? src : null, preset); });
   $("[name=categoria]").addEventListener("change", e => { $("[name=vidaUtil]").placeholder = catVida(e.target.value); });
-  if (!isEdit) setTimeout(() => $("[name=nombre]").focus(), 50);
+  if (!isEdit && !preset) setTimeout(() => $("[name=nombre]").focus(), 50);
 }
 function drawFormPhotos(){
   const box = $("#phs"); if (!box) return;
   box.innerHTML = formFotos.map((f, n) => `<div class="photo">${f.data ? `<img src="${f.data}" alt="">` : `<div class="empty small">Foto en otro dispositivo</div>`}<select data-n="${n}" aria-label="Tipo de foto">${TIPOS_FOTO.map(t => `<option ${t === f.tipo ? "selected" : ""}>${t}</option>`).join("")}</select><button type="button" class="x" data-del="${n}" aria-label="Quitar foto">×</button></div>`).join("")
     + `<button type="button" class="addph" id="addcam"><svg viewBox="0 0 24 24"><path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/></svg>Tomar foto</button>`
-    + `<button type="button" class="addph" id="addph"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg>Elegir de galería</button>`;
+    + `<button type="button" class="addph" id="addph"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><circle cx="9" cy="10" r="2"/><path d="M21 16l-5-5-9 9"/></svg>Galería</button>`;
   $("#addcam").onclick = () => $("#fileCam").click();
   $("#addph").onclick = () => $("#filePhoto").click();
   $$("[data-del]", box).forEach(b => b.onclick = () => { formFotos.splice(+b.dataset.del, 1); drawFormPhotos(); });
@@ -765,7 +1076,6 @@ async function addPhotoFiles(files){
   drawFormPhotos();
 }
 ["#filePhoto","#fileCam"].forEach(s => $(s).addEventListener("change", e => { const f = Array.from(e.target.files || []); e.target.value = ""; addPhotoFiles(f); }));
-// Pegar una imagen copiada (Ctrl+V o pegar desde el teclado) mientras el formulario está abierto
 document.addEventListener("paste", e => {
   if (!$("#phs")) return;
   const imgs = Array.from(e.clipboardData?.items || []).filter(it => it.type.startsWith("image/")).map(it => it.getAsFile()).filter(Boolean);
@@ -780,11 +1090,11 @@ function compressImage(file, max = 1400, q = 0.78){
   });
 }
 const FIELD_LABELS = {nombre:"nombre",categoria:"categoría",zona:"zona",precio:"precio",fechaCompra:"fecha de compra",altoValor:"alto valor",marca:"marca",modelo:"modelo",serie:"serie",color:"color",cantidad:"cantidad",etiquetas:"etiquetas",tienda:"tienda",metodoPago:"método de pago",folio:"folio",garantiaHasta:"garantía",msi:"MSI",link:"link",condicion:"condición",vidaUtil:"vida útil",valorActualManual:"valor manual",valorReposicion:"reposición",asegurado:"asegurado",estado:"estado",accesorios:"accesorios",notas:"notas",fotos:"fotos"};
-function saveForm(src){
+function saveForm(src, preset){
   const fm = $("#frm"); const fd = new FormData(fm);
   const nombre = String(fd.get("nombre") || "").trim();
   if (!nombre){ fm.nombre.focus(); toast("Escribe qué es el objeto."); return; }
-  const g = k => String(fd.get(k) ?? "").trim();
+  const g = k => fdVal(fd, k);
   const data = {
     nombre, categoria: g("categoria"), zona: g("zona"), precio: parseNum(g("precio")), fechaCompra: g("fechaCompra"),
     altoValor: !!fd.get("altoValor"), marca: g("marca"), modelo: g("modelo"), serie: g("serie"), color: g("color"),
@@ -794,25 +1104,25 @@ function saveForm(src){
     asegurado: !!fd.get("asegurado"), estado: g("estado") || "Activo", accesorios: g("accesorios"), notas: g("notas"),
     fotos: formFotos
   };
-  // agregar categoría/zona nuevas a ajustes
-  let sTouched = false;
-  if (data.categoria && !S.settings.categorias.some(c => c.nombre === data.categoria)){ S.settings.categorias.push({nombre: data.categoria, vida: data.vidaUtil || 5}); sTouched = true; }
-  if (data.zona && !S.settings.zonas.includes(data.zona)){ S.settings.zonas.push(data.zona); sTouched = true; }
-  if (data.metodoPago && !S.settings.metodos.includes(data.metodoPago)){ S.settings.metodos.push(data.metodoPago); sTouched = true; }
-  if (sTouched) touchSettings();
+  let t = false;
+  t = addToList("categorias", data.categoria) || t; t = addToList("zonas", data.zona) || t; t = addToList("metodos", data.metodoPago) || t; t = addToList("tiendas", data.tienda) || t;
+  for (const e of data.etiquetas) t = addToList("etiquetas", e) || t;
+  if (t) touchSettings();
   let item;
   if (src){
     const changes = [];
     for (const k of Object.keys(data)){
       const a = JSON.stringify(k === "fotos" ? (src.fotos||[]).map(f => f.id + f.tipo) : src[k] ?? null), b = JSON.stringify(k === "fotos" ? data.fotos.map(f => f.id + f.tipo) : data[k] ?? null);
-      if (a !== b && !(["", "null", "[]", "false"].includes(a) && ["", "null", "[]", "false", '""'].includes(b))) changes.push(k === "precio" ? `precio ${money(src.precio)} → ${money(data.precio)}` : k === "estado" ? `estado ${src.estado||"Activo"} → ${data.estado}` : FIELD_LABELS[k] || k);
+      if (a !== b && !(["", "null", "[]", "false", '""'].includes(a) && ["", "null", "[]", "false", '""'].includes(b))) changes.push(k === "precio" ? `precio ${money(src.precio)} → ${money(data.precio)}` : k === "estado" ? `estado ${src.estado||"Activo"} → ${data.estado}` : FIELD_LABELS[k] || k);
     }
     Object.assign(src, data, {updatedAt: nowISO()});
     if (changes.length){ src.historial = src.historial || []; src.historial.push({t: nowISO(), accion: "Editado", detalle: changes.join(", ")}); }
     item = src;
   } else {
-    item = {...data, id: uid(), code: nextCode(), createdAt: nowISO(), updatedAt: nowISO(), historial: [{t: nowISO(), accion: "Alta", detalle: data.precio ? "Registrado con precio " + money(data.precio) : "Registrado"}]};
+    item = {...data, id: uid(), code: nextCode(), createdAt: nowISO(), updatedAt: nowISO(), historial: [{t: nowISO(), accion: "Alta", detalle: preset && preset._compra ? "Comprado desde tu lista de compras" : data.precio ? "Registrado con precio " + money(data.precio) : "Registrado"}]};
+    if (preset && preset._compra) item.compraId = preset._compra;
     S.items.push(item);
+    if (preset && preset._compra){ const c = S.compras.find(x => x.id === preset._compra); if (c){ c.itemId = item.id; c.updatedAt = nowISO(); syncCompra(c); } }
   }
   persist(); syncItem(item); closeSheet(); render();
   toast(src ? "Cambios guardados" : `Guardado como ${item.code}`);
@@ -828,6 +1138,7 @@ function openDetail(id){
   openSheet(`
   <header>${closeBtn}<h2><span class="tag">${esc(i.code)}</span> ${esc(i.nombre)}</h2></header>
   <div class="body">
+    ${porVerificar(i) ? `<div class="verify"><span>Este objeto se importó de tus compras. Confirma que es tuyo y sigue en tu cuarto.</span><button class="btn sm dark" id="dVer">Ya lo verifiqué</button></div>` : ""}
     ${fotos.length ? `<div class="gallery">${fotos.map(f => `<img src="${f.data}" alt="${esc(f.tipo)}" title="${esc(f.tipo)}" data-zoom>`).join("")}</div>` : `<div class="panel empty" style="padding:18px"><b>Sin fotos</b>Edita el objeto para agregar foto, número de serie y ticket.</div>`}
     <div class="detail-head" style="margin-top:12px">
       <div class="row">${isAlto(i) ? '<span class="badge star">★ Alto valor</span>' : ""}<span class="badge">${esc(i.estado || "Activo")}</span>${g ? `<span class="badge ${g.cls}">${g.txt}</span>` : ""}${i.asegurado ? '<span class="badge ok">Asegurado</span>' : ""}</div>
@@ -838,7 +1149,7 @@ function openDetail(id){
       ${field("Marca", esc(i.marca))}${field("Modelo", esc(i.modelo))}${field("Número de serie", esc(i.serie))}
       ${field("Color", esc(i.color))}${field("Condición", esc(i.condicion))}${field("Etiquetas", esc((i.etiquetas||[]).join(", ")))}
       ${field("Fecha de compra", fmtDate(i.fechaCompra))}${field("Lo tienes desde hace", ageText(i.fechaCompra))}${field("Tienda", esc(i.tienda))}
-      ${field("Método de pago", esc(i.metodoPago))}${field("Folio", esc(i.folio))}${field("MSI", i.msi ? i.msi + " meses" : "")}
+      ${field("Método de pago", esc(i.metodoPago))}${field("Folio / pedido", esc(i.folio))}${field("MSI", i.msi ? i.msi + " meses" : "")}
       ${field("Garantía hasta", fmtDate(i.garantiaHasta))}${field("Vida útil", vida + " años" + (i.vidaUtil ? "" : " (categoría)"))}${field("Reponerlo hoy", i.valorReposicion ? money(i.valorReposicion) : "")}
       ${field("Accesorios", esc(i.accesorios))}${field("Link", i.link ? `<a href="${esc(/^https?:/i.test(i.link) ? i.link : "https://" + i.link)}" target="_blank" rel="noopener">Abrir</a>` : "")}
       ${i.estado && i.estado !== "Activo" ? field("Baja", `${fmtDate(i.fechaBaja)}${i.montoBaja ? " · " + money(i.montoBaja) : ""}${i.motivoBaja ? " · " + esc(i.motivoBaja) : ""}`) : ""}
@@ -853,12 +1164,14 @@ function openDetail(id){
     <button class="btn primary" id="dEdit">Editar</button>
   </footer>`);
   $$("[data-zoom]", sheet).forEach(im => im.onclick = () => { const z = document.createElement("div"); z.className = "zoom"; z.innerHTML = `<img src="${im.src}" alt="">`; z.onclick = () => z.remove(); dlg.appendChild(z); });
+  if ($("#dVer")) $("#dVer").onclick = () => { i.etiquetas = (i.etiquetas||[]).filter(e => e !== VERIFY); i.historial = i.historial || []; i.historial.push({t: nowISO(), accion: "Verificado", detalle: "Confirmado en el cuarto"}); i.updatedAt = nowISO(); persist(); syncItem(i); render(); openDetail(i.id); toast("Marcado como verificado"); };
   $("#dEdit").onclick = () => openForm(i.id);
   $("#dDup").onclick = () => openForm(i.id, true);
   $("#dQR").onclick = () => openLabels([i]);
   $("#dBaja").onclick = () => (i.estado && i.estado !== "Activo") ? reactivar(i) : openBaja(i);
-  $("#dDel").onclick = () => {
-    if (!confirm(`¿Eliminar ${i.code} · ${i.nombre} para siempre? Si lo vendiste o regalaste, mejor usa "Dar de baja" para conservar el historial.`)) return;
+  $("#dDel").onclick = async () => {
+    const r = await ask({title: `Eliminar ${i.code}`, html: `<p style="margin:0">¿Eliminar <b>${esc(i.nombre)}</b> para siempre? Si lo vendiste o regalaste, mejor usa <b>Dar de baja</b> para conservar el historial.</p>`, buttons: [{label:"Cancelar", value:false},{label:"Eliminar", value:true, cls:"danger"}]});
+    if (!r) return;
     const tomb = {id: i.id, code: i.code, deleted: true, updatedAt: nowISO()};
     Object.keys(i).forEach(k => delete i[k]); Object.assign(i, tomb);
     persist(); syncItem(i); closeSheet(); render(); toast("Objeto eliminado");
@@ -867,10 +1180,10 @@ function openDetail(id){
 function openBaja(i){
   openSheet(`<header>${closeBtn}<h2>Dar de baja ${esc(i.code)}</h2></header>
   <form class="body" id="fb"><p class="muted" style="margin-top:0">El objeto sale del inventario activo, pero se conserva con su historial.</p><div class="fg">
-    <label class="f">Motivo<select name="estado">${ESTADOS.filter(e => e !== "Activo").map(e => `<option>${e}</option>`).join("")}</select></label>
-    <label class="f">Fecha<input type="date" name="fecha" value="${today()}"></label>
-    <label class="f">Monto recibido<input type="number" min="0" step="0.01" name="monto" placeholder="Si lo vendiste"></label>
-    <label class="f s3">Detalle<input type="text" name="motivo" placeholder="A quién, por qué, número de denuncia…"></label>
+    <label class="f">Motivo<select name="estado" id="b-estado">${ESTADOS.filter(e => e !== "Activo").map(e => `<option>${e}</option>`).join("")}</select></label>
+    <label class="f">Fecha<input type="date" name="fecha" id="b-fecha" value="${today()}"></label>
+    <label class="f">Monto recibido<input type="number" min="0" step="0.01" name="monto" id="b-monto" placeholder="Si lo vendiste"></label>
+    <label class="f s3">Detalle<input type="text" name="motivo" id="b-motivo" placeholder="A quién, por qué, número de denuncia…"></label>
   </div></form>
   <footer><button class="btn" id="bCancel">Cancelar</button><button class="btn primary" id="bOk">Dar de baja</button></footer>`);
   $("#bCancel").onclick = () => openDetail(i.id);
@@ -887,10 +1200,163 @@ function reactivar(i){
   persist(); syncItem(i); render(); openDetail(i.id); toast("Objeto reactivado");
 }
 
+/* ================= Compras planeadas ================= */
+const PRI_N = {Alta:0, Media:1, Baja:2};
+const compraSort = (a,b) => (PRI_N[a.prioridad] ?? 1) - (PRI_N[b.prioridad] ?? 1) || (a.fechaObjetivo || "9999").localeCompare(b.fechaObjetivo || "9999") || (b.precio||0) - (a.precio||0);
+function reviveCompras(){
+  // Un aplazamiento vencido regresa la compra a Pendiente
+  let ch = false;
+  for (const c of liveC()) if (c.estado === "Pospuesto" && c.pospuestoHasta && c.pospuestoHasta <= today()){
+    c.estado = "Pendiente"; c.historial = c.historial || []; c.historial.push({t: nowISO(), accion: "Regresó a pendiente", detalle: "Terminó el aplazamiento del " + fmtDate(c.pospuestoHasta)});
+    c.updatedAt = nowISO(); syncCompra(c); ch = true;
+  }
+  if (ch) persist();
+}
+function renderCompras(){
+  reviveCompras();
+  const el = $("#v-compras"); const all = liveC(); const f = S.f.cf;
+  const pend = all.filter(c => c.estado === "Pendiente"), posp = all.filter(c => c.estado === "Pospuesto"), comp = all.filter(c => c.estado === "Comprado");
+  const sum = a => a.reduce((s,c) => s + (c.precio||0), 0);
+  const list = (f === "activas" ? [...pend, ...posp] : f === "todas" ? all : all.filter(c => c.estado === f)).sort((a,b) => (a.estado === "Pospuesto") - (b.estado === "Pospuesto") || compraSort(a,b));
+  // gráfica por mes objetivo (12 meses) + sin fecha
+  const t = today(); const months = []; { const d = new Date(t + "T12:00:00"); d.setDate(1); for (let n = 0; n < 12; n++){ const x = new Date(d); x.setMonth(d.getMonth() + n); months.push(x.toISOString().slice(0,7)); } }
+  const bucket = c => { const ref = c.estado === "Pospuesto" ? (c.pospuestoHasta || c.fechaObjetivo) : c.fechaObjetivo; if (!ref) return "sin"; const m = ref.slice(0,7); return m < months[0] ? months[0] : m > months[11] ? "despues" : m; };
+  const B = {}; for (const c of [...pend, ...posp]){ const k = bucket(c); B[k] = B[k] || {p:0, z:0}; B[k][c.estado === "Pospuesto" ? "z" : "p"] += c.precio||0; }
+  const chartData = [...months.map((m, n) => ({label: n === 0 ? "Este" : MESES[+m.slice(5)-1], title: (n === 0 ? "Este mes o atrasado · " : "") + MESES[+m.slice(5)-1] + " " + m.slice(0,4), parts:[{v:(B[m]||{}).p||0, cls:"alt"},{v:(B[m]||{}).z||0, cls:"c2"}]})),
+    ...(B.despues ? [{label:"Después", parts:[{v:B.despues.p, cls:"alt"},{v:B.despues.z, cls:"c2"}]}] : []),
+    ...(B.sin ? [{label:"s/f", title:"Sin fecha", parts:[{v:B.sin.p, cls:"alt"},{v:B.sin.z, cls:"c2"}]}] : [])];
+  const byPri = PRIORIDADES.map(p => { const a = [...pend, ...posp].filter(c => (c.prioridad || "Media") === p); return [p, {n:a.length, v:sum(a), parts:[{v:sum(a.filter(c => c.estado === "Pendiente")), cls:"alt"},{v:sum(a.filter(c => c.estado === "Pospuesto")), cls:"c2"}]}]; });
+  const counts = {activas: pend.length + posp.length, Pendiente: pend.length, Pospuesto: posp.length, Comprado: comp.length, Descartado: all.filter(c => c.estado === "Descartado").length, todas: all.length};
+  el.innerHTML = `
+  <div class="row" style="justify-content:space-between"><h1>Compras</h1><button class="btn primary" data-action="new-compra">+ Nueva compra</button></div>
+  ${all.length ? `
+  <div class="kpis" style="margin-bottom:12px">
+    <div class="kpi"><span>Pendiente</span><b class="num">${moneyShort(sum(pend))}</b><small>${pend.length} compra(s)</small></div>
+    <div class="kpi"><span>Pospuesto</span><b class="num">${moneyShort(sum(posp))}</b><small>${posp.length} compra(s)</small></div>
+    <div class="kpi"><span>Total por hacer</span><b class="num">${moneyShort(sum(pend) + sum(posp))}</b><small>pendiente + pospuesto</small></div>
+    <div class="kpi"><span>Ya compradas</span><b class="num">${moneyShort(comp.reduce((s,c) => s + (c.precioFinal ?? c.precio ?? 0), 0))}</b><small>${comp.length} desde la lista</small></div>
+  </div>
+  <div class="dash" style="margin-top:0; margin-bottom:12px">
+    <div class="panel wide"><div class="head"><h2>Lo que falta por comprar, por mes</h2></div>${colChart(chartData, {empty:"No tienes compras pendientes."})}<div class="legend"><span><i class="alt"></i>Pendiente</span><span><i class="c2"></i>Pospuesto (en su nueva fecha)</span></div></div>
+    <div class="panel wide"><h2>Por prioridad</h2>${hbars(byPri)}</div>
+  </div>` : ""}
+  <div class="chips" style="margin-bottom:10px">${[["activas","Por comprar"],["Pendiente","Pendientes"],["Pospuesto","Pospuestas"],["Comprado","Compradas"],["Descartado","Descartadas"],["todas","Todas"]].map(([v,t]) => `<button class="chip" data-cf="${v}" aria-pressed="${f===v}">${t}<span class="n">${counts[v]}</span></button>`).join("")}</div>
+  ${list.length ? `<div class="wl">${list.map(compraHTML).join("")}</div>` : `<div class="panel empty"><b>${all.length ? "Nada en esta lista" : "Planea tus próximas compras"}</b>${all.length ? "Cambia el filtro para ver otras compras." : "Agrega lo que quieres comprar con su precio aproximado. Verás cuánto te falta, podrás posponer y, al comprarlo, pasa directo a tu inventario."}<div style="margin-top:12px"><button class="btn primary" data-action="new-compra">+ Nueva compra</button></div></div>`}`;
+  $$("[data-cf]", el).forEach(b => b.onclick = () => { S.f.cf = b.dataset.cf; renderCompras(); });
+  $$("[data-cact]", el).forEach(b => b.onclick = e => { e.stopPropagation(); const c = S.compras.find(x => x.id === b.dataset.id); if (!c) return; const a = b.dataset.cact;
+    if (a === "comprado") openComprado(c); else if (a === "posponer") openPosponer(c); else if (a === "edit") openCompraForm(c.id);
+    else if (a === "reactivar") setCompraEstado(c, "Pendiente", "Reactivada"); else if (a === "ver" && c.itemId) openDetail(c.itemId); });
+}
+function compraHTML(c){
+  const atras = c.estado === "Pendiente" && c.fechaObjetivo && c.fechaObjetivo < today();
+  const done = c.estado === "Comprado" || c.estado === "Descartado";
+  return `<div class="wi ${done ? "done" : ""}"><span class="pri ${esc(c.prioridad || "Media")}"></span>
+    <div style="min-width:0"><div class="nm">${esc(c.nombre)}</div><div class="mt">
+      <span class="badge ${c.prioridad === "Alta" ? "bad" : c.prioridad === "Baja" ? "info" : "warn"}">${esc(c.prioridad || "Media")}</span>
+      <span class="badge ${c.estado === "Pospuesto" ? "" : c.estado === "Comprado" ? "ok" : ""}">${esc(c.estado)}${c.estado === "Pospuesto" && c.pospuestoHasta ? " hasta " + fmtDate(c.pospuestoHasta) : ""}</span>
+      ${c.fechaObjetivo ? `<span class="${atras ? "badge warn" : ""}">${atras ? "Atrasada · " : "Para "}${fmtDate(c.fechaObjetivo)}</span>` : ""}
+      ${c.tienda ? `<span>${esc(c.tienda)}</span>` : ""}${c.categoria ? `<span>· ${esc(c.categoria)}</span>` : ""}
+    </div></div>
+    <div class="pr num">${money(c.estado === "Comprado" ? (c.precioFinal ?? c.precio) : c.precio)}${c.estado === "Comprado" && c.precioFinal != null && c.precio && c.precioFinal !== c.precio ? `<div class="small muted">estimado ${money(c.precio)}</div>` : ""}</div>
+    <div class="acts">${done ? `${c.itemId ? `<button class="btn sm" data-cact="ver" data-id="${c.id}">Ver en inventario</button>` : ""}<button class="btn sm" data-cact="reactivar" data-id="${c.id}">Volver a pendiente</button>` :
+      `<button class="btn sm primary" data-cact="comprado" data-id="${c.id}">Ya lo compré</button><button class="btn sm" data-cact="posponer" data-id="${c.id}">${c.estado === "Pospuesto" ? "Cambiar aplazamiento" : "Posponer"}</button>${c.estado === "Pospuesto" ? `<button class="btn sm" data-cact="reactivar" data-id="${c.id}">Quitar aplazamiento</button>` : ""}`}
+      <button class="btn sm ghost" data-cact="edit" data-id="${c.id}">Editar</button>${c.link ? `<a class="btn sm ghost" href="${esc(/^https?:/i.test(c.link) ? c.link : "https://" + c.link)}" target="_blank" rel="noopener">Abrir link</a>` : ""}</div>
+  </div>`;
+}
+function setCompraEstado(c, estado, accion, detalle = ""){
+  c.historial = c.historial || []; c.historial.push({t: nowISO(), accion, detalle});
+  c.estado = estado; if (estado !== "Pospuesto") c.pospuestoHasta = ""; c.updatedAt = nowISO();
+  persist(); syncCompra(c); render(); toast(accion);
+}
+function openCompraForm(id){
+  const src = id ? S.compras.find(c => c.id === id) : null;
+  const c = src ? structuredClone(src) : {prioridad:"Media", estado:"Pendiente"};
+  const st = S.settings; const modo = st.formModo || "rapido"; const hid = modo === "rapido" ? "hidden" : "";
+  openSheet(`<header>${closeBtn}<h2>${src ? "Editar compra" : "Nueva compra"}</h2></header>
+  <form class="body" id="fc" autocomplete="off">
+    ${modeBar("fcHint", modo)}
+    <fieldset><legend>Qué quieres comprar</legend><div class="fg">
+      <label class="f s3">Qué es *<input type="text" name="nombre" id="c-nombre" required value="${esc(c.nombre||"")}" placeholder="Ej. Monitor 27&quot;, silla de escritorio"></label>
+      <label class="f">Precio aproximado<input type="number" inputmode="decimal" step="0.01" min="0" name="precio" id="c-precio" value="${c.precio ?? ""}" placeholder="0"></label>
+      <label class="f">Para cuándo<input type="date" name="fechaObjetivo" id="c-fechaObjetivo" value="${esc(c.fechaObjetivo||"")}"></label>
+      <div class="f s3"><span>Prioridad</span><div class="seg" role="group" aria-label="Prioridad">${PRIORIDADES.map(p => `<button type="button" data-pri="${p}" aria-pressed="${(c.prioridad||"Media") === p}">${p}</button>`).join("")}</div></div>
+    </div></fieldset>
+    <fieldset class="det" ${hid}><legend>Detalles</legend><div class="fg">
+      <label class="f">Categoría${selNew("categoria", st.categorias.map(x => x.nombre), c.categoria)}</label>
+      <label class="f">Tienda${selNew("tienda", st.tiendas, c.tienda)}</label>
+      <label class="f">Cantidad<input type="number" min="1" step="1" name="cantidad" id="c-cantidad" value="${c.cantidad || 1}"></label>
+      <label class="f s3">Link<input type="text" inputmode="url" name="link" id="c-link" value="${esc(c.link||"")}" placeholder="Amazon, Mercado Libre…"></label>
+      <label class="f">Estado<select name="estado" id="c-estado">${C_ESTADOS.map(e => `<option ${e === c.estado ? "selected" : ""}>${e}</option>`).join("")}</select></label>
+      <label class="f s2">Notas<input type="text" name="notas" id="c-notas" value="${esc(c.notas||"")}" placeholder="Modelo exacto, color, por qué lo quieres…"></label>
+    </div></fieldset>
+    ${src && (src.historial||[]).length ? `<div class="panel det" ${hid}><h2>Historial</h2><ul class="hist">${src.historial.slice().reverse().map(h => `<li><b>${esc(h.accion)}</b> <span class="muted small">${new Date(h.t).toLocaleDateString("es-MX",{dateStyle:"medium"})}</span>${h.detalle ? "<br>" + esc(h.detalle) : ""}</li>`).join("")}</ul></div>` : ""}
+  </form>
+  <footer>${src ? `<button class="btn danger" id="cDel">Eliminar</button>${src.estado !== "Descartado" ? `<button class="btn" id="cDesc">Descartar</button>` : ""}` : ""}<button class="btn" data-close>Cancelar</button><button class="btn primary" id="cSave">${src ? "Guardar" : "Agregar a la lista"}</button></footer>`);
+  let pri = c.prioridad || "Media";
+  $$("[data-pri]", sheet).forEach(b => b.onclick = () => { pri = b.dataset.pri; $$("[data-pri]", sheet).forEach(x => x.setAttribute("aria-pressed", x === b)); });
+  wireSelNew(sheet); wireModeBar(sheet, "fcHint");
+  const save = () => {
+    const fd = new FormData($("#fc")); const nombre = String(fd.get("nombre")||"").trim();
+    if (!nombre){ $("#c-nombre").focus(); toast("Escribe qué quieres comprar."); return; }
+    const g = k => fdVal(fd, k);
+    const data = {nombre, precio: parseNum(g("precio")), fechaObjetivo: g("fechaObjetivo"), prioridad: pri, categoria: g("categoria"), tienda: g("tienda"), cantidad: parseNum(g("cantidad")) || 1, link: g("link"), notas: g("notas"), estado: g("estado") || "Pendiente"};
+    let t = addToList("categorias", data.categoria); t = addToList("tiendas", data.tienda) || t; if (t) touchSettings();
+    let it;
+    if (src){ if (src.estado !== data.estado){ src.historial = src.historial || []; src.historial.push({t: nowISO(), accion: "Estado: " + data.estado, detalle: ""}); } if (data.estado !== "Pospuesto") data.pospuestoHasta = ""; Object.assign(src, data, {updatedAt: nowISO()}); it = src; }
+    else { it = {...data, id: uid("w"), createdAt: nowISO(), updatedAt: nowISO(), historial: [{t: nowISO(), accion: "Agregada", detalle: data.precio ? "Precio estimado " + money(data.precio) : ""}]}; S.compras.push(it); }
+    persist(); syncCompra(it); closeSheet(); if (S.view !== "compras") setView("compras"); else render(); toast(src ? "Compra guardada" : "Agregada a tu lista");
+  };
+  $("#cSave").onclick = save; $("#fc").addEventListener("submit", e => { e.preventDefault(); save(); });
+  if ($("#cDesc")) $("#cDesc").onclick = () => { closeSheet(); setCompraEstado(src, "Descartado", "Descartada"); };
+  if ($("#cDel")) $("#cDel").onclick = async () => {
+    const r = await ask({title: "Eliminar compra", html: `<p style="margin:0">¿Eliminar <b>${esc(src.nombre)}</b> de tu lista? Si ya no la quieres pero quieres conservarla, usa <b>Descartar</b>.</p>`, buttons: [{label:"Cancelar", value:false},{label:"Eliminar", value:true, cls:"danger"}]});
+    if (!r) return; Object.keys(src).forEach(k => k !== "id" && delete src[k]); Object.assign(src, {deleted: true, updatedAt: nowISO()}); persist(); syncCompra(src); closeSheet(); render(); toast("Compra eliminada");
+  };
+  if (!src) setTimeout(() => $("#c-nombre").focus(), 50);
+}
+function openPosponer(c){
+  const base = c.pospuestoHasta && c.pospuestoHasta > today() ? c.pospuestoHasta : today();
+  const ops = [["1 semana", addDays(base, 7)],["2 semanas", addDays(base, 14)],["1 mes", addMonths(base, 1)],["3 meses", addMonths(base, 3)],["6 meses", addMonths(base, 6)]];
+  openSheet(`<header>${closeBtn}<h2>Posponer compra</h2></header>
+  <div class="body"><p style="margin-top:0"><b>${esc(c.nombre)}</b> · ${money(c.precio)}</p>
+    <h3>¿Hasta cuándo?</h3><div class="chips" style="margin-bottom:12px">${ops.map(([t,d]) => `<button class="chip" data-pd="${d}">${t}<span class="n">${fmtDate(d)}</span></button>`).join("")}</div>
+    <div class="fg"><label class="f">Otra fecha<input type="date" id="pFecha" value="${addMonths(base, 1)}"></label><label class="f s2">Motivo (opcional)<input type="text" id="pMotivo" placeholder="Esperar el Buen Fin, juntar dinero…"></label></div>
+    <p class="small muted">Al llegar esa fecha, la compra regresa sola a Pendiente.</p></div>
+  <footer><button class="btn" data-close>Cancelar</button><button class="btn primary" id="pOk">Posponer</button></footer>`);
+  const go = d => {
+    if (!d){ toast("Elige una fecha."); return; }
+    const motivo = $("#pMotivo").value.trim();
+    c.pospuestoHasta = d; closeSheet();
+    setCompraEstado(c, "Pospuesto", "Pospuesta", `Hasta ${fmtDate(d)}${motivo ? " · " + motivo : ""}`);
+  };
+  $$("[data-pd]", sheet).forEach(b => b.onclick = () => go(b.dataset.pd));
+  $("#pOk").onclick = () => go($("#pFecha").value);
+}
+function openComprado(c){
+  openSheet(`<header>${closeBtn}<h2>¡Lo compraste!</h2></header>
+  <form class="body" id="fk"><p style="margin-top:0"><b>${esc(c.nombre)}</b></p><div class="fg">
+    <label class="f">Precio final<input type="number" inputmode="decimal" step="0.01" min="0" id="k-precio" value="${c.precio ?? ""}"></label>
+    <label class="f">Fecha de compra<input type="date" id="k-fecha" value="${today()}"></label>
+    <label class="f">Tienda${selNew("tienda", S.settings.tiendas, c.tienda)}</label>
+    <label class="check s3"><input type="checkbox" id="k-inv" checked> Agregarlo a mi inventario</label>
+  </div></form>
+  <footer><button class="btn" data-close>Cancelar</button><button class="btn primary" id="kOk">Marcar como comprado</button></footer>`);
+  wireSelNew(sheet);
+  $("#kOk").onclick = () => {
+    const fd = new FormData($("#fk")); const tienda = fdVal(fd, "tienda");
+    const precio = parseNum($("#k-precio").value), fecha = $("#k-fecha").value || today(), inv = $("#k-inv").checked;
+    c.precioFinal = precio; c.fechaCompra = fecha; c.tienda = tienda || c.tienda;
+    if (addToList("tiendas", tienda)) touchSettings();
+    setCompraEstado(c, "Comprado", "Comprada", `${money(precio)} el ${fmtDate(fecha)}`);
+    if (inv) openForm(null, false, {nombre: c.nombre, precio, fechaCompra: fecha, categoria: c.categoria || "", tienda: c.tienda || "", link: c.link || "", cantidad: c.cantidad || 1, notas: c.notas || "", _compra: c.id});
+    else closeSheet();
+  };
+}
+
 /* ================= Etiquetas QR ================= */
 async function openLabels(items){
-  openSheet(`<header>${closeBtn}<h2>Etiquetas QR (${items.length})</h2></header><div class="body"><p class="muted small" style="margin-top:0">Imprime y pega cada etiqueta en su objeto. Al escanearla verás el código, nombre y número de serie.</p><div class="labels" id="lbls"></div></div>
-  <footer><button class="btn" data-close>Cerrar</button><button class="btn" id="lDl">Descargar para imprimir</button></footer>`);
+  openSheet(`<header>${closeBtn}<h2>Etiquetas QR (${items.length})</h2></header><div class="body"><p class="muted small" style="margin-top:0">Descarga el archivo, ábrelo en el navegador e imprímelo. Pega cada etiqueta en su objeto; al escanearla verás el código, nombre y número de serie.</p><div class="labels" id="lbls"></div></div>
+  <footer><button class="btn" data-close>Cerrar</button><button class="btn primary" id="lDl">Descargar para imprimir</button></footer>`);
   try { await loadQR(); } catch { $("#lbls").innerHTML = `<p class="muted">No se pudo cargar el generador de QR. Revisa tu conexión e inténtalo de nuevo.</p>`; return; }
   const box = $("#lbls");
   for (const i of items){
@@ -915,26 +1381,80 @@ function renderReporte(){
   arr = arr.sort((a,b) => (b.precio||0) - (a.precio||0));
   const tot = arr.reduce((s,i) => s + (i.precio||0), 0), totA = arr.reduce((s,i) => s + valorActual(i), 0), totR = arr.reduce((s,i) => s + (i.valorReposicion || i.precio || 0), 0);
   el.innerHTML = `
-  <div class="noprint"><h1>Reportes</h1>
-    <div class="chips" style="margin-bottom:10px">${[["alto","Alto valor"],["todos","Todo lo activo"],["bajas","Bajas"]].map(([v,t]) => `<button class="chip" data-rep="${v}" aria-pressed="${mode===v}">${t}</button>`).join("")}</div>
-    <div class="row" style="margin-bottom:14px"><button class="btn primary" id="rPrint">Imprimir o guardar PDF</button><button class="btn" id="rDl">Descargar reporte</button><button class="btn" id="rQR">Etiquetas QR de esta lista</button><button class="btn" id="rCSV">Excel de esta lista</button></div>
-  </div>
+  <h1>Reportes</h1>
+  <div class="chips" style="margin-bottom:10px">${[["alto","Alto valor"],["todos","Todo lo activo"],["bajas","Bajas"]].map(([v,t]) => `<button class="chip" data-rep="${v}" aria-pressed="${mode===v}">${t}</button>`).join("")}</div>
+  <div class="row" style="margin-bottom:14px"><button class="btn primary" id="rDl">Descargar reporte (para imprimir o PDF)</button><button class="btn" id="rCSV">Excel de esta lista</button><button class="btn" id="rQR">Etiquetas QR</button></div>
   <div class="report" id="repArea">
     <div class="panel" style="margin-bottom:12px">
       <h1>${mode === "alto" ? "Objetos de alto valor" : mode === "todos" ? "Inventario del cuarto" : "Objetos dados de baja"}</h1>
-      <p class="muted small" style="margin:0 0 10px">Victor Manuel Salazar Castro · Generado el ${fmtDate(today())} · ${arr.length} objeto(s)</p>
+      <p class="muted small" style="margin:0 0 10px">${esc(S.settings.dueno || "")} · Generado el ${fmtDate(today())} · ${arr.length} objeto(s)</p>
       <div class="row num" style="gap:22px"><div><span class="small muted">Pagado</span><br><b>${money(tot)}</b></div><div><span class="small muted">Valor actual estimado</span><br><b>${money(totA)}</b></div><div><span class="small muted">Costo de reposición</span><br><b>${money(totR)}</b></div></div>
     </div>
     ${arr.length ? `<div class="tablewrap"><table class="t"><thead><tr><th>Foto</th><th>Código</th><th>Objeto</th><th>Marca / modelo</th><th>Serie</th><th>Compra</th><th>Tienda / folio</th><th class="r">Precio</th><th class="r">Valor hoy</th>${mode === "bajas" ? "<th>Baja</th>" : "<th>Zona</th>"}</tr></thead><tbody>${arr.map(i => { const f = fotoPrincipal(i); return `<tr data-action="open" data-id="${i.id}"><td>${f ? `<img class="rthumb" src="${f.data}" alt="">` : '<span class="rthumb"></span>'}</td><td><span class="tag">${esc(i.code)}</span></td><td><b>${esc(i.nombre)}</b><br><span class="small muted">${esc(i.categoria||"")}</span></td><td>${esc([i.marca, i.modelo].filter(Boolean).join(" "))}</td><td>${esc(i.serie||"")}</td><td class="num">${fmtDate(i.fechaCompra)}</td><td>${esc([i.tienda, i.folio].filter(Boolean).join(" · "))}</td><td class="r num">${money(i.precio)}</td><td class="r num">${money(valorActual(i))}</td><td>${mode === "bajas" ? esc(`${i.estado} ${fmtDate(i.fechaBaja)}`) : esc(i.zona||"")}</td></tr>`; }).join("")}</tbody></table></div>` : `<div class="panel empty"><b>No hay objetos en esta lista</b>${mode === "alto" ? `Se consideran de alto valor los que marcas con ★ o cuestan ${money(S.settings.umbral)} o más.` : ""}</div>`}
   </div>`;
   $$("[data-rep]", el).forEach(b => b.onclick = () => { S.f.rep = b.dataset.rep; renderReporte(); });
-  $("#rPrint").onclick = () => { el.classList.add("printing"); try { window.print(); } catch { toast("Tu navegador no permite imprimir aquí. Usa Descargar reporte."); } setTimeout(() => el.classList.remove("printing"), 500); };
   $("#rDl").onclick = () => {
-    const css = `body{font-family:Arial,sans-serif;margin:12mm;color:#111}h1{margin:0 0 4px}table{border-collapse:collapse;width:100%;font-size:10pt}th,td{border-bottom:1px solid #ccc;padding:5px;text-align:left;vertical-align:middle}th{background:#eee}.r{text-align:right}.tag{background:#F2C230;font-weight:bold;padding:1px 5px;border-radius:2px}.rthumb{width:46px;height:46px;object-fit:cover;border-radius:4px;display:block}.small{font-size:9pt}.muted{color:#666}.row{display:flex;gap:24px;margin:8px 0 14px}.panel{margin-bottom:10px}`;
-    saveFile(`reporte-inventario-${S.f.rep}-${today()}.html`, `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Reporte de inventario</title><style>${css}</style></head><body>${$("#repArea").innerHTML}</body></html>`, "text/html");
+    const css = `body{font-family:Arial,sans-serif;margin:12mm;color:#111}h1{margin:0 0 4px}table{border-collapse:collapse;width:100%;font-size:10pt}th,td{border-bottom:1px solid #ccc;padding:5px;text-align:left;vertical-align:middle}th{background:#eee}.r{text-align:right}.tag{background:#F2C230;font-weight:bold;padding:1px 5px;border-radius:2px}.rthumb{width:46px;height:46px;object-fit:cover;border-radius:4px;display:block}.small{font-size:9pt}.muted{color:#666}.row{display:flex;gap:24px;margin:8px 0 14px}.panel{margin-bottom:10px}.badge{font-size:8pt}`;
+    saveFile(`reporte-inventario-${S.f.rep}-${today()}.html`, `<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>Reporte de inventario</title><style>${css}</style></head><body>${$("#repArea").innerHTML}<script>window.onload=()=>print()<\/script></body></html>`, "text/html");
   };
   $("#rQR").onclick = () => arr.length ? openLabels(arr) : toast("La lista está vacía.");
   $("#rCSV").onclick = () => exportXLSX(arr, `inventario-${S.f.rep}-${today()}.xlsx`);
+}
+
+/* ================= Desplegables ================= */
+function usage(key, field){
+  const m = {};
+  for (const i of live()){ const v = i[field]; if (Array.isArray(v)) v.forEach(x => m[x] = (m[x]||0) + 1); else if (v) m[v] = (m[v]||0) + 1; }
+  if (field === "categoria" || field === "tienda") for (const c of liveC()) if (c[field]) m[c[field]] = (m[c[field]]||0) + 1;
+  return m;
+}
+function renameValue(field, from, to){
+  let n = 0;
+  for (const i of live()){
+    if (field === "etiquetas"){ if ((i.etiquetas||[]).includes(from)){ i.etiquetas = i.etiquetas.map(x => x === from ? to : x); i.updatedAt = nowISO(); syncItem(i); n++; } }
+    else if (i[field] === from){ i[field] = to; i.updatedAt = nowISO(); syncItem(i); n++; }
+  }
+  if (field === "categoria" || field === "tienda") for (const c of liveC()) if (c[field] === from){ c[field] = to; c.updatedAt = nowISO(); syncCompra(c); n++; }
+  return n;
+}
+function renderListas(){
+  const el = $("#v-listas"); const st = S.settings;
+  el.innerHTML = `<h1>Desplegables</h1><p class="muted" style="margin:-6px 0 14px; max-width:65ch">Las opciones que aparecen en los formularios. Al renombrar una opción también se actualizan los objetos y compras que la usan.</p>
+  <div class="lists">${LISTAS.map(([key, title, help, field]) => {
+    const u = usage(key, field); const isCat = key === "categorias";
+    const vals = isCat ? st.categorias.map(c => c.nombre) : st[key];
+    return `<div class="panel" data-list="${key}"><div class="head"><h2>${title}</h2><span class="small muted">${vals.length} opciones</span></div><p class="small muted" style="margin:-4px 0 8px">${help}</p>
+      <div>${vals.map((v, n) => `<div class="li-row ${isCat ? "cat" : ""}"><div class="mv"><button type="button" data-mv="-1" data-n="${n}" aria-label="Subir">▲</button><button type="button" data-mv="1" data-n="${n}" aria-label="Bajar">▼</button></div>
+        <input type="text" value="${esc(v)}" data-ren="${n}" id="l-${key}-${n}" aria-label="Nombre">${isCat ? `<input type="number" min="1" step="1" value="${st.categorias[n].vida}" data-vida="${n}" id="l-${key}-${n}-v" aria-label="Vida útil en años" title="Vida útil (años)">` : ""}
+        <span class="cnt">${u[v] ? u[v] + " uso" + (u[v] > 1 ? "s" : "") : "sin uso"}</span><button type="button" class="xbtn" data-delv="${n}" aria-label="Quitar ${esc(v)}">×</button></div>`).join("")}</div>
+      <div class="addrow"><input type="text" placeholder="Nueva opción" data-addin id="l-${key}-new">${isCat ? `<input type="number" min="1" step="1" placeholder="años" style="width:84px" data-addvida id="l-${key}-newv">` : ""}<button type="button" class="btn sm" data-add>Agregar</button></div>
+      ${isCat ? `<p class="small muted" style="margin:8px 0 0">El número es la vida útil en años.</p>` : ""}
+    </div>`; }).join("")}</div>
+  <div class="row" style="margin-top:12px"><button class="btn" id="lReset">Agregar las opciones que vienen de fábrica</button></div>`;
+  $$("[data-list]", el).forEach(p => {
+    const key = p.dataset.list; const field = LISTAS.find(l => l[0] === key)[3]; const isCat = key === "categorias";
+    const arr = () => isCat ? st.categorias : st[key];
+    const nameAt = n => isCat ? st.categorias[n].nombre : st[key][n];
+    $$("[data-mv]", p).forEach(b => b.onclick = () => { const n = +b.dataset.n, m = n + +b.dataset.mv; const a = arr(); if (m < 0 || m >= a.length) return; [a[n], a[m]] = [a[m], a[n]]; touchSettings(); renderListas(); });
+    $$("[data-ren]", p).forEach(inp => inp.onchange = () => {
+      const n = +inp.dataset.ren, from = nameAt(n), to = inp.value.trim();
+      if (!to){ inp.value = from; return; }
+      if (to === from) return;
+      if ((isCat ? st.categorias.some(c => c.nombre === to) : st[key].includes(to))){ toast("Esa opción ya existe."); inp.value = from; return; }
+      if (isCat) st.categorias[n].nombre = to; else st[key][n] = to;
+      const k = renameValue(field, from, to); touchSettings(); persist(); renderListas(); toast(k ? `Renombrado en ${k} registro(s)` : "Renombrado");
+    });
+    $$("[data-vida]", p).forEach(inp => inp.onchange = () => { st.categorias[+inp.dataset.vida].vida = parseNum(inp.value) || 5; touchSettings(); toast("Vida útil actualizada"); });
+    $$("[data-delv]", p).forEach(b => b.onclick = () => { const n = +b.dataset.delv, v = nameAt(n); arr().splice(n, 1); touchSettings(); renderListas(); toast(`Se quitó “${v}”. Los registros que la usan la conservan.`); });
+    const add = () => { const inp = $("[data-addin]", p); const v = inp.value.trim(); if (!v) return; if (isCat){ if (st.categorias.some(c => c.nombre === v)) return toast("Ya existe."); st.categorias.push({nombre: v, vida: parseNum($("[data-addvida]", p).value) || 5}); } else { if (st[key].includes(v)) return toast("Ya existe."); st[key].push(v); } touchSettings(); renderListas(); toast("Opción agregada"); setTimeout(() => $(`[data-list="${key}"] [data-addin]`)?.focus(), 30); };
+    $("[data-add]", p).onclick = add; $("[data-addin]", p).addEventListener("keydown", e => { if (e.key === "Enter"){ e.preventDefault(); add(); } });
+  });
+  $("#lReset").onclick = () => {
+    let n = 0;
+    for (const c of DEFAULT_SETTINGS.categorias) if (!st.categorias.some(x => x.nombre === c.nombre)){ st.categorias.push({...c}); n++; }
+    for (const k of ["zonas","metodos","condiciones","tiendas","etiquetas"]) for (const v of DEFAULT_SETTINGS[k]) if (!st[k].includes(v)){ st[k].push(v); n++; }
+    touchSettings(); renderListas(); toast(n ? `${n} opción(es) agregadas` : "Ya tenías todas");
+  };
 }
 
 /* ================= Exportar / importar ================= */
@@ -948,26 +1468,28 @@ const EXTRA = [["Valor actual calculado", i => valorActual(i)],["Antiguedad (dia
 function rowsFor(arr){
   return arr.map(i => { const r = {}; for (const [h,k] of COLS){ let v = i[k]; if (Array.isArray(v)) v = v.join(", "); if (typeof v === "boolean") v = v ? "Si" : "No"; r[h] = v ?? ""; } for (const [h,fn] of EXTRA) r[h] = fn(i); return r; });
 }
+const compraRows = () => liveC().map(c => ({Nombre:c.nombre, Precio:c.precio ?? "", Prioridad:c.prioridad, Estado:c.estado, "Para cuando":c.fechaObjetivo||"", "Pospuesto hasta":c.pospuestoHasta||"", Categoria:c.categoria||"", Tienda:c.tienda||"", "Precio final":c.precioFinal ?? "", Link:c.link||"", Notas:c.notas||""}));
 function toCSV(rows){
   if (!rows.length) return "";
   const hs = Object.keys(rows[0]); const q = v => { const s = String(v ?? ""); return /[",\n;]/.test(s) ? `"${s.replace(/"/g,'""')}"` : s; };
-  return "\uFEFF" + [hs.map(q).join(","), ...rows.map(r => hs.map(h => q(r[h])).join(","))].join("\r\n");
+  return "﻿" + [hs.map(q).join(","), ...rows.map(r => hs.map(h => q(r[h])).join(","))].join("\r\n");
 }
-async function exportXLSX(arr, name){
+async function exportXLSX(arr, name, withCompras){
   try { await loadXLSX(); } catch { toast("No se pudo cargar Excel; se guardará como CSV."); return saveFile(name.replace(/\.xlsx$/, ".csv"), toCSV(rowsFor(arr)), "text/csv"); }
-  const wb = XLSX.utils.book_new(); const ws = XLSX.utils.json_to_sheet(rowsFor(arr));
-  ws["!cols"] = Object.keys(rowsFor(arr)[0] || {}).map(h => ({wch: Math.max(10, Math.min(30, h.length + 4))}));
+  const wb = XLSX.utils.book_new(); const rows = rowsFor(arr); const ws = XLSX.utils.json_to_sheet(rows);
+  ws["!cols"] = Object.keys(rows[0] || {}).map(h => ({wch: Math.max(10, Math.min(30, h.length + 4))}));
   XLSX.utils.book_append_sheet(wb, ws, "Inventario");
+  if (withCompras && liveC().length) XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(compraRows()), "Compras");
   const out = XLSX.write(wb, {bookType:"xlsx", type:"array"});
   return saveFile(name, new Blob([out], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 }
 async function exportJSON(withPhotos){
-  const payload = {app: "Inventario del cuarto", version: 1, exportado: nowISO(), settings: S.settings, items: withPhotos ? S.items : S.items.map(i => ({...i, fotos: (i.fotos||[]).map(f => ({id:f.id, tipo:f.tipo}))}))};
+  const payload = {app: "Inventario del cuarto", version: 2, exportado: nowISO(), settings: S.settings, compras: S.compras, items: withPhotos ? S.items : S.items.map(i => ({...i, fotos: (i.fotos||[]).map(f => ({id:f.id, tipo:f.tipo}))}))};
   const ok = await saveFile(`respaldo-inventario-cuarto-${today()}${withPhotos ? "" : "-sin-fotos"}.json`, JSON.stringify(payload), "application/json");
   if (ok && withPhotos){ S.settings.ultimoRespaldo = nowISO(); touchSettings(); render(); }
 }
 function parseCSV(text){
-  text = text.replace(/^\uFEFF/, ""); const sep = (text.split("\n")[0].match(/;/g)||[]).length > (text.split("\n")[0].match(/,/g)||[]).length ? ";" : ",";
+  text = text.replace(/^﻿/, ""); const sep = (text.split("\n")[0].match(/;/g)||[]).length > (text.split("\n")[0].match(/,/g)||[]).length ? ";" : ",";
   const rows = []; let row = [], cur = "", q = false;
   for (let n = 0; n < text.length; n++){
     const c = text[n];
@@ -988,7 +1510,7 @@ const ALIASES = {
   code:["codigo","code","id inventario"], nombre:["nombre","objeto","articulo","producto","descripcion","item"], categoria:["categoria","tipo"], zona:["zona","ubicacion","lugar"],
   marca:["marca"], modelo:["modelo"], serie:["numero de serie","serie","no. serie","imei","s/n"], color:["color"], cantidad:["cantidad","piezas"],
   fechaCompra:["fecha de compra","fecha compra","fecha","compra"], precio:["precio","costo","precio de compra","importe","monto"], tienda:["tienda","vendedor","proveedor","lugar de compra"],
-  metodoPago:["metodo de pago","forma de pago","pago","tarjeta"], folio:["folio","factura","ticket"], msi:["msi","meses sin intereses"], garantiaHasta:["garantia hasta","garantia","fin de garantia"],
+  metodoPago:["metodo de pago","forma de pago","pago","tarjeta"], folio:["folio","factura","ticket","pedido"], msi:["msi","meses sin intereses"], garantiaHasta:["garantia hasta","garantia","fin de garantia"],
   condicion:["condicion"], vidaUtil:["vida util (anos)","vida util"], valorActualManual:["valor actual manual"], valorReposicion:["valor reposicion","costo de reposicion"],
   asegurado:["asegurado"], altoValor:["alto valor"], estado:["estado","estatus"], fechaBaja:["fecha de baja"], montoBaja:["monto de baja"], motivoBaja:["motivo de baja"],
   accesorios:["accesorios"], etiquetas:["etiquetas","tags"], link:["link","url","enlace"], notas:["notas","comentarios","observaciones"], id:["id"]
@@ -1007,16 +1529,93 @@ function rowToItem(r){
     etiquetas: String(get("etiquetas")).split(",").map(s => s.trim()).filter(Boolean), link: String(get("link")).trim(), notas: String(get("notas")).trim()
   };
 }
+
+/* ---- Importar desde el archivo de Cobranzas (pedidos de Amazon, Mercado Libre, Temu) ---- */
+const CONSUMIBLE = /crema|jab[oó]n|shampoo|champ[uú]|acondicionador|desodor|antitransp|protector solar|sun |serum|maquill|corrector|polvo|brochas|gel |cepillo|pasta dental|floss|hilo dental|vitamin|multivit|centrum|creatina|prote[ií]na|whey|enzima|probi[oó]t|inositol|leche|aceite|salsa|consom|caf[eé]|dulce|tabletas|c[aá]psulas|pa[nñ]al|toalla|papel|detergente|suavizante|pinzas para ropa|music|suscrip|recarga|mica|protector de pantalla|cable|adaptador|folder|carpeta|pegamento|tapones|sticker|calcoman|toothpaste|aerosol|tratamiento|bals[aá]mo|labial|fijador|perfume|loci[oó]n|agenda/i;
+const CAT_RULES = [
+  [/laptop|mouse|teclado|hub|ssd|disco duro|microsd|memoria|capturadora|monitor|nexode|docking|router|webcam/i, "Computación"],
+  [/celular|galaxy|iphone|tablet|ipad|funda|smartwatch|reloj inteligente/i, "Celulares y tablets"],
+  [/aud[ií]fono|bocina|speaker|sound|earbud|barra de sonido/i, "Audio"],
+  [/tenis|zapat|playera|camis|pantal|sudadera|mochila|chamarra|jogger|calcet/i, "Ropa y calzado"],
+  [/lego|funko|figura|coleccion/i, "Coleccionables"],
+  [/foco|bombilla|led|l[aá]mpara|tira/i, "Decoración"],
+  [/skate|bicic|pesas|mancuern|bal[oó]n|patin/i, "Deportes"],
+  [/power bank|bater[ií]a|proyector|fire tv|c[aá]mara|smart|cargador|consola/i, "Electrónica"],
+  [/prensa|taladro|desarmador|herramient|soldad|pinzas/i, "Herramientas"],
+  [/libro|novela/i, "Libros"], [/reloj|anillo|collar|pulsera/i, "Relojes y joyería"], [/silla|mesa|escritorio|repisa|librero/i, "Muebles"]
+];
+const guessCat = n => (CAT_RULES.find(([r]) => r.test(n)) || [0, "Otros"])[1];
+const cleanName = n => { let s = String(n).replace(/^(presentamos( el)?|1pc|\d+pcs?)\s+/i, "").split(/,| - | – | \| /)[0].trim(); if (s.length > 70) s = s.slice(0, 68).replace(/\s+\S*$/, "") + "…"; return s; };
+function cobranzasCandidates(data){
+  const M = new Map((data.movimientos || []).map(m => [m.id, m]));
+  const T = Object.fromEntries((data.tarjetas || []).map(t => [t.cta, t.nom]));
+  const L = Object.fromEntries((data.plasticos || []).filter(p => p.ult4).map(p => [p.ult4, T[p.cta] || p.banco]));
+  const out = [];
+  for (const p of (data.pedidos || [])){
+    if (p.src === "Steam" || p.reemb) continue;
+    const movs = (p.links || []).map(l => M.get(l)).filter(Boolean);
+    const owners = movs.map(m => m.pq || "").filter(Boolean);
+    if (owners.length && owners.every(o => !/^victor|por identificar/i.test(o))) continue;
+    const metodo = movs[0] ? (T[movs[0].cta] || "") : (p.last4 || []).map(x => L[x] || "Tarjeta ····" + x)[0] || ((p.pago || []).join(" ").includes("PayPal") ? "PayPal" : "");
+    const link = p.url || (p.src === "Amazon" && p.pedido ? `https://www.amazon.com.mx/gp/your-account/order-details?orderID=${p.pedido}` : "");
+    (p.items || []).forEach((it, n) => {
+      const precio = +(it.precio || 0) * (+(it.qty || 1));
+      if (precio < 250 || CONSUMIBLE.test(it.nom)) return;
+      const ya = live().some(i => (i.folio && i.folio === p.pedido && Math.abs((i.precio||0) - precio) < 1) || i.srcRef === p.id + "#" + n);
+      out.push({ref: p.id + "#" + n, ya, nom: it.nom, item: {nombre: cleanName(it.nom) + (+it.qty > 1 ? ` (x${it.qty})` : ""), categoria: guessCat(it.nom), precio: Math.round(precio*100)/100, fechaCompra: p.f, tienda: p.src, metodoPago: metodo, folio: p.pedido || p.id, link, cantidad: 1, notas: `Importado de tus compras de ${p.src} (pedido ${p.pedido || p.id}). Nombre original: ${it.nom}`}});
+    });
+  }
+  return out.sort((a,b) => (b.item.fechaCompra||"").localeCompare(a.item.fechaCompra||""));
+}
+function openCobranzasImport(data){
+  const cands = cobranzasCandidates(data);
+  if (!cands.length){ toast("No encontré artículos duraderos nuevos en ese archivo."); return; }
+  openSheet(`<header>${closeBtn}<h2>Importar de tus compras</h2></header>
+  <div class="body"><p class="small muted" style="margin-top:0">Encontré ${cands.length} artículo(s) de $250 o más que no parecen consumibles ni de otras personas. Los ya importados aparecen sin marcar. Revisa y elige cuáles agregar; llegarán con la etiqueta “por verificar”.</p>
+  <div class="row" style="margin-bottom:8px"><button class="btn sm" id="ckAll">Marcar todos</button><button class="btn sm" id="ckNone">Ninguno</button></div>
+  <div class="picklist">${cands.map((c, n) => `<label class="pick"><input type="checkbox" data-ck="${n}" id="ck-${n}" ${c.ya ? "" : "checked"}><span><b>${esc(c.item.nombre)}</b><small>${esc(c.item.tienda)} · ${fmtDate(c.item.fechaCompra)} · ${esc(c.item.categoria)}${c.ya ? " · ya está en tu inventario" : ""}</small></span><b class="num">${money(c.item.precio)}</b></label>`).join("")}</div></div>
+  <footer><button class="btn" data-close>Cancelar</button><button class="btn primary" id="ckOk">Agregar seleccionados</button></footer>`);
+  $("#ckAll").onclick = () => $$("[data-ck]", sheet).forEach(c => c.checked = true);
+  $("#ckNone").onclick = () => $$("[data-ck]", sheet).forEach(c => c.checked = false);
+  $("#ckOk").onclick = () => {
+    const sel = $$("[data-ck]", sheet).filter(c => c.checked).map(c => cands[+c.dataset.ck]);
+    for (const c of sel){ const it = newItemFrom({...c.item, srcRef: c.ref}, "Importado del archivo de Cobranzas"); S.items.push(it); syncItem(it); addToList("tiendas", it.tienda); addToList("metodos", it.metodoPago); }
+    touchSettings(); persist(); closeSheet(); S.f = {...S.f, verif: true, estado: "Activo", q:"", cat:"", zona:"", alto:false}; setView("objetos"); toast(`${sel.length} objeto(s) agregados`);
+  };
+}
+function newItemFrom(src, detalle, id){
+  return {estado:"Activo", condicion:"Bueno", cantidad:1, marca:"", modelo:"", serie:"", zona:"", ...src, id: id || uid(), code: nextCode(), fotos: [], etiquetas: [VERIFY, "importado"], createdAt: nowISO(), updatedAt: nowISO(), historial: [{t: nowISO(), accion: "Alta", detalle}]};
+}
+function applySeed(){
+  if (S.settings.seedCob1) return 0;
+  let n = 0;
+  for (const s of SEED){
+    const id = "seed-" + s.src; if (S.items.some(i => i.id === id)) continue;
+    const {src, ...rest} = s;
+    S.items.push(newItemFrom({...rest, srcRef: src}, "Importado de tu archivo de Cobranzas (16 oct 2026)", id)); n++;
+    addToList("tiendas", s.tienda); addToList("metodos", s.metodoPago); addToList("categorias", s.categoria);
+  }
+  S.settings.seedCob1 = true; touchSettings(); persist();
+  return n;
+}
+
 $("#fileImport").addEventListener("change", async e => {
   const file = e.target.files[0]; e.target.value = ""; if (!file) return;
   try {
     const name = file.name.toLowerCase();
     if (name.endsWith(".json")){
-      const data = JSON.parse(await file.text()); if (!Array.isArray(data.items)) throw new Error("formato");
-      const replace = live().length && confirm(`El respaldo tiene ${data.items.filter(i => !i.deleted).length} objeto(s).\n\nAceptar = REEMPLAZAR todo tu inventario actual.\nCancelar = combinarlo con lo que ya tienes.`);
-      if (replace || !live().length){ S.items = data.items; if (data.settings) S.settings = {...DEFAULT_SETTINGS, ...data.settings}; }
-      else { const map = new Map(S.items.map(i => [i.id, i])); for (const it of data.items){ const loc = map.get(it.id); if (!loc) S.items.push(it); else if ((it.updatedAt||"") > (loc.updatedAt||"")) Object.assign(loc, it, {fotos: (it.fotos||[]).some(f => f.data) ? it.fotos : loc.fotos}); } }
-      S.items.forEach(i => syncItem(i)); touchSettings(); persist(); render(); toast("Respaldo importado");
+      const data = JSON.parse(await file.text());
+      if (Array.isArray(data.pedidos) && Array.isArray(data.movimientos)) return openCobranzasImport(data);
+      if (!Array.isArray(data.items)) throw new Error("formato");
+      let mode = "replace";
+      if (live().length) mode = await ask({title: "Importar respaldo", html: `<p style="margin:0">El respaldo tiene <b>${data.items.filter(i => !i.deleted).length}</b> objeto(s)${Array.isArray(data.compras) ? ` y ${data.compras.filter(c => !c.deleted).length} compra(s)` : ""}. ¿Qué hago con lo que ya tienes?</p>`, buttons: [{label:"Cancelar", value:null},{label:"Combinar", value:"merge", cls:"primary"},{label:"Reemplazar todo", value:"replace", cls:"danger"}]});
+      if (!mode) return;
+      if (mode === "replace"){ S.items = data.items; S.compras = data.compras || []; if (data.settings) S.settings = {...DEFAULT_SETTINGS, ...data.settings, seedCob1: true}; }
+      else {
+        const map = new Map(S.items.map(i => [i.id, i])); for (const it of data.items){ const loc = map.get(it.id); if (!loc) S.items.push(it); else if ((it.updatedAt||"") > (loc.updatedAt||"")) Object.assign(loc, it, {fotos: (it.fotos||[]).some(f => f.data) ? it.fotos : loc.fotos}); }
+        const cm = new Map(S.compras.map(c => [c.id, c])); for (const c of (data.compras || [])){ const loc = cm.get(c.id); if (!loc) S.compras.push(c); else if ((c.updatedAt||"") > (loc.updatedAt||"")) Object.assign(loc, c); }
+      }
+      S.items.forEach(syncItem); S.compras.forEach(syncCompra); touchSettings(); persist(); applyLayout(); render(); toast("Respaldo importado");
       return;
     }
     let rows;
@@ -1030,70 +1629,98 @@ $("#fileImport").addEventListener("change", async e => {
       else { const n = {...it, id: uid(), code: it.code || nextCode(), fotos: [], createdAt: nowISO(), updatedAt: nowISO(), historial: [{t: nowISO(), accion: "Alta", detalle: "Importado desde " + file.name}]}; S.items.push(n); syncItem(n); added++; }
     }
     persist(); render(); toast(`${added} agregado(s), ${updated} actualizado(s)`);
-  } catch (err) { toast("No se pudo leer el archivo. Usa un respaldo JSON de esta app, o un CSV/Excel con encabezados."); }
+  } catch (err) { toast("No se pudo leer el archivo. Usa un respaldo de esta app, tu archivo de Cobranzas, o un CSV/Excel con encabezados."); }
 });
 
 /* ================= Ajustes ================= */
 function renderAjustes(){
   const el = $("#v-ajustes"); const st = S.settings;
   const lr = st.ultimoRespaldo ? new Date(st.ultimoRespaldo).toLocaleString("es-MX", {dateStyle:"medium", timeStyle:"short"}) : "nunca";
+  const seg = (id, opts, val) => `<div class="seg" role="group" id="${id}">${opts.map(([v,t]) => `<button type="button" data-v="${v}" aria-pressed="${String(val) === String(v)}">${t}</button>`).join("")}</div>`;
   el.innerHTML = `
-  <h1>Ajustes y respaldo</h1>
-  <div class="grid">
-    <div class="panel"><h2>Respaldo</h2>
-      <p class="small muted" style="margin-top:0">Tus datos y fotos también se guardan en este navegador para que funcione sin internet. Exporta un respaldo completo con regularidad y guárdalo en Drive o en tu computadora. Último respaldo: <b>${lr}</b>.</p>
-      <div class="row"><button class="btn primary" id="eJson">Respaldo completo (con fotos)</button><button class="btn" id="eJsonNo">Respaldo sin fotos</button><button class="btn" id="eXlsx">Exportar a Excel</button><button class="btn" id="eCsv">Exportar CSV</button></div>
-      <div class="row" style="margin-top:10px"><button class="btn" id="iFile">Importar respaldo, Excel o CSV</button></div>
-      <p class="small muted">Al importar Excel o CSV se reconocen encabezados como Nombre, Precio, Fecha de compra, Marca, Modelo, Serie, Zona y Categoría. Los objetos con el mismo código se actualizan.</p>
-      <p class="small muted" id="cloudInfo">${cloud.col ? `Sincronizado con tu cuenta <b>${esc(cloud.email)}</b>: tus datos y fotos se guardan en la nube y aparecen en tu celular y tu computadora. Aun así, exporta un respaldo de vez en cuando.` : "Estás usando la app sin cuenta: todo se queda solo en este dispositivo."}</p><div class="row">${cloud.col ? '<button class="btn" id="cOut">Cerrar sesión</button>' : '<button class="btn" id="cIn">Entrar con mi cuenta</button>'}</div>
+  <h1>Ajustes</h1>
+  <div class="dash" style="margin-top:0">
+    <div class="panel"><h2>Apariencia</h2>
+      <div class="setrow"><span>Modo</span>${seg("aTema", [["auto","Automático"],["claro","Claro"],["oscuro","Oscuro"],["negro","Negro puro"]], st.tema)}</div>
+      <div class="setrow"><span>Tema de la app</span><div class="swatches">${Object.entries(PALETAS).map(([k,[n,h,s]]) => `<button type="button" class="pal" data-pal="${k}" aria-pressed="${st.paleta === k}"><i style="background:hsl(${h} ${s}% 94%)"><b style="background:hsl(${h} ${Math.max(s,8)+14}% 15%)"></b></i>${n}</button>`).join("")}</div></div>
+      <div class="setrow"><span>Color de acento</span><div class="swatches">${ACENTOS.map(([c,n]) => `<button type="button" class="sw" data-acc="${c}" title="${n}" aria-label="${n}" aria-pressed="${(st.acento||"").toLowerCase() === c.toLowerCase()}" style="background:${c}"></button>`).join("")}<label class="row small" style="gap:6px">Otro<input type="color" class="colorinput" id="aColor" value="${esc(st.acento || "#F2C230")}"></label></div></div>
+      <div class="setrow"><span>Tamaño de texto</span>${seg("aEsc", [["0.92","Chico"],["1","Normal"],["1.1","Grande"],["1.2","Muy grande"]], st.escala || 1)}</div>
+      <div class="setrow"><span>Densidad</span>${seg("aDen", [["comoda","Cómoda"],["compacta","Compacta"]], st.densidad || "comoda")}</div>
+      <div class="setrow"><span>Diseño</span>${seg("aVista", [["auto","Automático"],["telefono","Teléfono"],["escritorio","Escritorio"]], st.vista || "auto")}</div>
+      <div class="setrow"><button class="btn sm" id="aReset" style="justify-self:start">Restablecer apariencia</button></div>
     </div>
-    <div class="panel"><h2>Valores</h2><div class="fg">
-      <label class="f">Alto valor desde (MXN)<input type="number" min="0" step="100" id="sUmbral" value="${st.umbral}"></label>
-      <label class="f">Valor residual mínimo (%)<input type="number" min="0" max="100" step="1" id="sRes" value="${st.residual ?? 15}"><span class="hint">Lo mínimo que conserva un objeto al terminar su vida útil</span></label>
-      <label class="f">Tema<select id="sTema">${[["auto","Automático"],["claro","Claro"],["oscuro","Oscuro"]].map(([v,t]) => `<option value="${v}" ${st.tema===v?"selected":""}>${t}</option>`).join("")}</select></label>
-      <label class="f">Vista<select id="sVista">${[["auto","Automática"],["telefono","Teléfono"],["escritorio","Escritorio"]].map(([v,t]) => `<option value="${v}" ${st.vista===v?"selected":""}>${t}</option>`).join("")}</select></label>
-    </div></div>
-    <div class="panel"><h2>Listas</h2><div class="fg">
-      <label class="f s3">Categorías y vida útil<textarea id="sCat" rows="8">${esc(st.categorias.map(c => `${c.nombre} | ${c.vida}`).join("\n"))}</textarea><span class="hint">Una por línea: Nombre | años de vida útil</span></label>
-      <label class="f">Zonas del cuarto<textarea id="sZon" rows="7">${esc(st.zonas.join("\n"))}</textarea></label>
-      <label class="f">Métodos de pago<textarea id="sMet" rows="7">${esc(st.metodos.join("\n"))}</textarea></label>
-      <label class="f">Condiciones<textarea id="sCon" rows="7">${esc(st.condiciones.join("\n"))}</textarea></label>
-    </div><div class="row" style="margin-top:10px"><button class="btn primary" id="sSave">Guardar listas</button></div></div>
+    <div class="panel"><h2>Preferencias</h2>
+      <div class="setrow"><span>Pantalla al abrir</span><select id="pInicio">${VIEWS.map(([k,t]) => `<option value="${k}" ${st.inicio === k ? "selected" : ""}>${t}</option>`).join("")}</select></div>
+      <div class="setrow"><span>Formulario al agregar</span>${seg("pForm", [["rapido","Rápido"],["detalles","Detalles"]], st.formModo || "rapido")}</div>
+      <div class="setrow"><span>Montos</span>${seg("pCent", [["auto","Con centavos"],["nunca","Redondeados"]], st.centavos || "auto")}<label class="check"><input type="checkbox" id="pPriv" ${st.privado ? "checked" : ""}> Ocultar montos (para enseñar la pantalla)</label></div>
+      <div class="setrow"><span>Nombre en los reportes</span><input type="text" id="pDueno" value="${esc(st.dueno || "")}"></div>
+      <div class="setrow"><div class="fg">
+        <label class="f">Alto valor desde (MXN)<input type="number" min="0" step="100" id="sUmbral" value="${st.umbral}"></label>
+        <label class="f">Valor residual mínimo (%)<input type="number" min="0" max="100" step="1" id="sRes" value="${st.residual ?? 15}"><span class="hint">Lo que conserva al terminar su vida útil</span></label>
+      </div></div>
+      <div class="setrow"><span>Listas de opciones</span><button class="btn sm" data-nav="listas" style="justify-self:start">Editar desplegables</button></div>
+    </div>
+    <div class="panel"><h2>Respaldo</h2>
+      <p class="small muted" style="margin-top:0">Tus datos y fotos también se guardan en este navegador para que funcione sin internet. Exporta un respaldo completo de vez en cuando y guárdalo en Drive. Último respaldo: <b>${lr}</b>.</p>
+      <div class="row"><button class="btn primary" id="eJson">Respaldo completo (con fotos)</button><button class="btn" id="eJsonNo">Sin fotos</button><button class="btn" id="eXlsx">Excel</button><button class="btn" id="eCsv">CSV</button></div>
+      <p class="small muted">${cloud.col ? `Sincronizado con tu cuenta <b>${esc(cloud.email)}</b>: tus objetos, compras y fotos se guardan en la nube y aparecen en tu celular y tu computadora.` : "Estás usando la app sin cuenta: todo se queda solo en este dispositivo."}</p><div class="row">${cloud.col ? '<button class="btn" id="cOut">Cerrar sesión</button>' : '<button class="btn" id="cIn">Entrar con mi cuenta</button>'}</div>
+    </div>
+    <div class="panel"><h2>Importar</h2>
+      <p class="small muted" style="margin-top:0">Acepta un respaldo de esta app, tu archivo de <b>Cobranzas</b> (.json, toma tus pedidos de Amazon, Mercado Libre y Temu) o un Excel/CSV con encabezados como Nombre, Precio y Fecha de compra.</p>
+      <button class="btn" id="iFile">Elegir archivo para importar</button>
+    </div>
     <div class="panel"><h2>Instalar en tu celular</h2><p class="small" style="margin:0">En Samsung Internet o Chrome abre el menú y elige <b>Agregar a pantalla de inicio</b> (o <b>Instalar app</b>). Con tu cuenta iniciada verás lo mismo en todos tus dispositivos.</p></div>
-    <div class="panel"><h2>Zona de cuidado</h2><p class="small muted" style="margin-top:0">${live().length} objeto(s) guardados${storageOK ? "" : " · el guardado en este dispositivo falló, exporta un respaldo"}.</p><button class="btn danger" id="sWipe">Borrar todo el inventario de este dispositivo</button></div>
+    <div class="panel"><h2>Zona de cuidado</h2><p class="small muted" style="margin-top:0">${live().length} objeto(s) y ${liveC().length} compra(s) guardados${storageOK ? "" : " · el guardado en este dispositivo falló, exporta un respaldo"}.</p><button class="btn danger" id="sWipe">Borrar todo de este dispositivo</button></div>
   </div>`;
-  if ($("#cOut")) $("#cOut").onclick = cloudLogout; if ($("#cIn")) $("#cIn").onclick = cloudLogin;
-  $("#eJson").onclick = () => exportJSON(true);
-  $("#eJsonNo").onclick = () => exportJSON(false);
-  $("#eXlsx").onclick = () => exportXLSX(live(), `inventario-cuarto-${today()}.xlsx`);
-  $("#eCsv").onclick = () => saveFile(`inventario-cuarto-${today()}.csv`, toCSV(rowsFor(live())), "text/csv");
-  $("#iFile").onclick = () => $("#fileImport").click();
+  const segWire = (id, fn) => $$(`#${id} button`, el).forEach(b => b.onclick = () => { $$(`#${id} button`, el).forEach(x => x.setAttribute("aria-pressed", x === b)); fn(b.dataset.v); touchSettings(); applyLayout(); });
+  segWire("aTema", v => st.tema = v);
+  segWire("aEsc", v => st.escala = +v);
+  segWire("aDen", v => st.densidad = v);
+  segWire("aVista", v => st.vista = v);
+  segWire("pForm", v => st.formModo = v);
+  segWire("pCent", v => { st.centavos = v; });
+  $$("[data-pal]", el).forEach(b => b.onclick = () => { st.paleta = b.dataset.pal; touchSettings(); applyLayout(); renderAjustes(); });
+  $$("[data-acc]", el).forEach(b => b.onclick = () => { st.acento = b.dataset.acc; touchSettings(); applyLayout(); renderAjustes(); });
+  $("#aColor").oninput = debounce(e => { st.acento = e.target.value; touchSettings(); applyLayout(); $$("[data-acc]", el).forEach(x => x.setAttribute("aria-pressed", "false")); }, 120);
+  $("#aReset").onclick = () => { Object.assign(st, {tema:"auto", paleta:"grafito", acento:"#F2C230", escala:1, densidad:"comoda", vista:"auto"}); touchSettings(); applyLayout(); renderAjustes(); toast("Apariencia restablecida"); };
+  $("#pInicio").onchange = e => { st.inicio = e.target.value; touchSettings(); };
+  $("#pPriv").onchange = e => { st.privado = e.target.checked; touchSettings(); applyLayout(); };
+  $("#pDueno").onchange = e => { st.dueno = e.target.value.trim(); touchSettings(); };
   $("#sUmbral").onchange = e => { st.umbral = parseNum(e.target.value) || 0; touchSettings(); };
   $("#sRes").onchange = e => { st.residual = Math.min(100, Math.max(0, parseNum(e.target.value) ?? 15)); touchSettings(); };
-  $("#sTema").onchange = e => { st.tema = e.target.value; touchSettings(); applyLayout(); };
-  $("#sVista").onchange = e => { st.vista = e.target.value; touchSettings(); applyLayout(); };
-  $("#sSave").onclick = () => {
-    const lines = id => $(id).value.split("\n").map(s => s.trim()).filter(Boolean);
-    st.categorias = lines("#sCat").map(l => { const [n, v] = l.split("|").map(s => s.trim()); return {nombre: n, vida: parseNum(v) || 5}; });
-    st.zonas = lines("#sZon"); st.metodos = lines("#sMet"); st.condiciones = lines("#sCon");
-    touchSettings(); toast("Listas guardadas");
-  };
-  $("#sWipe").onclick = () => {
-    if (!confirm("¿Borrar TODO el inventario de este dispositivo? Esto no se puede deshacer. Exporta un respaldo antes.")) return;
-    if (prompt('Escribe BORRAR para confirmar') !== "BORRAR") return;
+  $("#eJson").onclick = () => exportJSON(true);
+  $("#eJsonNo").onclick = () => exportJSON(false);
+  $("#eXlsx").onclick = () => exportXLSX(live(), `inventario-cuarto-${today()}.xlsx`, true);
+  $("#eCsv").onclick = () => saveFile(`inventario-cuarto-${today()}.csv`, toCSV(rowsFor(live())), "text/csv");
+  $("#iFile").onclick = () => $("#fileImport").click();
+  if ($("#cOut")) $("#cOut").onclick = cloudLogout; if ($("#cIn")) $("#cIn").onclick = cloudLogin;
+  $("#sWipe").onclick = async () => {
+    const r = await ask({title: "Borrar todo", html: `<p style="margin:0">Se borrarán todos los objetos y compras de este dispositivo (y de la copia en la nube). No se puede deshacer; exporta un respaldo antes.</p>`, typeToConfirm: "BORRAR", buttons: [{label:"Cancelar", value:false},{label:"Borrar todo", value:true, cls:"danger", needsType:true}]});
+    if (!r) return;
     for (const i of S.items){ const tomb = {id: i.id, code: i.code, deleted: true, updatedAt: nowISO()}; Object.keys(i).forEach(k => delete i[k]); Object.assign(i, tomb); syncItem(i); }
+    for (const c of S.compras){ Object.keys(c).forEach(k => k !== "id" && delete c[k]); Object.assign(c, {deleted: true, updatedAt: nowISO()}); syncCompra(c); }
     persist(); render(); toast("Inventario borrado");
   };
 }
 
 /* ================= Inicio de la app ================= */
 (async function start(){
+  buildNav();
   try {
-    const [items, settings] = await Promise.all([kvGet("items"), kvGet("settings")]);
+    const [items, settings, compras] = await Promise.all([kvGet("items"), kvGet("settings"), kvGet("compras")]);
     if (Array.isArray(items)) S.items = items;
-    if (settings) S.settings = {...DEFAULT_SETTINGS, ...settings};
+    if (Array.isArray(compras)) S.compras = compras;
+    if (settings){
+      S.settings = {...structuredClone(DEFAULT_SETTINGS), ...settings};
+      // Migración: listas nuevas y métodos con los nombres de tus tarjetas
+      for (const k of ["tiendas","etiquetas"]) if (!Array.isArray(S.settings[k])) S.settings[k] = [...DEFAULT_SETTINGS[k]];
+      for (const m of DEFAULT_SETTINGS.metodos) if (!S.settings.metodos.includes(m)) S.settings.metodos.push(m);
+      if (!S.settings.categorias.some(c => c.nombre === "Accesorios personales")) S.settings.categorias.splice(9, 0, {nombre:"Accesorios personales", vida:3});
+    }
   } catch (e) { storageOK = false; toast("Este navegador no permite guardar datos aquí. Exporta respaldos seguido.", 5000); }
-  applyLayout(); setView("inicio");
+  const n = applySeed();
+  applyLayout(); setView(VIEWS.some(v => v[0] === S.settings.inicio) ? S.settings.inicio : "inicio");
+  if (n) setTimeout(() => toast(`Agregué ${n} adquisiciones de tus compras. Revísalas en Objetos › Por verificar.`, 5200), 400);
   initCloud();
 })();
 </script>
