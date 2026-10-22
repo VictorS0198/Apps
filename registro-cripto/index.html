@@ -155,6 +155,9 @@ button.sm,.lbtn{padding:5px 9px;font-size:13px}
 .rep-head{display:flex;gap:12px;align-items:center;margin-bottom:8px}
 .rep-head img{width:56px;height:56px;border-radius:10px}
 @media print{body.printing #ovl{display:none!important}}
+.lm-table th.r,.lm-table td.num{text-align:right}.lm-pct{font-weight:700;font-size:16px;white-space:nowrap}.lm-px{display:none;font-size:11px;font-weight:400}
+@media (max-width:700px){.lm-table{min-width:0!important}.lm-table th:nth-child(n+5),.lm-table td:nth-child(n+5){display:none}.lm-px{display:block}.lm-table{width:100%;font-size:13px}.lm-table th,.lm-table td{padding-left:3px;padding-right:3px;white-space:normal}.lm-table td .mu{font-size:11px!important}.lm-pct{font-size:14px}.lm-table .coin-ic,.lm-table img{display:none}}.lm-pct.pos{color:var(--buy)}.lm-pct.neg{color:var(--sell)}
+
 .rcharts{display:grid;gap:14px 18px;grid-template-columns:repeat(2,minmax(0,1fr))}
 .rcharts.rc1{grid-template-columns:minmax(0,1fr)}.rcharts.rc3{grid-template-columns:repeat(3,minmax(0,1fr))}
 .rcharts .chartbox{max-width:none}.rcharts .rwide{grid-column:1/-1}
@@ -1090,13 +1093,16 @@ function cycTopHtml(cs){
  var coins={},plats={};cs.forEach(function(x){coins[x.o.coin]=1;if(x.o.plat)plats[x.o.plat]=1});
  var seg=function(k,opts){return '<div class="seg" role="group">'+opts.map(function(o){return '<button type="button" data-cyf="'+k+'" data-v="'+o[0]+'" aria-pressed="'+(CYU[k]==o[0])+'">'+o[1]+'</button>'}).join('')+'</div>'};
  var sel=function(k,ph,vals){return '<select data-cyf="'+k+'" class="cyc-sel"><option value="">'+ph+'</option>'+vals.map(function(v){return '<option'+(CYU[k]==v?' selected':'')+'>'+esc(v)+'</option>'}).join('')+'</select>'};
- var bar='<div class="cyc-bar">'+seg('view',[['active','Activos ('+act.length+')'],['closed','Cerrados ('+cl.length+')'],['all','Todos']])+
+ var bar='<div class="cyc-bar">'+seg('view',[['active','Activos ('+act.length+')'],['closed','Cerrados ('+cl.length+')'],['all','Todos'],['last','Último movimiento']])+
+  (CYU.view=='last'?sel('coin','Todas las monedas',Object.keys(coins).sort())+sel('plat','Todos los brokers',Object.keys(plats).sort())+
+   '<label class="unlock"><input type="checkbox" data-cyf="lastPlat"'+(CYU.lastPlat?' checked':'')+'>Separar por broker</label>'+
+   (CYU.coin||CYU.plat?'<button type="button" class="sm x" data-cyclear="1">Quitar filtros</button>':'')+'</div>':(
   seg('type',[['','Todos'],['rec','Esperan recompra'],['ven','Esperan venta']])+
   sel('coin','Todas las monedas',Object.keys(coins).sort())+sel('plat','Todos los brokers',Object.keys(plats).sort())+
   '<select data-cyf="sort" class="cyc-sel">'+[['recent','Más recientes'],['old','Más antiguos'],['pend','Mayor monto pendiente'],['opp','Mejor oportunidad'],['gain','Mayor ganancia']].map(function(o){return '<option value="'+o[0]+'"'+(CYU.sort==o[0]?' selected':'')+'>'+o[1]+'</option>'}).join('')+'</select>'+
   '<label class="unlock"><input type="checkbox" data-cyf="opp"'+(CYU.opp?' checked':'')+'>Solo con precio a favor</label>'+
   '<input type="search" data-cyf="q" class="cyc-q" placeholder="Buscar folio, moneda o broker" value="'+esc(CYU.q||'')+'">'+
-  (CYU.type||CYU.coin||CYU.plat||CYU.opp||CYU.q?'<button type="button" class="sm x" data-cyclear="1">Quitar filtros</button>':'')+'</div>';
+  (CYU.type||CYU.coin||CYU.plat||CYU.opp||CYU.q?'<button type="button" class="sm x" data-cyclear="1">Quitar filtros</button>':'')+'</div>'));
  return '<div class="card cyc-top"><div class="row"><h2 style="margin:0">Ciclos</h2><span class="sp"></span>'+
   '<button type="button" class="sm" data-cydash="1">'+(CYU.dash?'Ocultar resumen':'Mostrar resumen')+'</button>'+(CYU.dash?'<button type="button" class="sm" data-cycfg="1">'+(CYU.cfg?'Listo':'Elegir indicadores')+'</button>':'')+'</div>'+
   (CYU.dash?cfg+dash:'')+bar+'</div>';
@@ -1118,6 +1124,26 @@ document.addEventListener('change',function(e){
 var _cyqT=null;
 document.addEventListener('input',function(e){var t=e.target;if(!t.getAttribute||t.getAttribute('data-cyf')!='q')return;CYU.q=t.value;clearTimeout(_cyqT);_cyqT=setTimeout(function(){saveCyu();render()},300)});
 
+/* último movimiento por moneda (compra o venta) y cuánto se ha movido el precio desde entonces */
+function lastMovesHtml(){
+ var by={};
+ M.forEach(function(m){if(CYU.coin&&m.coin!=CYU.coin)return;if(CYU.plat&&m.plat!=CYU.plat)return;
+  var k=CYU.lastPlat?m.coin+'|'+(m.plat||''):m.coin,o=by[k];if(!o||m.time>o.time||(m.time==o.time&&m.id>o.id))by[k]=m});
+ var rows=Object.keys(by).map(function(k){var m=by[k],pp=m.price>0?m.price:(m.qty>0&&m.usdt>0?m.usdt/m.qty:null),p=refPrice(m.coin),pct=pp&&p?(p/pp-1)*100:null,sell=m.action=='VENTA';
+  return{m:m,pp:pp,p:p,pct:pct,fav:pct==null?null:(sell?-pct:pct)}});
+ rows.sort(function(a,b){return a.m.time<b.m.time?1:-1});
+ if(!rows.length)return '<div class="card empty">No hay movimientos con estos filtros.</div>';
+ var body=rows.map(function(r){var m=r.m,sell=m.action=='VENTA',cls=r.fav==null?'':r.fav>=0?'pos':'neg';
+  return '<tr><td>'+coinIcon(m.coin,18)+'<b>'+esc(m.coin)+'</b>'+(CYU.lastPlat?'<div class="mu" style="font-size:12px">'+esc(m.plat||'')+'</div>':'')+'</td>'+
+   '<td><b class="'+m.action+'">'+(sell?'Venta':'Compra')+'</b><div class="mu" style="font-size:12px">'+fd(m.time).slice(0,16)+(CYU.lastPlat?'':' · '+esc(m.plat||''))+'</div></td>'+
+   '<td class="num">'+(m.qty?n(m.qty,m.qty>=100?2:m.qty>=1?4:6):'—')+'<div class="mu" style="font-size:12px">'+n(m.usdt,2)+' USD</div></td>'+
+   '<td class="num lm-pct '+cls+'">'+(r.pct==null?'<span class="mu">sin precio</span>':(r.pct>=0?'▲ +':'▼ ')+n(r.pct,2)+'%')+'<div class="mu lm-px">'+px(r.pp)+' → '+px(r.p)+'</div></td>'+
+   '<td class="num">'+px(r.pp)+'</td><td class="num">'+px(r.p)+'</td>'+
+   '<td class="mu" style="font-size:12px">'+(r.fav==null?'':sell?(r.pct<0?'Bajó desde tu venta: a favor para recomprar':'Subió desde tu venta'):(r.pct>=0?'Subió desde tu compra: a favor para vender':'Bajó desde tu compra'))+'</td>'+
+   '<td><button type="button" class="x sm" data-edit="'+m.id+'">Editar</button></td></tr>'}).join('');
+ return '<div class="card wrap"><table class="lm-table"><thead><tr><th>Moneda</th><th>Último</th><th class="r">Cantidad</th><th class="r">Cambio</th><th class="r">Precio de ese movimiento</th><th class="r">Precio hoy</th><th></th><th></th></tr></thead><tbody>'+body+'</tbody></table>'+
+  '<p class="mu" style="font-size:12px;margin:8px 0 0">El cambio es el precio de hoy contra el precio de tu último movimiento de cada moneda, sea compra o venta. En verde cuando te favorece: si compraste, que suba; si vendiste, que baje.</p></div>';
+}
 function render(){
  var cs=cycles(),fc=$('#fc').value;
  var open=cs.filter(function(x){return x.st!='cerrado'}).length;
@@ -1126,6 +1152,7 @@ function render(){
  $('#cycTop').innerHTML=cycTopHtml(cs);
  if(_aq){var _q=document.querySelector('.cyc-q');if(_q){_q.focus();_q.setSelectionRange(_q.value.length,_q.value.length)}}
  var list=cycSort(cycFilter(cs));
+ if(CYU.view=='last')$('#v1').innerHTML=lastMovesHtml();else
  $('#v1').innerHTML=list.length?list.map(cardHtml).join(''):'<div class="card empty">'+(CYU.view=='active'&&!open?'No tienes ciclos activos: todos están cerrados.':'No hay ciclos con estos filtros.')+'</div>';
  var mv=M.filter(function(m){return!fc||m.coin==fc}).sort(function(a,b){return a.time<b.time?1:-1});
  $('#v2').innerHTML='<div class="card wrap"><table><thead><tr><th>Folio</th><th>Cripto</th><th>Acción</th><th>Monto</th><th>USD</th><th>Cantidad</th><th>Precio</th><th>Orden</th><th>Comisión</th><th>Fecha</th><th>Plataforma</th><th></th></tr></thead><tbody>'+
