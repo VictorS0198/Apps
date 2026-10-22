@@ -155,6 +155,11 @@ button.sm,.lbtn{padding:5px 9px;font-size:13px}
 .rep-head{display:flex;gap:12px;align-items:center;margin-bottom:8px}
 .rep-head img{width:56px;height:56px;border-radius:10px}
 @media print{body.printing #ovl{display:none!important}}
+.fs-map{position:relative;margin:6px auto 4px;max-width:100%}
+.fs-scr{position:absolute;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;border:2px solid var(--ln);border-radius:10px;background:var(--bg);color:var(--ink);padding:4px;cursor:pointer;font-size:12px;line-height:1.2;overflow:hidden;text-align:center}
+.fs-scr b{font-size:22px}.fs-scr:hover,.fs-scr:focus-visible{border-color:var(--acc,#2E93BE)}.fs-scr.on{border-color:var(--acc,#2E93BE);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc,#2E93BE) 25%,transparent)}
+#fsBtn svg{flex:none}
+
 .lm-table th.r,.lm-table td.num{text-align:right}.lm-pct{font-weight:700;font-size:16px;white-space:nowrap}.lm-px{display:none;font-size:11px;font-weight:400}
 @media (max-width:700px){.lm-table{min-width:0!important}.lm-table th:nth-child(n+5),.lm-table td:nth-child(n+5){display:none}.lm-px{display:block}.lm-table{width:100%;font-size:13px}.lm-table th,.lm-table td{padding-left:3px;padding-right:3px;white-space:normal}.lm-table td .mu{font-size:11px!important}.lm-pct{font-size:14px}.lm-table .coin-ic,.lm-table img{display:none}}.lm-pct.pos{color:var(--buy)}.lm-pct.neg{color:var(--sell)}
 
@@ -754,6 +759,68 @@ document.addEventListener('change',function(e){
 });
 
 applyAll();applyLogo();
+
+/* ================= Pantalla completa, eligiendo el monitor ================= */
+var KFS='registro-cripto.fsscreen';
+var FS={details:null};
+function fsIsOn(){return !!(document.fullscreenElement||document.webkitFullscreenElement)}
+function fsExit(){(document.exitFullscreen||document.webkitExitFullscreen||function(){}).call(document)}
+function fsGo(screen){
+ var el=document.documentElement,req=el.requestFullscreen||el.webkitRequestFullscreen;if(!req)return alert('Este navegador no permite pantalla completa. Usa F11.');
+ var p;try{p=req.call(el,screen?{navigationUI:'hide',screen:screen}:{navigationUI:'hide'})}catch(e){p=Promise.reject(e)}
+ if(p&&p.catch)p.catch(function(){try{req.call(el)}catch(e){}});
+}
+function fsLabel(s,i){var l=(s.label||'').trim();return (l||('Pantalla '+(i+1)))}
+function fsScreens(){return FS.details?FS.details.screens.slice().sort(function(a,b){return a.left-b.left||a.top-b.top}):[]}
+function fsPickerHtml(){
+ var sc=fsScreens(),cur=FS.details&&FS.details.currentScreen,saved=localStorage.getItem(KFS)||'';
+ if(!sc.length)return '';
+ var minL=Math.min.apply(null,sc.map(function(s){return s.left})),minT=Math.min.apply(null,sc.map(function(s){return s.top})),
+  maxR=Math.max.apply(null,sc.map(function(s){return s.left+s.width})),maxB=Math.max.apply(null,sc.map(function(s){return s.top+s.height})),
+  W=maxR-minL,H=maxB-minT,k=Math.min(520/W,170/H);
+ var map='<div class="fs-map" style="width:'+Math.round(W*k)+'px;height:'+Math.round(H*k)+'px">'+sc.map(function(s,i){
+  var key=s.left+','+s.top,me=cur&&cur.left==s.left&&cur.top==s.top;
+  return '<button type="button" class="fs-scr'+(saved==key?' on':'')+'" data-fsscr="'+i+'" style="left:'+Math.round((s.left-minL)*k)+'px;top:'+Math.round((s.top-minT)*k)+'px;width:'+Math.max(40,Math.round(s.width*k)-6)+'px;height:'+Math.max(30,Math.round(s.height*k)-6)+'px">'+
+   '<b>'+(i+1)+'</b><span>'+esc(fsLabel(s,i))+'</span><span class="mu">'+s.width+'×'+s.height+(s.isPrimary?' · principal':'')+(me?' · aquí está':'')+'</span></button>'}).join('')+'</div>';
+ return map;
+}
+function fsOpen(){
+ if(fsIsOn()){fsExit();return}
+ var html=function(body){return '<div class="row" style="margin-bottom:8px"><h2 style="margin:0">Pantalla completa</h2><span class="sp"></span><button type="button" id="rpCancel">Cerrar</button></div>'+body};
+ if(!('getScreenDetails' in window)){
+  openOvl(html('<p>Este navegador no deja elegir el monitor. En <b>Chrome</b> o <b>Edge</b> sí se puede.</p><p>Mientras, puedes llevar la ventana al monitor que quieras con <b>Windows + Shift + ← / →</b> y luego usar el botón de abajo (o <b>F11</b>).</p><div class="row"><button type="button" class="p" data-fshere="1">Pantalla completa aquí</button></div>'));return}
+ openOvl(html('<p class="mu" style="margin:0 0 10px">Consultando tus pantallas… Si el navegador pregunta por <b>administrar ventanas en todas tus pantallas</b>, dale <b>Permitir</b>.</p>'));
+ window.getScreenDetails().then(function(d){FS.details=d;
+  d.onscreenschange=function(){if(!$('#ovl').hidden&&$('.fs-map'))fsOpen()};
+  openOvl(html('<p class="mu" style="margin:0 0 10px">Toca la pantalla donde la quieres ver (están acomodadas como en Windows). Para salir: <b>Esc</b>.</p>'+fsPickerHtml()+
+   '<div class="row" style="margin-top:12px"><button type="button" data-fshere="1">Pantalla completa aquí</button>'+(localStorage.getItem(KFS)?'<button type="button" class="x sm" data-fsforget="1">Olvidar pantalla favorita</button>':'')+'<span class="mu" style="font-size:12px">La que elijas queda como favorita: el atajo <b>Shift + F</b> la abre directo.</span></div>'),true);
+ }).catch(function(){
+  openOvl(html('<p>No se dio permiso para ver tus pantallas, así que solo puedo ponerla en pantalla completa en el monitor donde está ahora.</p><p class="mu">Para dar el permiso: icono a la izquierda de la dirección → <b>Administración de ventanas</b> → Permitir. También puedes mover la ventana con <b>Windows + Shift + ← / →</b>.</p><div class="row"><button type="button" class="p" data-fshere="1">Pantalla completa aquí</button></div>'));
+ });
+}
+function fsFavorite(){
+ var key=localStorage.getItem(KFS);
+ if(!key||!('getScreenDetails' in window)){fsGo(null);return}
+ var go=function(){var s=fsScreens().filter(function(s){return s.left+','+s.top==key})[0];fsGo(s||null)};
+ if(FS.details)go();else window.getScreenDetails().then(function(d){FS.details=d;go()}).catch(function(){fsGo(null)});
+}
+document.addEventListener('click',function(e){
+ var t=e.target.closest&&e.target.closest('#fsBtn,[data-fsscr],[data-fshere],[data-fsforget]');if(!t)return;
+ if(t.id=='fsBtn'){fsOpen();return}
+ if(t.hasAttribute('data-fshere')){closeOvl();fsGo(null);return}
+ if(t.hasAttribute('data-fsforget')){try{localStorage.removeItem(KFS)}catch(err){}fsOpen();return}
+ var s=fsScreens()[+t.getAttribute('data-fsscr')];if(!s)return;
+ try{localStorage.setItem(KFS,s.left+','+s.top)}catch(err){}
+ closeOvl();fsGo(s);
+});
+document.addEventListener('keydown',function(e){
+ if(e.shiftKey&&!e.ctrlKey&&!e.altKey&&!e.metaKey&&(e.key=='F'||e.key=='f')){var a=document.activeElement,tg=a&&a.tagName;if(tg=='INPUT'||tg=='TEXTAREA'||tg=='SELECT'||(a&&a.isContentEditable))return;e.preventDefault();if(fsIsOn())fsExit();else fsFavorite()}
+});
+function fsSync(){var b=$('#fsBtn');if(!b)return;var on=fsIsOn();b.title=on?'Salir de pantalla completa (Esc)':'Pantalla completa: elegir monitor (Shift + F)';b.setAttribute('aria-label',b.title);b.innerHTML=on?
+ '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M9 4v5H4M15 4v5h5M9 20v-5H4M15 20v-5h5"/></svg>Salir':
+ '<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5"/></svg>Pantalla completa'}
+(function(){var bar=document.querySelector('.bkgen .row');if(bar&&!$('#fsBtn')){bar.insertAdjacentHTML('beforeend','<button type="button" id="fsBtn" class="cloud-pill"></button>');fsSync()}})();
+document.addEventListener('fullscreenchange',fsSync);document.addEventListener('webkitfullscreenchange',fsSync);
 
 /* ---------- fondo / marca de agua ---------- */
 var wmOn=localStorage.getItem(KWM);wmOn=wmOn==null?true:wmOn=='1';
