@@ -168,7 +168,7 @@ button.sm,.lbtn{padding:5px 9px;font-size:13px}
 .al-bulk input,.al-bulk select{height:32px!important}
 .al-table td{vertical-align:middle}.al-mcond{display:none;font-size:11px;max-width:150px;white-space:normal}
 @media (max-width:700px){.al-table{min-width:0!important;width:100%}.al-table th:nth-child(3),.al-table td:nth-child(3),.al-table th:nth-child(5),.al-table td:nth-child(5),.al-table th:nth-child(6),.al-table td:nth-child(6),.al-table th:nth-child(9),.al-table td:nth-child(9),.al-table th:nth-child(8),.al-table td:nth-child(8){display:none}.al-table td:last-child{white-space:normal!important;width:1%}.al-table td:last-child button{display:block;margin:2px 0 2px auto;padding:0 4px}.al-table td:nth-child(2){max-width:118px}.al-table td:nth-child(7){white-space:normal}.al-mst{display:inline-block!important;margin-top:2px}.al-mcond{display:block}.al-table th,.al-table td{padding-left:3px;padding-right:3px}.al-table .al-in{width:52px!important}.al-table select.al-in{width:42px!important;margin-right:2px}.al-table td:nth-child(7){font-size:12px}.al-table td:nth-child(4){white-space:nowrap}}.al-mst{display:none}.al-table th.r,.al-table td.num{text-align:right}
-.al-table .al-in{height:32px!important;width:82px;padding:0 6px!important}.al-table select.al-in{width:52px;margin-right:4px}
+.al-table .al-in{height:32px!important;width:82px;padding:0 6px!important}.al-table select.al-in{width:52px;margin-right:4px}.al-table select.al-tf{width:62px}
 .al-selrow td{background:color-mix(in srgb,var(--acc,#2E93BE) 10%,transparent)}
 .al-st{font-size:12px;font-weight:600;padding:2px 8px;border-radius:999px;white-space:nowrap}
 .al-st.on{background:var(--buy-bg);color:var(--buy)}.al-st.met{background:color-mix(in srgb,#E2A400 22%,transparent);color:#C98A0A}.al-st.off{background:var(--bg);color:var(--mu);border:1px solid var(--ln)}
@@ -1514,10 +1514,33 @@ setInterval(function(){if(!document.hidden)fetchMarket(false).then(afterMarket)}
 var KALR='registro-cripto.alerts';
 var AL={rules:[],watch:[],log:[],seen:0,cfg:{notif:true,sound:true,bg:true}};
 try{var _al=JSON.parse(localStorage.getItem(KALR)||'null');if(_al){Object.keys(_al).forEach(function(k){AL[k]=_al[k]});AL.cfg=Object.assign({notif:true,sound:true,bg:true},_al.cfg||{})}}catch(e){}
-var ALU={sel:{},mk:{coins:{},type:'last',dir:'any',val:5,mode:'repeat',note:''},f:{coin:'',type:'',st:''},lastCheck:null};
+var ALU={sel:{},mk:{coins:{},type:'candle',tf:'4h',meas:'body',dir:'any',val:5,mode:'repeat',note:''},f:{coin:'',type:'',st:''},lastCheck:null};
 function saveAl(){try{localStorage.setItem(KALR,JSON.stringify(AL))}catch(e){}}
-var AL_T={last:'% desde mi último movimiento',avg:'% contra mi precio promedio',ref:'% desde que creé la alerta',chg24:'Cambio en 24 horas',above:'El precio sube a',below:'El precio baja a'};
-var AL_PCT={last:1,avg:1,ref:1,chg24:1};
+var AL_T={candle:'Movimiento en una sola vela',last:'% desde mi último movimiento',avg:'% contra mi precio promedio',ref:'% desde que creé la alerta',chg24:'Cambio en 24 horas',above:'El precio sube a',below:'El precio baja a'};
+var AL_PCT={last:1,avg:1,ref:1,chg24:1,candle:1};
+var AL_TF=[['15m','15 min',15],['30m','30 min',30],['1h','1 hora',60],['2h','2 horas',120],['4h','4 horas',240],['6h','6 horas',360],['12h','12 horas',720],['1d','1 día','D'],['1w','1 semana','W']];
+function alTfName(tf){var t=AL_TF.filter(function(x){return x[0]==tf})[0];return t?t[1]:tf}
+/* velas: se consultan a Binance (o Bybit si Binance no tiene la moneda) y se guardan en memoria */
+var ALC={};
+function alCandleKeys(){var o={};AL.rules.forEach(function(r){if(r.on&&r.type=='candle')o[r.coin+'|'+(r.tf||'4h')]=1});return Object.keys(o)}
+function alFetchCandle(coin,tf){
+ var b=AL_TF.filter(function(x){return x[0]==tf})[0];
+ return fetchJson('https://api.binance.com/api/v3/klines?symbol='+coin+'USDT&interval='+tf+'&limit=2').then(function(j){
+  if(!Array.isArray(j)||!j.length)throw 0;var k=j[j.length-1],p=j.length>1?j[j.length-2]:null;
+  return{t:+k[0],o:+k[1],h:+k[2],l:+k[3],c:+k[4],end:+k[6],prev:p?{t:+p[0],o:+p[1],h:+p[2],l:+p[3],c:+p[4]}:null,src:'Binance'};
+ }).catch(function(){
+  return fetchJson('https://api.bybit.com/v5/market/kline?category=spot&symbol='+coin+'USDT&interval='+(b?b[2]:240)+'&limit=2').then(function(j){
+   var L=j&&j.result&&j.result.list;if(!L||!L.length)return null;var k=L[0],p=L[1],ms={15:9e5,30:18e5,60:36e5,120:72e5,240:144e5,360:216e5,720:432e5,D:864e5,W:6048e5}[b?b[2]:240];
+   return{t:+k[0],o:+k[1],h:+k[2],l:+k[3],c:+k[4],end:+k[0]+ms-1,prev:p?{t:+p[0],o:+p[1],h:+p[2],l:+p[3],c:+p[4]}:null,src:'Bybit'};
+  }).catch(function(){return null});
+ });
+}
+function alRefreshCandles(){var ks=alCandleKeys();if(!ks.length)return Promise.resolve(false);
+ return Promise.all(ks.map(function(k){var a=k.split('|');return alFetchCandle(a[0],a[1]).then(function(c){if(c){c.at=Date.now();ALC[k]=c}})})).then(function(){return true})}
+function alCandleCur(r,k){if(r.meas=='range')return (k.h/k.l-1)*100;var up=(k.h/k.o-1)*100,dn=(k.l/k.o-1)*100,now=(k.c/k.o-1)*100;
+ /* "en algún momento de la vela": usa el extremo que corresponda a la dirección */
+ if(r.dir=='up')return up;if(r.dir=='down')return dn;return Math.abs(up)>=Math.abs(dn)?up:dn}
+function alLeft(k){var ms=k.end+1-Date.now();if(ms<=0)return 'cerrando';var m=Math.round(ms/6e4);return m>=1440?Math.floor(m/1440)+' d '+Math.floor(m%1440/60)+' h':m>=60?Math.floor(m/60)+' h '+(m%60)+' min':m+' min'}
 function alUp(s){return String(s||'').trim().toUpperCase().replace(/[^A-Z0-9]/g,'')}
 function alHeld(){var o={};brokerData().forEach(function(b){b.rows.forEach(function(r){if(!isCash(r.asset)&&r.qty>1e-9)o[r.asset]=(o[r.asset]||0)+r.qty})});return o}
 function alHeldList(){return Object.keys(alHeld()).sort()}
@@ -1529,29 +1552,35 @@ function alBase(r){if(r.type=='last'){var l=alLast(r.coin);return l?l.p:null}if(
 /* estado actual de una regla: valor medido y si se cumple */
 function alEval(r){
  var p=refPrice(r.coin),o=MKT[r.coin]||{},base=alBase(r),cur=null,ok=false,miss='';
- if(r.type=='chg24'){if(o.chg==null)miss='sin dato de 24 h';else cur=o.chg}
+ var ck=null;
+ if(r.type=='candle'){ck=ALC[r.coin+'|'+(r.tf||'4h')];if(!ck)miss='consultando velas…';else{cur=alCandleCur(r,ck);if(!p)p=ck.c}}
+ else if(r.type=='chg24'){if(o.chg==null)miss='sin dato de 24 h';else cur=o.chg}
  else if(AL_PCT[r.type]){if(!p)miss='sin precio';else if(!base)miss=r.type=='avg'?'no la tienes comprada':r.type=='last'?'sin movimientos con precio':'sin precio base';else cur=(p/base-1)*100}
  else{if(!p)miss='sin precio';else cur=p}
  if(cur!=null){
-  if(AL_PCT[r.type])ok=r.dir=='up'?cur>=r.val:r.dir=='down'?cur<=-r.val:Math.abs(cur)>=r.val;
+  if(r.type=='candle'&&r.meas=='range')ok=cur>=r.val;
+  else if(AL_PCT[r.type])ok=r.dir=='up'?cur>=r.val:r.dir=='down'?cur<=-r.val:Math.abs(cur)>=r.val;
   else ok=r.type=='above'?cur>=r.val:cur<=r.val;
  }
- return{p:p,base:base,cur:cur,ok:ok,miss:miss};
+ return{p:p,base:base,cur:cur,ok:ok,miss:miss,ck:ck};
 }
 function alCondTxt(r){
+ if(r.type=='candle')return (r.meas=='range'?'rango de '+n(r.val,2)+'% (mínimo a máximo)':(r.dir=='up'?'sube ':r.dir=='down'?'baja ':'se mueve ')+n(r.val,2)+'%')+' en una vela de '+alTfName(r.tf||'4h');
  if(AL_PCT[r.type])return (r.dir=='up'?'sube ':r.dir=='down'?'baja ':'se mueve ')+n(r.val,2)+'%'+(r.type=='chg24'?' en 24 h':r.type=='last'?' desde mi último movimiento':r.type=='avg'?' contra mi promedio':' desde que la creé');
  return (r.type=='above'?'sube a ':'baja a ')+px(r.val);
 }
 function alNowTxt(r,e){
  if(e.miss)return '<span class="mu">'+e.miss+'</span>';
- if(AL_PCT[r.type])return '<b class="num" style="color:'+col(e.cur)+'">'+(e.cur>=0?'+':'')+n(e.cur,2)+'%</b>';
+ if(AL_PCT[r.type])return '<b class="num" style="color:'+col(e.cur)+'">'+(e.cur>=0?'+':'')+n(e.cur,2)+'%</b>'+(e.ck?'<div class="mu" style="font-size:11px">vela actual · '+(function(l){return l=='cerrando'?'cerrando':'cierra en '+l})(alLeft(e.ck))+'</div>':'');
  var d=(e.cur/r.val-1)*100;return '<b class="num">'+px(e.cur)+'</b><div class="mu" style="font-size:11px">'+(e.ok?'ya llegó':'le falta '+n(Math.abs(d),2)+'%')+'</div>';
 }
 /* revisión: avisa cuando la condición pasa de no cumplirse a cumplirse */
-function checkAlerts(){
+function checkAlerts(){alRun();alRefreshCandles().then(function(any){if(any)alRun()})}
+function alRun(){
  var fired=[],changed=false;ALU.lastCheck=new Date();
  AL.rules.forEach(function(r){
   if(!r.on)return;var e=alEval(r);if(e.cur==null)return;
+  if(r.type=='candle'){if(r.fresh){r.fresh=false;changed=true;if(e.ok){r.ct=e.ck.t;return}}if(e.ok&&r.ct!==e.ck.t){r.ct=e.ck.t;r.fired=(r.fired||0)+1;r.lastT=isoNow();if(r.mode=='once')r.on=false;changed=true;fired.push({r:r,e:e})}return}
   if(AL_PCT[r.type]&&r.type!='chg24'){var bk=e.base!=null?+e.base.toPrecision(10):null;if(r.bk!==bk){if(r.bk!=null&&!r.armed){r.armed=true}r.bk=bk;changed=true}}
   if(e.ok&&r.armed!==false){r.armed=false;r.fired=(r.fired||0)+1;r.lastT=isoNow();if(r.mode=='once')r.on=false;changed=true;fired.push({r:r,e:e})}
   else if(!e.ok&&r.armed===false&&r.on){r.armed=true;changed=true}
@@ -1584,9 +1613,9 @@ function alNotify(fired){
  if(fired.length>4)alToast('Y '+(fired.length-4)+' alertas más. Revisa la pestaña Alertas.',true);
 }
 function alBadge(){var b=$('#t11');if(!b)return;var k=AL.log.filter(function(l){return l.t>(AL.seen||'')}).length;if(k&&tab!=11)b.setAttribute('data-n',k>99?'99+':k);else b.removeAttribute('data-n')}
-function alNew(coin,o){var id=AL.rules.reduce(function(a,r){return Math.max(a,r.id)},0)+1;var r={id:id,coin:coin,type:o.type,dir:o.dir||'any',val:+o.val,mode:o.mode||'repeat',note:o.note||'',on:true,armed:true,fired:0,created:isoNow()};if(o.type=='ref')r.ref=refPrice(coin)||null;
+function alNew(coin,o){var id=AL.rules.reduce(function(a,r){return Math.max(a,r.id)},0)+1;var r={id:id,coin:coin,type:o.type,tf:o.tf||'4h',meas:o.meas||'body',dir:o.dir||'any',val:+o.val,mode:o.mode||'repeat',note:o.note||'',on:true,armed:true,fired:0,created:isoNow()};if(o.type=='ref')r.ref=refPrice(coin)||null;
  /* si ya se cumple al crearla, no avisa hasta que salga y vuelva a entrar */
- var e=alEval(r);if(e.ok)r.armed=false;if(e.base!=null)r.bk=+e.base.toPrecision(10);AL.rules.push(r);return r}
+ var e=alEval(r);if(e.ok)r.armed=false;if(e.ok&&e.ck)r.ct=e.ck.t;if(r.type=='candle'&&!e.ck)r.fresh=true;if(e.base!=null)r.bk=+e.base.toPrecision(10);AL.rules.push(r);return r}
 /* ---------- pestaña ---------- */
 function renderAlerts(){
  var v=$('#v11');if(!v)return;
@@ -1613,13 +1642,16 @@ function renderAlerts(){
   '<div class="lt">1. Monedas <span class="mu" style="font-weight:400">('+selN+' elegida'+(selN==1?'':'s')+')</span></div><div class="row" style="gap:6px;margin:4px 0 6px;flex-wrap:wrap"><button type="button" class="sm" data-almkall="held">Todas las que tengo</button><button type="button" class="sm" data-almkall="watch">Todas las vigiladas</button><button type="button" class="sm" data-almkall="all">Todas</button><button type="button" class="x sm" data-almkall="none">Ninguna</button></div>'+
   '<div class="al-chips">'+coins.map(function(c){return '<button type="button" class="al-pick'+(mk.coins[c]?' on':'')+'" data-almkc="'+esc(c)+'">'+coinIcon(c,14)+esc(c)+(held[c]?'':' <span class="mu" style="font-size:11px">vigilada</span>')+'</button>'}).join('')+'</div>'+
   '<div class="fgrid c3" style="margin-top:12px"><label><span class="lt">2. Qué vigilar</span><select id="alMkType">'+tsel+'</select></label>'+
-  (AL_PCT[mk.type]?'<label><span class="lt">Dirección</span><select id="alMkDir"><option value="any"'+(mk.dir=='any'?' selected':'')+'>Sube o baja</option><option value="up"'+(mk.dir=='up'?' selected':'')+'>Solo si sube</option><option value="down"'+(mk.dir=='down'?' selected':'')+'>Solo si baja</option></select></label>':'')+
+  (mk.type=='candle'?'<label><span class="lt">Temporalidad de la vela</span><select id="alMkTf">'+AL_TF.map(function(t){return '<option value="'+t[0]+'"'+(mk.tf==t[0]?' selected':'')+'>'+t[1]+'</option>'}).join('')+'</select></label>'+
+   '<label><span class="lt">Qué mide</span><select id="alMkMeas"><option value="body"'+(mk.meas!='range'?' selected':'')+'>Desde la apertura de la vela</option><option value="range"'+(mk.meas=='range'?' selected':'')+'>Rango de la vela (mínimo a máximo)</option></select></label>':'')+
+  (AL_PCT[mk.type]&&!(mk.type=='candle'&&mk.meas=='range')?'<label><span class="lt">Dirección</span><select id="alMkDir"><option value="any"'+(mk.dir=='any'?' selected':'')+'>Sube o baja</option><option value="up"'+(mk.dir=='up'?' selected':'')+'>Solo si sube</option><option value="down"'+(mk.dir=='down'?' selected':'')+'>Solo si baja</option></select></label>':'')+
   '<label><span class="lt">'+(AL_PCT[mk.type]?'Porcentaje (%)':'Precio (USD)')+'</span><input id="alMkVal" type="number" step="any" min="0" value="'+esc(String(mk.val))+'"></label>'+
   '<label><span class="lt">Cuántas veces avisa</span><select id="alMkMode"><option value="repeat"'+(mk.mode=='repeat'?' selected':'')+'>Cada vez que se cumpla</option><option value="once"'+(mk.mode=='once'?' selected':'')+'>Solo una vez (luego se pausa)</option></select></label>'+
   '<label style="grid-column:span 2"><span class="lt">Nota (opcional)</span><input id="alMkNote" maxlength="80" placeholder="Ej. revisar para recomprar" value="'+esc(mk.note||'')+'"></label></div>'+
+  (mk.type=='candle'?'<p class="mu" style="font-size:12px;margin:6px 0 0">Avisa en cuanto la vela que está corriendo se mueve ese porcentaje desde su apertura (contando máximos y mínimos), sin esperar a que cierre. Avisa máximo una vez por vela.</p>':'')+
   (mk.type=='above'||mk.type=='below'?'<p class="mu" style="font-size:12px;margin:6px 0 0">Con precio fijo conviene una moneda a la vez; con varias, todas usan el mismo precio.</p>':'')+
   '<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap"><button type="button" class="p" data-almake="1"'+(selN?'':' disabled')+'>Crear '+(selN||'')+' alerta'+(selN==1?'':'s')+'</button>'+
-  '<span class="mu" style="font-size:12px">Atajos:</span><button type="button" class="chipbtn" data-alpreset="last5">±5% desde mi último movimiento · las que tengo</button><button type="button" class="chipbtn" data-alpreset="avg10">−10% contra mi promedio · las que tengo</button><button type="button" class="chipbtn" data-alpreset="chg8">±8% en 24 h · todas</button></div></div>';
+  '<span class="mu" style="font-size:12px">Atajos:</span><button type="button" class="chipbtn" data-alpreset="c4h5">±5% en una vela de 4 h · las que tengo</button><button type="button" class="chipbtn" data-alpreset="last5">±5% desde mi último movimiento · las que tengo</button><button type="button" class="chipbtn" data-alpreset="avg10">−10% contra mi promedio · las que tengo</button><button type="button" class="chipbtn" data-alpreset="chg8">±8% en 24 h · todas</button></div></div>';
  /* lista */
  var f=ALU.f,list=AL.rules.filter(function(r){if(f.coin&&r.coin!=f.coin)return false;if(f.type&&r.type!=f.type)return false;if(f.st=='on'&&!r.on)return false;if(f.st=='off'&&r.on)return false;if(f.st=='met'&&!alEval(r).ok)return false;return true}).sort(function(a,b){return a.coin<b.coin?-1:a.coin>b.coin?1:a.id-b.id});
  Object.keys(ALU.sel).forEach(function(id){if(!AL.rules.some(function(r){return r.id==+id}))delete ALU.sel[id]});
@@ -1628,14 +1660,15 @@ function renderAlerts(){
  var bulk=sk.length?'<div class="al-bulk"><b>'+sk.length+' seleccionada'+(sk.length==1?'':'s')+':</b><button type="button" class="sm" data-albulk="on">Activar</button><button type="button" class="sm" data-albulk="off">Pausar</button><button type="button" class="sm" data-albulk="rearm">Reiniciar</button>'+
   '<span class="row" style="gap:4px"><input id="alBulkVal" type="number" step="any" min="0" placeholder="nuevo valor" style="width:110px"><button type="button" class="sm" data-albulk="val">Cambiar valor</button></span>'+
   '<select id="alBulkDir" class="cyc-sel"><option value="">Dirección…</option><option value="any">Sube o baja</option><option value="up">Solo si sube</option><option value="down">Solo si baja</option></select>'+
+  '<select id="alBulkTf" class="cyc-sel"><option value="">Vela…</option>'+AL_TF.map(function(t){return '<option value="'+t[0]+'">'+t[1]+'</option>'}).join('')+'</select>'+
   '<select id="alBulkMode" class="cyc-sel"><option value="">Avisos…</option><option value="repeat">Cada vez</option><option value="once">Solo una vez</option></select>'+
   '<button type="button" class="x sm" data-albulk="del">Eliminar</button><button type="button" class="x sm" data-albulk="clear">Quitar selección</button></div>':'';
  var rows=list.map(function(r){var e=alEval(r),st=!r.on?'<span class="al-st off">Pausada</span>':e.ok?'<span class="al-st met">Se cumple</span>':'<span class="al-st on">Vigilando</span>';
   return '<tr class="'+(ALU.sel[r.id]?'al-selrow':'')+'"><td><input type="checkbox" data-alsel="'+r.id+'"'+(ALU.sel[r.id]?' checked':'')+' aria-label="Seleccionar alerta"></td>'+
    '<td>'+coinIcon(r.coin,16)+'<b>'+esc(r.coin)+'</b><div class="mu" style="font-size:11px">'+(held[r.coin]?'la tienes':'vigilada')+'</div><div class="al-mcond mu">'+esc(alCondTxt(r))+'</div><span class="al-mst">'+st+'</span></td>'+
    '<td>'+esc(AL_T[r.type])+'<div class="mu" style="font-size:12px">'+esc(alCondTxt(r))+(r.note?' · '+esc(r.note):'')+'</div></td>'+
-   '<td>'+(AL_PCT[r.type]?'<select data-aldir="'+r.id+'" class="al-in"><option value="any"'+(r.dir=='any'?' selected':'')+'>±</option><option value="up"'+(r.dir=='up'?' selected':'')+'>▲</option><option value="down"'+(r.dir=='down'?' selected':'')+'>▼</option></select>':'')+'<input type="number" step="any" min="0" class="al-in num" data-alval="'+r.id+'" value="'+r.val+'" aria-label="Valor">'+(AL_PCT[r.type]?'%':' USD')+'</td>'+
-   '<td class="num">'+(r.type=='chg24'?'<span class="mu">24 h</span>':AL_PCT[r.type]?px(e.base):'—')+'</td><td class="num">'+px(e.p)+'</td><td>'+alNowTxt(r,e)+'</td><td>'+st+'</td>'+
+   '<td>'+(r.type=='candle'?'<select data-altf="'+r.id+'" class="al-in al-tf" aria-label="Temporalidad">'+AL_TF.map(function(t){return '<option value="'+t[0]+'"'+((r.tf||'4h')==t[0]?' selected':'')+'>'+t[0]+'</option>'}).join('')+'</select>':'')+(AL_PCT[r.type]&&!(r.type=='candle'&&r.meas=='range')?'<select data-aldir="'+r.id+'" class="al-in"><option value="any"'+(r.dir=='any'?' selected':'')+'>±</option><option value="up"'+(r.dir=='up'?' selected':'')+'>▲</option><option value="down"'+(r.dir=='down'?' selected':'')+'>▼</option></select>':'')+'<input type="number" step="any" min="0" class="al-in num" data-alval="'+r.id+'" value="'+r.val+'" aria-label="Valor">'+(AL_PCT[r.type]?'%':' USD')+'</td>'+
+   '<td class="num">'+(r.type=='chg24'?'<span class="mu">24 h</span>':r.type=='candle'?(e.ck?px(e.ck.o)+'<div class="mu" style="font-size:11px">apertura</div>':'—'):AL_PCT[r.type]?px(e.base):'—')+'</td><td class="num">'+px(e.p)+'</td><td>'+alNowTxt(r,e)+'</td><td>'+st+'</td>'+
    '<td class="num">'+(r.fired||0)+(r.lastT?'<div class="mu" style="font-size:11px">'+fmtDT(r.lastT).slice(5,16)+'</div>':'')+'</td>'+
    '<td style="white-space:nowrap"><button type="button" class="x sm" data-altog="'+r.id+'">'+(r.on?'Pausar':'Activar')+'</button><button type="button" class="x sm" data-aldel="'+r.id+'" aria-label="Eliminar">✕</button></td></tr>'}).join('');
  var lst='<div class="card"><div class="row"><h2 style="margin:0">Mis alertas ('+AL.rules.length+')</h2><span class="sp"></span>'+fsel('coin','Todas las monedas',alCoins().map(function(c){return [c,c]}),f.coin)+fsel('type','Todos los tipos',Object.keys(AL_T).map(function(k){return [k,AL_T[k]]}),f.type)+fsel('st','Todos los estados',[['on','Activas'],['off','Pausadas'],['met','Se cumplen ahora']],f.st)+'</div>'+bulk+
@@ -1661,18 +1694,18 @@ document.addEventListener('click',function(e){
  if(g('data-almkall')){alPick(g('data-almkall'));renderAlerts();return}
  if(g('data-almkc')){var c=g('data-almkc');ALU.mk.coins[c]=!ALU.mk.coins[c];renderAlerts();return}
  if(g('data-alpreset')){var pr=g('data-alpreset'),cs=pr=='chg8'?alCoins():alHeldList();if(!cs.length)return alert('No hay monedas para esa plantilla.');
-  var o=pr=='last5'?{type:'last',dir:'any',val:5}:pr=='avg10'?{type:'avg',dir:'down',val:10}:{type:'chg24',dir:'any',val:8};
-  var dup=0,mkd=0;cs.forEach(function(c){if(AL.rules.some(function(r){return r.coin==c&&r.type==o.type&&r.dir==o.dir&&r.val==o.val})){dup++;return}alNew(c,o);mkd++});saveAl();renderAlerts();alToast(alMadeTxt(mkd,dup),true);return}
+  var o=pr=='c4h5'?{type:'candle',tf:'4h',meas:'body',dir:'any',val:5}:pr=='last5'?{type:'last',dir:'any',val:5}:pr=='avg10'?{type:'avg',dir:'down',val:10}:{type:'chg24',dir:'any',val:8};
+  var dup=0,mkd=0;cs.forEach(function(c){if(AL.rules.some(function(r){return r.coin==c&&r.type==o.type&&r.dir==o.dir&&r.val==o.val&&(o.type!='candle'||r.tf==o.tf)})){dup++;return}alNew(c,o);mkd++});saveAl();renderAlerts();alToast(alMadeTxt(mkd,dup),true);alRefreshCandles().then(function(){if(tab==11)renderAlerts()});return}
  if(t.hasAttribute('data-almake')){var mk=ALU.mk,list=Object.keys(mk.coins).filter(function(c){return mk.coins[c]});var val=parseFloat($('#alMkVal').value);
   if(!(val>0))return alert('Escribe un '+(AL_PCT[mk.type]?'porcentaje':'precio')+' mayor que cero.');
   mk.val=val;mk.note=$('#alMkNote').value.trim();var dup=0,mkd=0;
-  list.forEach(function(c){if(AL.rules.some(function(r){return r.coin==c&&r.type==mk.type&&(!AL_PCT[mk.type]||r.dir==mk.dir)&&r.val==val})){dup++;return}alNew(c,{type:mk.type,dir:mk.dir,val:val,mode:mk.mode,note:mk.note});mkd++});
-  saveAl();renderAlerts();alToast(alMadeTxt(mkd,dup),true);return}
+  list.forEach(function(c){if(AL.rules.some(function(r){return r.coin==c&&r.type==mk.type&&(!AL_PCT[mk.type]||r.dir==mk.dir)&&r.val==val&&(mk.type!='candle'||(r.tf==mk.tf&&r.meas==mk.meas))})){dup++;return}alNew(c,{type:mk.type,tf:mk.tf,meas:mk.meas,dir:mk.meas=='range'&&mk.type=='candle'?'any':mk.dir,val:val,mode:mk.mode,note:mk.note});mkd++});
+  saveAl();renderAlerts();alToast(alMadeTxt(mkd,dup),true);alRefreshCandles().then(function(){if(tab==11)renderAlerts()});return}
  if(g('data-albulk')){var a=g('data-albulk'),ids=Object.keys(ALU.sel).filter(function(k){return ALU.sel[k]}).map(Number),rs=AL.rules.filter(function(r){return ids.indexOf(r.id)>-1});
   if(a=='clear'){ALU.sel={};renderAlerts();return}
   if(a=='del'){if(!confirm('¿Eliminar '+rs.length+' alerta'+(rs.length==1?'':'s')+'?'))return;AL.rules=AL.rules.filter(function(r){return ids.indexOf(r.id)<0});ALU.sel={}}
   if(a=='on')rs.forEach(function(r){r.on=true});if(a=='off')rs.forEach(function(r){r.on=false});
-  if(a=='rearm')rs.forEach(function(r){r.armed=!alEval(r).ok;r.fired=0;r.lastT=null;if(r.type=='ref')r.ref=refPrice(r.coin)||r.ref});
+  if(a=='rearm')rs.forEach(function(r){r.ct=null;r.armed=!alEval(r).ok;r.fired=0;r.lastT=null;if(r.type=='ref')r.ref=refPrice(r.coin)||r.ref});
   if(a=='val'){var nv=parseFloat($('#alBulkVal').value);if(!(nv>0))return alert('Escribe el nuevo valor.');
    var rp=rs.filter(function(r){return AL_PCT[r.type]}),rf=rs.filter(function(r){return !AL_PCT[r.type]}),tgt=rs;
    if(rp.length&&rf.length){if(!confirm('Elegiste alertas de porcentaje y de precio fijo.\n\nAceptar: cambiar solo las '+rp.length+' de porcentaje a '+nv+'%.\nCancelar: cambiar solo las '+rf.length+' de precio fijo a $'+nv+'.'))tgt=rf;else tgt=rp}
@@ -1686,13 +1719,16 @@ document.addEventListener('change',function(e){
  var t=e.target;if(!t.closest||!t.closest('#v11'))return;var g=function(a){return t.getAttribute(a)};
  if(g('data-alcfg')){AL.cfg[g('data-alcfg')]=t.checked;if(g('data-alcfg')=='notif'&&t.checked&&window.Notification&&Notification.permission=='default')Notification.requestPermission().then(function(){renderAlerts()});saveAl();return}
  if(t.id=='alMkType'){ALU.mk.type=t.value;if(!AL_PCT[t.value]){var c=Object.keys(ALU.mk.coins).filter(function(k){return ALU.mk.coins[k]})[0],p=c&&refPrice(c);ALU.mk.val=p?+p.toPrecision(5):''}else if(!(ALU.mk.val<100))ALU.mk.val=5;renderAlerts();return}
+ if(t.id=='alMkTf'){ALU.mk.tf=t.value;return}if(t.id=='alMkMeas'){ALU.mk.meas=t.value;renderAlerts();return}
  if(t.id=='alMkDir'){ALU.mk.dir=t.value;return}if(t.id=='alMkMode'){ALU.mk.mode=t.value;return}if(t.id=='alMkVal'){ALU.mk.val=t.value;return}if(t.id=='alMkNote'){ALU.mk.note=t.value;return}
  if(g('data-alf')){ALU.f[g('data-alf')]=t.value;renderAlerts();return}
  if(g('data-alsel')){ALU.sel[g('data-alsel')]=t.checked;renderAlerts();return}
  if(g('data-alselall')){var f=ALU.f;AL.rules.forEach(function(r){if(f.coin&&r.coin!=f.coin)return;if(f.type&&r.type!=f.type)return;if(f.st=='on'&&!r.on)return;if(f.st=='off'&&r.on)return;if(f.st=='met'&&!alEval(r).ok)return;ALU.sel[r.id]=t.checked});renderAlerts();return}
  if(t.id=='alBulkDir'&&t.value){Object.keys(ALU.sel).forEach(function(k){if(!ALU.sel[k])return;var r=AL.rules.filter(function(x){return x.id==+k})[0];if(r&&AL_PCT[r.type]){r.dir=t.value;r.armed=!alEval(r).ok}});saveAl();renderAlerts();return}
+ if(t.id=='alBulkTf'&&t.value){var nC=0;Object.keys(ALU.sel).forEach(function(k){if(!ALU.sel[k])return;var r=AL.rules.filter(function(x){return x.id==+k})[0];if(r&&r.type=='candle'){r.tf=t.value;r.ct=null;r.fresh=true;nC++}});saveAl();renderAlerts();if(!nC)alToast('La temporalidad solo aplica a alertas de vela.',false);alRefreshCandles().then(function(){if(tab==11)renderAlerts()});return}
  if(t.id=='alBulkMode'&&t.value){Object.keys(ALU.sel).forEach(function(k){if(!ALU.sel[k])return;var r=AL.rules.filter(function(x){return x.id==+k})[0];if(r)r.mode=t.value});saveAl();renderAlerts();return}
  if(g('data-alval')){var r=AL.rules.filter(function(x){return x.id==+g('data-alval')})[0],nv=parseFloat(t.value);if(r&&nv>0){r.val=nv;r.armed=!alEval(r).ok;saveAl()}renderAlerts();return}
+ if(g('data-altf')){var r3=AL.rules.filter(function(x){return x.id==+g('data-altf')})[0];if(r3){r3.tf=t.value;r3.ct=null;r3.fresh=true;saveAl();alRefreshCandles().then(function(){if(tab==11)renderAlerts()})}renderAlerts();return}
  if(g('data-aldir')){var r2=AL.rules.filter(function(x){return x.id==+g('data-aldir')})[0];if(r2){r2.dir=t.value;r2.armed=!alEval(r2).ok;saveAl()}renderAlerts();return}
 });
 document.addEventListener('keydown',function(e){if(e.key=='Enter'&&e.target&&e.target.id=='alWatchIn'){e.preventDefault();alWatchAdd()}});
