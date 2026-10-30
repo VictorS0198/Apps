@@ -1774,7 +1774,8 @@ try{H=JSON.parse(localStorage.getItem(KH))||[]}catch(e){H=[]}
 H.forEach(function(x){x.time=normT(x.time)});
 function saveH(){try{localStorage.setItem(KH,JSON.stringify(H))}catch(e){}}
 function isCash(c){return c=='MXN'||c=='USDT'}
-function snapTime(plat){var t=null,k=plat||'SIN BROKER';H.forEach(function(x){if(isCash(x.coin)&&(x.plat||'SIN BROKER')==k&&(t==null||x.time>t))t=x.time});return t}
+/* foto del broker: los movimientos anteriores ya están en los saldos. Un ajuste manual de efectivo no cuenta como foto (solo fija pesos y dólares). */
+function snapTime(plat){var t=null,k=plat||'SIN BROKER';H.forEach(function(x){if(!isCash(x.coin)||(x.plat||'SIN BROKER')!=k)return;var st=('snapTime' in x)?x.snapTime:x.time;if(st!=null&&(t==null||st>t))t=st});return t}
 function reflected(m){var t=snapTime(m.plat);return t!=null&&m.time<t}
 
 /* efectivo: una venta acredita USDT (o MXN si el monto se capturó en pesos) en el mismo broker; una compra lo descuenta */
@@ -1922,7 +1923,7 @@ $('#hAdd').onclick=function(){
   if(later&&!confirm('Hay '+later+' movimiento(s) en '+o.plat+' con fecha igual o posterior a la de este saldo, y se sumarán o restarán a él. Si tu saldo ya los incluye, usa la fecha y hora de hoy.\n\n¿Guardar con esta fecha de todos modos?'))return}
  if(editId==null&&cash){var ex=H.filter(function(x){return x.coin==o.coin&&x.plat==o.plat})[0];if(ex)editId=ex.id}
  var msg=(editId!=null?(cash?'Saldo actualizado.':'Tenencia actualizada.'):(cash?'Saldo guardado.':'Tenencia agregada.'));
- if(editId!=null){var i=H.findIndex(function(x){return x.id==editId});if(i>-1)H[i]=Object.assign({},H[i],o)}
+ if(editId!=null){var i=H.findIndex(function(x){return x.id==editId});if(i>-1){H[i]=Object.assign({},H[i],o);if(cash){delete H[i].snapTime;delete H[i].adj}}}
  else{o.id=H.reduce(function(a,x){return Math.max(a,x.id)},0)+1;H.push(o)}
  saveH();hReset();$('#hMsg').textContent=msg;renderPositions();
 };
@@ -1932,6 +1933,7 @@ $('#hCancel').onclick=function(){hReset()};
 var KADJ='registro-cripto.adjust',ADJ=[];
 try{ADJ=JSON.parse(localStorage.getItem(KADJ)||'[]')||[]}catch(e){ADJ=[]}
 var ADJU={plat:''};
+(function(){var fixed=false;ADJ.forEach(function(a){(a.changes||[]).forEach(function(c){var x=H.filter(function(y){return y.id==c.id})[0];if(!x||('snapTime' in x))return;x.adj=true;x.snapTime=c.prev?(('snapTime' in c.prev)?c.prev.snapTime:c.prev.time):null;fixed=true})});if(fixed)saveH()})();
 function saveAdj(){try{localStorage.setItem(KADJ,JSON.stringify(ADJ))}catch(e){}}
 function adjPlats(){var o={};Object.keys(FEES).forEach(function(p){o[p]=1});cashMap().forEach(function(c){o[c.plat]=1});M.forEach(function(m){if(m.plat)o[m.plat]=1});return Object.keys(o).sort()}
 function adjCur(plat){var r={MXN:0,USDT:0,nMXN:0,nUSDT:0};cashMap().forEach(function(c){if(c.plat==plat){r[c.asset]=c.cur;r['n'+c.asset]=c.n}});return r}
@@ -1976,8 +1978,8 @@ function adjUpdate(){
 function renderAdj(){var w=$('#adjWrap');if(!w){var pw=$('#prefWrap');if(!pw)return;pw.insertAdjacentHTML('afterend','<div id="adjWrap"></div>');w=$('#adjWrap')}w.innerHTML=adjHtml();adjUpdate()}
 function adjSetBase(plat,asset,qty,time){
  var ex=H.filter(function(x){return x.coin==asset&&(x.plat||'SIN BROKER')==plat});
- if(ex.length){ex.sort(function(a,b){return a.time<b.time?1:-1});var prev=Object.assign({},ex[0]);ex[0].qty=qty;ex[0].time=time;ex[0].price=0;return{id:ex[0].id,prev:prev}}
- var o={id:H.reduce(function(a,x){return Math.max(a,x.id)},0)+1,coin:asset,qty:qty,price:0,plat:plat,time:time};H.push(o);return{id:o.id,prev:null};
+ if(ex.length){ex.sort(function(a,b){return a.time<b.time?1:-1});var prev=Object.assign({},ex[0]);ex[0].snapTime=('snapTime' in prev)?prev.snapTime:prev.time;ex[0].adj=true;ex[0].qty=qty;ex[0].time=time;ex[0].price=0;return{id:ex[0].id,prev:prev}}
+ var o={id:H.reduce(function(a,x){return Math.max(a,x.id)},0)+1,coin:asset,qty:qty,price:0,plat:plat,time:time,adj:true,snapTime:null};H.push(o);return{id:o.id,prev:null};
 }
 document.addEventListener('input',function(e){if(e.target&&/^adj(MXN|USDT|Confirm)$/.test(e.target.id))adjUpdate()});
 document.addEventListener('change',function(e){if(e.target&&e.target.id=='adjPlat'){ADJU.plat=e.target.value;renderAdj()}});
