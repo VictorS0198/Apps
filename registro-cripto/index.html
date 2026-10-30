@@ -155,6 +155,8 @@ button.sm,.lbtn{padding:5px 9px;font-size:13px}
 .rep-head{display:flex;gap:12px;align-items:center;margin-bottom:8px}
 .rep-head img{width:56px;height:56px;border-radius:10px}
 @media print{body.printing #ovl{display:none!important}}
+.pc-table th.r,.pc-table td.num{text-align:right}.pc-table td{font-size:13px}
+
 .adj-now{display:grid;gap:2px;align-content:start}.adj-diff{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--bg);border:1px solid var(--ln);display:grid;gap:4px;font-size:14px}.adj-table th.r,.adj-table td.num{text-align:right}
 
 .al-ok{color:var(--buy);font-weight:600}.al-bad{color:var(--sell);font-weight:600}
@@ -1928,6 +1930,43 @@ $('#hAdd').onclick=function(){
  saveH();hReset();$('#hMsg').textContent=msg;renderPositions();
 };
 $('#hCancel').onclick=function(){hReset()};
+
+/* ================= Correcciones por link (#corregir=...): se revisan y se confirman antes de aplicarse ================= */
+window.addEventListener('hashchange',function(){if(/[#&]corregir=/.test(location.hash))location.reload()});
+(function(){
+ var KP='rc-patch';
+ try{var mh=location.hash.match(/[#&]corregir=([^&]+)/);if(mh){sessionStorage.setItem(KP,mh[1]);history.replaceState(null,'',location.pathname+location.search)}}catch(e){}
+ var raw=null;try{raw=sessionStorage.getItem(KP)}catch(e){}
+ if(!raw)return;
+ var P=null;try{var b=raw.replace(/-/g,'+').replace(/_/g,'/');while(b.length%4)b+='=';P=JSON.parse(decodeURIComponent(escape(atob(b))))}catch(e){P=null}
+ if(!P||!Array.isArray(P.movs)){try{sessionStorage.removeItem(KP)}catch(e){}return}
+ var LBL={time:'Fecha y hora',qty:'Cantidad',price:'Precio',fee:'Comisión (USD)',feePct:'Comisión %',amountOrig:'Monto',usdt:'USD',coin:'Moneda',action:'Acción',plat:'Broker'};
+ function fmtV(k,v){return k=='time'?fmtDT(v):typeof v=='number'?n(v,k=='qty'?8:k=='price'?6:4):esc(String(v))}
+ function show(){
+  var rows=[],bad=[];
+  P.movs.forEach(function(it){var m=M.filter(function(x){return x.id==it.id})[0];
+   if(!m||(it.coin&&m.coin!=it.coin)||(it.plat&&(m.plat||'')!=it.plat)){bad.push(it);return}
+   var ch=Object.keys(it.set||{}).filter(function(k){return String(m[k])!==String(it.set[k])});
+   rows.push({m:m,it:it,ch:ch})});
+  var nch=rows.filter(function(r){return r.ch.length}).length;
+  openOvl('<div class="row" style="margin-bottom:6px"><h2 style="margin:0">Aplicar corrección</h2><span class="sp"></span><button type="button" id="pcCancel">No aplicar</button></div>'+
+   '<p class="mu" style="margin:0 0 8px">'+esc(P.title||'Corrección de movimientos')+'. Revisa los cambios; nada se guarda hasta que escribas CONFIRMAR.</p>'+
+   (bad.length?'<p class="al-bad">'+bad.length+' movimiento(s) no coinciden con tus datos y se van a omitir.</p>':'')+
+   '<div class="wrap"><table class="pc-table"><thead><tr><th>Folio</th><th>Moneda</th><th>Dato</th><th class="r">Antes</th><th class="r">Después</th></tr></thead><tbody>'+
+   rows.map(function(r){if(!r.ch.length)return '<tr><td>'+folio(r.m.ciclo)+'</td><td>'+esc(r.m.coin)+'</td><td colspan="3" class="mu">ya está correcto</td></tr>';
+    return r.ch.map(function(k,i){return '<tr>'+(i==0?'<td rowspan="'+r.ch.length+'">'+folio(r.m.ciclo)+'</td><td rowspan="'+r.ch.length+'">'+coinIcon(r.m.coin,14)+esc(r.m.coin)+'</td>':'')+'<td>'+(LBL[k]||k)+'</td><td class="num mu">'+fmtV(k,r.m[k])+'</td><td class="num"><b>'+fmtV(k,r.it.set[k])+'</b></td></tr>'}).join('')}).join('')+'</tbody></table></div>'+
+   (nch?'<div class="row" style="margin-top:12px;gap:8px;align-items:flex-end"><label style="margin:0"><span class="lt">Escribe CONFIRMAR</span><input id="pcConfirm" autocomplete="off" placeholder="CONFIRMAR" style="width:200px;text-transform:uppercase"></label><button type="button" class="p" id="pcGo" disabled>Aplicar '+nch+' corrección'+(nch==1?'':'es')+'</button></div>':'<p class="mu">No hay nada que cambiar: tus movimientos ya tienen estos datos.</p>'),true);
+  var ci=$('#pcConfirm');if(ci)ci.addEventListener('input',function(){$('#pcGo').disabled=this.value.trim().toUpperCase()!='CONFIRMAR'});
+  $('#pcCancel').onclick=function(){try{sessionStorage.removeItem(KP)}catch(e){}closeOvl()};
+  var go=$('#pcGo');if(go)go.onclick=function(){
+   rows.forEach(function(r){r.ch.forEach(function(k){r.m[k]=r.it.set[k]})});
+   save();try{sessionStorage.removeItem(KP)}catch(e){}closeOvl();render();try{renderPositions()}catch(e){}
+   var mm=$('#msg');if(mm)mm.textContent='Corrección aplicada a '+nch+' movimiento'+(nch==1?'':'s')+'.';
+   try{alToast('Corrección aplicada a '+nch+' movimiento'+(nch==1?'':'s')+'. Se guarda en tu nube.',true)}catch(e){}
+  };
+ }
+ var tries=0,iv=setInterval(function(){tries++;if(window.RC_DATA_READY||tries>60){clearInterval(iv);show()}},500);
+})();
 
 /* ================= Ajuste manual de saldos (pesos y dólares por broker) ================= */
 var KADJ='registro-cripto.adjust',ADJ=[];
@@ -3985,7 +4024,7 @@ function initCloud(){
   if(CLOUD.sb&&CLOUD.uid){if(confirm('¿Cerrar sesión ('+CLOUD.email+')? Tus datos se quedan guardados en la nube y en este navegador.'))CLOUD.sb.auth.signOut().then(function(){location.reload()})}
   else{try{localStorage.removeItem('registro-cripto.sololocal')}catch(e){}location.reload()}
  };
- if(!window.supabase||!window.supabase.createClient){cloudPill('off','Sin conexión: solo en este navegador');return}
+ if(!window.supabase||!window.supabase.createClient){cloudPill('off','Sin conexión: solo en este navegador');window.RC_DATA_READY=true;return}
  CLOUD.sb=window.supabase.createClient(SUPA.url,SUPA.key,{auth:{persistSession:true,autoRefreshToken:true,storageKey:'registro-cripto-auth'}});
  CLOUD.sb.auth.getSession().then(function(r){
   var session=r.data&&r.data.session;
@@ -3993,13 +4032,13 @@ function initCloud(){
   if(localStorage.getItem('registro-cripto.sololocal')==='1')return null;
   return cloudLogin().then(function(s){if(!s){try{localStorage.setItem('registro-cripto.sololocal','1')}catch(e){}}return s});
  }).then(function(session){
-  if(!session){CLOUD.sb=null;cloudPill('off');return}
+  if(!session){CLOUD.sb=null;cloudPill('off');window.RC_DATA_READY=true;return}
   try{localStorage.removeItem('registro-cripto.sololocal')}catch(e){}
   CLOUD.uid=session.user.id;CLOUD.email=session.user.email||'';
   cloudPill('busy','Revisando la nube…');
   return cloudPull(true).then(function(changed){
    if(changed){try{sessionStorage.setItem('rc-cloud-loaded','1')}catch(e){}location.reload();return}
-   CLOUD_READY=true;
+   CLOUD_READY=true;window.RC_DATA_READY=true;
    if(Object.keys(CLOUD_DIRTY).length)cloudFlush();else cloudPill('on');
    try{if(sessionStorage.getItem('rc-cloud-loaded')){sessionStorage.removeItem('rc-cloud-loaded');var m=$('#msg');if(m)m.textContent='Se cargaron tus datos desde la nube.'}}catch(e){}
    try{CLOUD.sb.channel('rt-registro-cripto').on('postgres_changes',{event:'*',schema:'public',table:'registros',filter:'app=eq.'+SUPA.app},function(p){
@@ -4007,7 +4046,7 @@ function initCloud(){
    document.addEventListener('visibilitychange',function(){if(document.visibilityState=='visible'&&CLOUD.sb)cloudPull(false).then(function(ch){if(ch)cloudBanner()}).catch(function(){})});
    CLOUD.sb.auth.onAuthStateChange(function(ev){if(ev==='SIGNED_OUT')location.reload()});
   });
- }).catch(function(){cloudPill('err');CLOUD_READY=true});
+ }).catch(function(){cloudPill('err');CLOUD_READY=true;window.RC_DATA_READY=true});
 }
 initCloud();
 
