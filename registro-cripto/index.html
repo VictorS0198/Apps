@@ -155,6 +155,8 @@ button.sm,.lbtn{padding:5px 9px;font-size:13px}
 .rep-head{display:flex;gap:12px;align-items:center;margin-bottom:8px}
 .rep-head img{width:56px;height:56px;border-radius:10px}
 @media print{body.printing #ovl{display:none!important}}
+.adj-now{display:grid;gap:2px;align-content:start}.adj-diff{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--bg);border:1px solid var(--ln);display:grid;gap:4px;font-size:14px}.adj-table th.r,.adj-table td.num{text-align:right}
+
 .al-ok{color:var(--buy);font-weight:600}.al-bad{color:var(--sell);font-weight:600}
 .al-coins{display:grid;grid-template-columns:1fr 1fr;gap:16px}@media (max-width:800px){.al-coins{grid-template-columns:1fr}}
 .al-chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
@@ -623,7 +625,7 @@ svg.heat{width:100%;height:auto;display:block}
  window.addEventListener('unhandledrejection',function(e){var r=e.reason;if(r&&/fetch|network|load failed|abort/i.test(String(r.message||r)))return;__showErr((r&&r.stack)||r,'promesa')});
 })();
 /* --- sincronización: registra qué datos cambian para subirlos a la nube --- */
-var SYNC_KEYS=['registro-cripto.v3','registro-cripto.holdings','registro-cripto.fees2','registro-cripto.coins','registro-cripto.reports','registro-cripto.flows','registro-cripto.ledger','registro-cripto.taborder','registro-cripto.theme','registro-cripto.dash','registro-cripto.hist','registro-cripto.cycui','registro-cripto.prefs','registro-cripto.logo','registro-cripto.decb','registro-cripto.alerts'];
+var SYNC_KEYS=['registro-cripto.v3','registro-cripto.holdings','registro-cripto.fees2','registro-cripto.coins','registro-cripto.reports','registro-cripto.flows','registro-cripto.ledger','registro-cripto.taborder','registro-cripto.theme','registro-cripto.dash','registro-cripto.hist','registro-cripto.cycui','registro-cripto.prefs','registro-cripto.logo','registro-cripto.decb','registro-cripto.alerts','registro-cripto.adjust'];
 var SYNC_META={},CLOUD_DIRTY={},CLOUD_READY=false,CLOUD_APPLYING=false;
 try{SYNC_META=JSON.parse(localStorage.getItem('registro-cripto.syncmeta')||'{}')||{}}catch(e){SYNC_META={}}
 function saveSyncMeta(){try{Storage.prototype._rcSet.call(localStorage,'registro-cripto.syncmeta',JSON.stringify(SYNC_META))}catch(e){}}
@@ -1374,7 +1376,7 @@ $('#v5').innerHTML='<div class="card"><h2>Apariencia</h2>'+
 '</div>'+
 '<div class="card"><h2>Fondo por moneda</h2><p class="mu">Sube una imagen para cada cripto (ideal cuadrada, PNG o JPG; se guarda en este navegador). Si una moneda no tiene imagen propia, se usa su sigla como fondo de texto.</p><div id="dBg"></div></div>';
 function renderConfig(){
- try{renderThemeGrid()}catch(err){window.__showErr&&__showErr((err&&err.stack)||err,'temas')}try{renderPrefCards()}catch(err){window.__showErr&&__showErr((err&&err.stack)||err,'preferencias')}
+ try{renderThemeGrid()}catch(err){window.__showErr&&__showErr((err&&err.stack)||err,'temas')}try{renderPrefCards()}catch(err){window.__showErr&&__showErr((err&&err.stack)||err,'preferencias')}try{renderAdj()}catch(err){window.__showErr&&__showErr((err&&err.stack)||err,'ajuste de saldos')}
  $('#bgMode').value=bgMode;
  $('#bgFixedWrap').hidden=bgMode!='fixed';
  $('#bgFixedCoin').innerHTML='<option value="">Genérico (todas las siglas)</option>'+COINS.slice().sort().map(function(c){return '<option'+(c==bgFixed?' selected':'')+'>'+c+'</option>'}).join('');
@@ -1926,6 +1928,87 @@ $('#hAdd').onclick=function(){
 };
 $('#hCancel').onclick=function(){hReset()};
 
+/* ================= Ajuste manual de saldos (pesos y dólares por broker) ================= */
+var KADJ='registro-cripto.adjust',ADJ=[];
+try{ADJ=JSON.parse(localStorage.getItem(KADJ)||'[]')||[]}catch(e){ADJ=[]}
+var ADJU={plat:''};
+function saveAdj(){try{localStorage.setItem(KADJ,JSON.stringify(ADJ))}catch(e){}}
+function adjPlats(){var o={};Object.keys(FEES).forEach(function(p){o[p]=1});cashMap().forEach(function(c){o[c.plat]=1});M.forEach(function(m){if(m.plat)o[m.plat]=1});return Object.keys(o).sort()}
+function adjCur(plat){var r={MXN:0,USDT:0,nMXN:0,nUSDT:0};cashMap().forEach(function(c){if(c.plat==plat){r[c.asset]=c.cur;r['n'+c.asset]=c.n}});return r}
+function adjRound(v){return Math.round(v*100)/100}
+function adjHtml(){
+ var pl=adjPlats();if(!ADJU.plat||pl.indexOf(ADJU.plat)<0)ADJU.plat=pl.indexOf('BITSO')>-1?'BITSO':pl[0]||'';
+ var cur=adjCur(ADJU.plat);
+ var hist=ADJ.slice().sort(function(a,b){return a.time<b.time?1:-1}).slice(0,30);
+ var lastBy={};ADJ.forEach(function(a){if(!lastBy[a.plat]||a.time>lastBy[a.plat].time)lastBy[a.plat]=a});
+ return '<div class="card" id="adjCard"><h2>Ajustar saldos de efectivo</h2>'+
+  '<p class="mu" style="margin:0 0 10px">Para cuadrar lo que dice la app con lo que ves en tu broker (por ejemplo, si parte de tus pesos ya los tienes en dólares). Escribes las cantidades reales, revisas la diferencia y confirmas. Queda registrado y desde ese momento la app parte de esas cantidades; los movimientos nuevos se suman o restan normal.</p>'+
+  '<div class="fgrid c3"><label><span class="lt">Broker</span><select id="adjPlat">'+pl.map(function(p){return '<option'+(p==ADJU.plat?' selected':'')+'>'+esc(p)+'</option>'}).join('')+'</select></label>'+
+  '<div class="adj-now"><span class="lt">La app dice que tienes</span><div class="num"><b>'+n(cur.MXN,2)+'</b> MXN</div><div class="num"><b>'+n(cur.USDT,2)+'</b> USDT</div></div>'+
+  '<div class="adj-now"><span class="lt">Tipo de cambio de hoy</span><div class="num"><b>'+n(FX,4)+'</b> MXN por USD</div></div>'+
+  '<label><span class="lt">Pesos reales (MXN)</span><input id="adjMXN" type="number" step="0.01" inputmode="decimal" value="'+adjRound(cur.MXN)+'"></label>'+
+  '<label><span class="lt">Dólares reales (USDT)</span><input id="adjUSDT" type="number" step="0.01" inputmode="decimal" value="'+adjRound(cur.USDT)+'"></label>'+
+  '<label><span class="lt">Nota (opcional)</span><input id="adjNote" maxlength="120" placeholder="Ej. convertí pesos a dólares en Bitso"></label></div>'+
+  '<div id="adjDiff" class="adj-diff"></div>'+
+  '<div class="row" style="margin-top:10px;gap:8px;flex-wrap:wrap;align-items:flex-end"><label style="margin:0"><span class="lt">Escribe CONFIRMAR para guardar</span><input id="adjConfirm" autocomplete="off" placeholder="CONFIRMAR" style="width:200px;text-transform:uppercase"></label>'+
+  '<button type="button" class="p" id="adjGo" disabled>Guardar ajuste</button><button type="button" class="x sm" id="adjReset">Volver a lo que dice la app</button><span class="mu" id="adjMsg" role="status"></span></div>'+
+  '<h3 style="margin:16px 0 6px;font-size:15px">Historial de ajustes</h3>'+
+  (hist.length?'<div class="wrap"><table class="adj-table"><thead><tr><th>Fecha</th><th>Broker</th><th class="r">Pesos antes → después</th><th class="r">Dólares antes → después</th><th>Nota</th><th></th></tr></thead><tbody>'+hist.map(function(a){
+   var dM=a.after.MXN-a.before.MXN,dU=a.after.USDT-a.before.USDT,canUndo=lastBy[a.plat]&&lastBy[a.plat].id==a.id&&!M.some(function(m){return (m.plat||'SIN BROKER')==a.plat&&m.time>=a.time});
+   return '<tr><td>'+fmtDT(a.time).slice(0,16)+'</td><td>'+esc(a.plat)+'</td><td class="num">'+n(a.before.MXN,2)+' → <b>'+n(a.after.MXN,2)+'</b><div class="mu" style="font-size:11px;color:'+col(dM)+'">'+(dM>=0?'+':'')+n(dM,2)+'</div></td><td class="num">'+n(a.before.USDT,2)+' → <b>'+n(a.after.USDT,2)+'</b><div class="mu" style="font-size:11px;color:'+col(dU)+'">'+(dU>=0?'+':'')+n(dU,2)+'</div></td><td class="mu">'+esc(a.note||'')+(a.rate?'<div style="font-size:11px">a '+n(a.rate,4)+' MXN/USD</div>':'')+'</td><td>'+(canUndo?'<button type="button" class="x sm" data-adjundo="'+a.id+'">Deshacer</button>':'')+'</td></tr>'}).join('')+'</tbody></table></div>':'<p class="mu" style="margin:0">Aún no has hecho ajustes.</p>')+'</div>';
+}
+function adjUpdate(){
+ var box=$('#adjDiff');if(!box)return;var cur=adjCur(ADJU.plat),nm=parseFloat($('#adjMXN').value),nu=parseFloat($('#adjUSDT').value);
+ var okv=!isNaN(nm)&&!isNaN(nu)&&nm>=0&&nu>=0,dM=okv?nm-cur.MXN:0,dU=okv?nu-cur.USDT:0,ch=okv&&(Math.abs(dM)>=0.005||Math.abs(dU)>=0.005);
+ var txt='';
+ if(!okv)txt='<span class="al-bad">Escribe cantidades válidas (0 o más).</span>';
+ else if(!ch)txt='<span class="mu">Sin cambios: coincide con lo que dice la app.</span>';
+ else{
+  txt='<div><b>Pesos:</b> <span class="num" style="color:'+col(dM)+'">'+(dM>=0?'+':'')+n(dM,2)+' MXN</span> · <b>Dólares:</b> <span class="num" style="color:'+col(dU)+'">'+(dU>=0?'+':'')+n(dU,2)+' USDT</span></div>';
+  if(dM<0&&dU>0){var r=-dM/dU;txt+='<div>Equivale a cambiar <b>'+n(-dM,2)+' MXN</b> por <b>'+n(dU,2)+' USDT</b> a <b>'+n(r,4)+' MXN por dólar</b>'+(Math.abs(r/FX-1)>0.05?' <span class="al-bad">(lejos del tipo de cambio de hoy, '+n(FX,2)+'; revisa las cantidades)</span>':'')+'.</div>'}
+  else if(dM>0&&dU<0){var r2=dM/-dU;txt+='<div>Equivale a cambiar <b>'+n(-dU,2)+' USDT</b> por <b>'+n(dM,2)+' MXN</b> a <b>'+n(r2,4)+' MXN por dólar</b>'+(Math.abs(r2/FX-1)>0.05?' <span class="al-bad">(lejos del tipo de cambio de hoy, '+n(FX,2)+'; revisa las cantidades)</span>':'')+'.</div>'}
+  else{var tot=dM/FX+dU;txt+='<div class="mu">En total la cuenta '+(tot>=0?'sube':'baja')+' <b>'+n(Math.abs(tot),2)+' USD</b> ('+n(Math.abs(tot*FX),2)+' MXN). Si fue un depósito o retiro, regístralo también en Aportaciones.</div>'}
+ }
+ box.innerHTML=txt;
+ var conf=String($('#adjConfirm').value||'').trim().toUpperCase()=='CONFIRMAR';
+ $('#adjGo').disabled=!(okv&&ch&&conf);
+}
+function renderAdj(){var w=$('#adjWrap');if(!w){var pw=$('#prefWrap');if(!pw)return;pw.insertAdjacentHTML('afterend','<div id="adjWrap"></div>');w=$('#adjWrap')}w.innerHTML=adjHtml();adjUpdate()}
+function adjSetBase(plat,asset,qty,time){
+ var ex=H.filter(function(x){return x.coin==asset&&(x.plat||'SIN BROKER')==plat});
+ if(ex.length){ex.sort(function(a,b){return a.time<b.time?1:-1});var prev=Object.assign({},ex[0]);ex[0].qty=qty;ex[0].time=time;ex[0].price=0;return{id:ex[0].id,prev:prev}}
+ var o={id:H.reduce(function(a,x){return Math.max(a,x.id)},0)+1,coin:asset,qty:qty,price:0,plat:plat,time:time};H.push(o);return{id:o.id,prev:null};
+}
+document.addEventListener('input',function(e){if(e.target&&/^adj(MXN|USDT|Confirm)$/.test(e.target.id))adjUpdate()});
+document.addEventListener('change',function(e){if(e.target&&e.target.id=='adjPlat'){ADJU.plat=e.target.value;renderAdj()}});
+document.addEventListener('click',function(e){
+ var t=e.target;if(!t.closest||!t.closest('#adjCard'))return;
+ if(t.id=='adjReset'){renderAdj();return}
+ if(t.id=='adjGo'){
+  if(String($('#adjConfirm').value||'').trim().toUpperCase()!='CONFIRMAR')return;
+  var plat=ADJU.plat,cur=adjCur(plat),nm=adjRound(parseFloat($('#adjMXN').value)),nu=adjRound(parseFloat($('#adjUSDT').value));
+  if(isNaN(nm)||isNaN(nu)||nm<0||nu<0)return;
+  var time=isoNow(),dM=nm-cur.MXN,dU=nu-cur.USDT,rate=(dM<0&&dU>0)?-dM/dU:(dM>0&&dU<0)?dM/-dU:null;
+  var ch=[];
+  if(Math.abs(dM)>=0.005)ch.push(Object.assign({asset:'MXN'},adjSetBase(plat,'MXN',nm,time)));
+  if(Math.abs(dU)>=0.005)ch.push(Object.assign({asset:'USDT'},adjSetBase(plat,'USDT',nu,time)));
+  /* la moneda que no cambió también se fija en la misma hora para que ambas partan del mismo punto */
+  if(Math.abs(dM)<0.005)ch.push(Object.assign({asset:'MXN'},adjSetBase(plat,'MXN',adjRound(cur.MXN),time)));
+  if(Math.abs(dU)<0.005)ch.push(Object.assign({asset:'USDT'},adjSetBase(plat,'USDT',adjRound(cur.USDT),time)));
+  var id=ADJ.reduce(function(a,x){return Math.max(a,x.id)},0)+1;
+  ADJ.push({id:id,time:time,plat:plat,before:{MXN:adjRound(cur.MXN),USDT:adjRound(cur.USDT)},after:{MXN:nm,USDT:nu},rate:rate,note:$('#adjNote').value.trim(),changes:ch});
+  saveH();saveAdj();
+  try{renderPositions()}catch(err){}
+  renderAdj();$('#adjMsg').textContent='Ajuste guardado: '+plat+' ahora tiene '+n(nm,2)+' MXN y '+n(nu,2)+' USDT.';
+  return;
+ }
+ var u=t.getAttribute('data-adjundo');
+ if(u){var a=ADJ.filter(function(x){return x.id==+u})[0];if(!a)return;
+  if(!confirm('¿Deshacer el ajuste de '+a.plat+' del '+fmtDT(a.time).slice(0,16)+'? Los saldos vuelven a como estaban antes.'))return;
+  (a.changes||[]).forEach(function(c){var i=H.findIndex(function(x){return x.id==c.id});if(i<0)return;if(c.prev)H[i]=c.prev;else H.splice(i,1)});
+  ADJ=ADJ.filter(function(x){return x.id!=a.id});saveH();saveAdj();try{renderPositions()}catch(err){}renderAdj();$('#adjMsg').textContent='Ajuste deshecho.';}
+});
+
 /* vender desde una entrada concreta */
 function startSellFromLot(key){
  var l=lots().filter(function(x){return x.key==key})[0];if(!l)return;
@@ -2081,7 +2164,7 @@ function bkInfo(){
 function fullBackup(){
  return{app:'registro-actividad',version:1,generado:new Date().toISOString(),
   movimientos:M,tenencias:H,brokers:FEES,monedas:COINS,tipoCambio:FX,
-  ajustes:{tema:theme,fondoActivo:wmOn,modoFondo:bgMode,fondoFijo:bgFixed},fondos:backgrounds,reportes:REPORTS,aportaciones:FLW,estadosCuenta:LED,dashboard:DASH,historial:HIST,preferencias:PREF,alertas:AL,perfil:(function(){try{return localStorage.getItem(KLOGO)||''}catch(e){return ''}})()};
+  ajustes:{tema:theme,fondoActivo:wmOn,modoFondo:bgMode,fondoFijo:bgFixed},fondos:backgrounds,reportes:REPORTS,aportaciones:FLW,estadosCuenta:LED,dashboard:DASH,historial:HIST,preferencias:PREF,alertas:AL,ajustes_saldo:ADJ,perfil:(function(){try{return localStorage.getItem(KLOGO)||''}catch(e){return ''}})()};
 }
 function markBackup(){try{localStorage.setItem(KLAST,String(Date.now()))}catch(e){}bkInfo()}
 /* --- exportar todo: los tres formatos llevan exactamente lo mismo --- */
@@ -2151,7 +2234,7 @@ function restoreFromObject(d){
    if(a.fondoActivo!=null)set(KWM,a.fondoActivo?'1':'0');
    if(a.modoFondo)set(KBGMODE,a.modoFondo);
    set(KBGFIXED,a.fondoFijo||'');
-   set(KBG,d.fondos||{});set(KREP,d.reportes||[]);if(Array.isArray(d.aportaciones))set(KFLOW,d.aportaciones);if(d.estadosCuenta&&d.estadosCuenta.trades)set(KLED,d.estadosCuenta);if(d.dashboard&&d.dashboard.items)set(KDASH,d.dashboard);if(Array.isArray(d.historial))set(KHIST,d.historial);if(d.preferencias)set(KPREF,d.preferencias);if(d.alertas&&d.alertas.rules)set(KALR,d.alertas);if(d.perfil)set(KLOGO,d.perfil);
+   set(KBG,d.fondos||{});set(KREP,d.reportes||[]);if(Array.isArray(d.aportaciones))set(KFLOW,d.aportaciones);if(d.estadosCuenta&&d.estadosCuenta.trades)set(KLED,d.estadosCuenta);if(d.dashboard&&d.dashboard.items)set(KDASH,d.dashboard);if(Array.isArray(d.historial))set(KHIST,d.historial);if(d.preferencias)set(KPREF,d.preferencias);if(d.alertas&&d.alertas.rules)set(KALR,d.alertas);if(Array.isArray(d.ajustes_saldo))set(KADJ,d.ajustes_saldo);if(d.perfil)set(KLOGO,d.perfil);
    location.reload();
   }catch(err){alert('No se pudo restaurar: el almacenamiento del navegador está lleno o bloqueado.')}
  }
