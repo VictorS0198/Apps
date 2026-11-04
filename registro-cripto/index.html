@@ -155,6 +155,9 @@ button.sm,.lbtn{padding:5px 9px;font-size:13px}
 .rep-head{display:flex;gap:12px;align-items:center;margin-bottom:8px}
 .rep-head img{width:56px;height:56px;border-radius:10px}
 @media print{body.printing #ovl{display:none!important}}
+.cyc-click{cursor:pointer;transition:border-color .12s}.cyc-click:hover{border-color:var(--acc,#2E93BE)}.cyc-click.on{border-color:var(--acc,#2E93BE);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc,#2E93BE) 22%,transparent)}
+.cp-table th.r,.cp-table td.num,.cp-sub th.r,.cp-sub td.num{text-align:right}.cp-row{cursor:pointer}.cp-row:hover td{background:color-mix(in srgb,var(--acc,#2E93BE) 8%,transparent)}.cp-car{display:inline-block;width:12px;color:var(--mu)}.cp-det>td{padding:4px 8px 10px 22px!important;background:var(--bg)}.cp-sub{min-width:0!important}.cp-sub td,.cp-sub th{font-size:12px}
+
 .pc-table th.r,.pc-table td.num{text-align:right}.pc-table td{font-size:13px}
 
 .adj-now{display:grid;gap:2px;align-content:start}.adj-diff{margin-top:10px;padding:10px 12px;border-radius:10px;background:var(--bg);border:1px solid var(--ln);display:grid;gap:4px;font-size:14px}.adj-table th.r,.adj-table td.num{text-align:right}
@@ -1134,9 +1137,12 @@ function cycles(){
 
 /* ---------- Ciclos: filtros y mini dashboard configurable ---------- */
 var KCYU='registro-cripto.cycui';
-var CYT={act:'Activos',rec:'Esperan recompra',ven:'Esperan venta',gain:'Ganancia si cierras hoy',best:'Mejor oportunidad',old:'Activo más antiguo',res:'Resultado de cerrados',month:'Cerrados este mes',small:'Menos de 10 USD'};
+var CYT={up:'Ganancia sin cerrar',down:'Pérdida sin cerrar',act:'Activos',rec:'Esperan recompra',ven:'Esperan venta',gain:'Ganancia si cierras hoy',best:'Mejor oportunidad',old:'Activo más antiguo',res:'Resultado de cerrados',month:'Cerrados este mes',small:'Menos de 10 USD'};
 var CYU={view:'active',type:'',coin:'',plat:'',sort:'recent',q:'',opp:false,dash:true,cfg:false,tiles:{act:1,rec:1,ven:1,gain:1,best:1,old:1,res:1,month:0,small:0}};
 try{var _cu=JSON.parse(localStorage.getItem(KCYU)||'null');if(_cu){Object.keys(_cu).forEach(function(k){if(k!='cfg')CYU[k]=_cu[k]})}}catch(e){}
+CYU.tiles=CYU.tiles||{};if(CYU.tiles.up==null)CYU.tiles.up=1;if(CYU.tiles.down==null)CYU.tiles.down=1;CYU.pl=CYU.pl||'';
+/* ganancia/pérdida abierta de un ciclo activo, en USD a precios de hoy */
+function cycOpenUsd(x){return x.st=='cerrado'?null:cycUsd(x.gain,x.gainUnit,x.o.coin)}
 function saveCyu(){try{localStorage.setItem(KCYU,JSON.stringify(CYU))}catch(e){}}
 function cycUsd(v,unit,coin){if(v==null)return null;if(unit=='USD')return v;var p=refPrice(coin);return p?v*p:null}
 function cycFav(x){if(x.chg==null)return null;return x.o.action=='VENTA'?-x.chg:x.chg}
@@ -1149,6 +1155,7 @@ function cycFilter(cs){
   if(CYU.type=='rec'&&x.o.action!='VENTA')return false;if(CYU.type=='ven'&&x.o.action=='VENTA')return false;
   if(CYU.coin&&x.o.coin!=CYU.coin)return false;if(CYU.plat&&x.o.plat!=CYU.plat)return false;
   if(CYU.opp&&!(act&&cycFav(x)>0))return false;
+  if(CYU.pl){var g=cycOpenUsd(x);if(g==null||(CYU.pl=='up'?g<=0:g>=0))return false}
   if(q&&(folio(x.o.id)+' '+x.o.coin+' '+x.o.plat).toLowerCase().indexOf(q)<0)return false;
   return true;
  });
@@ -1159,7 +1166,7 @@ function cycSort(list){
   old:function(a,b){return a.o.time<b.o.time?-1:1},
   pend:function(a,b){return (b.remUsd||0)-(a.remUsd||0)},
   opp:function(a,b){return (cycFav(b)==null?-1e9:cycFav(b))-(cycFav(a)==null?-1e9:cycFav(a))},
-  gain:function(a,b){var g=function(x){return x.st=='cerrado'?(cycUsd(x.delta,x.unit,x.o.coin)||0):(cycUsd(x.gain,x.gainUnit,x.o.coin)||0)};return g(b)-g(a)}
+  gain:function(a,b){var g=function(x){return x.st=='cerrado'?(cycUsd(x.delta,x.unit,x.o.coin)||0):(cycUsd(x.gain,x.gainUnit,x.o.coin)||0)};return CYU.pl=='down'?g(a)-g(b):g(b)-g(a)}
  };
  var ord={abierto:0,parcial:1,cerrado:2};
  return list.sort(function(a,b){return CYU.view=='all'?(ord[a.st]-ord[b.st])||(by[CYU.sort]||by.recent)(a,b):(by[CYU.sort]||by.recent)(a,b)});
@@ -1173,7 +1180,10 @@ function cycTopHtml(cs){
  var oldest=act.slice().sort(function(a,b){return a.o.time<b.o.time?-1:1})[0];
  var ym=new Date().toISOString().slice(0,7),month=cl.filter(function(x){var t=x.all[x.all.length-1].time;return String(t).slice(0,7)==ym}).length;
  var small=act.filter(function(x){return x.remUsd!=null&&x.remUsd<10&&x.rem>0}).length;
+ var opn=act.map(function(x){return cycOpenUsd(x)}).filter(function(v){return v!=null}),upS=0,upN=0,dnS=0,dnN=0;opn.forEach(function(v){if(v>0){upS+=v;upN++}else if(v<0){dnS+=v;dnN++}});
  var T={
+  up:['<span style="color:var(--buy)">+'+n(upS,2)+' USD</span>',upN+' ciclo'+(upN==1?'':'s')+' en ganancia · toca para verlos'],
+  down:['<span style="color:var(--sell)">'+(dnS<0?'−':'')+n(Math.abs(dnS),2)+' USD</span>',dnN+' ciclo'+(dnN==1?'':'s')+' en pérdida · toca para verlos'],
   act:[act.length,act.length?'de '+cs.length+' ciclos':'todo cerrado'],
   rec:[rec.length,n(recU,2)+' USD por recomprar'],
   ven:[ven.length,'≈ '+n(venU,2)+' USD por vender'],
@@ -1185,7 +1195,7 @@ function cycTopHtml(cs){
   small:[small,'activos con menos de 10 USD pendientes']
  };
  var on=Object.keys(CYT).filter(function(k){return CYU.tiles[k]});
- var dash='<div class="cyc-dash">'+on.map(function(k){return '<div class="fl-stat cyc-tile" data-cyt="'+k+'"><div class="mu">'+CYT[k]+'</div><div class="num fl-v">'+T[k][0]+'</div><div class="mu" style="font-size:12px">'+T[k][1]+'</div></div>'}).join('')+'</div>';
+ var dash='<div class="cyc-dash">'+on.map(function(k){var clk=k=='up'||k=='down';return '<div class="fl-stat cyc-tile'+(clk?' cyc-click'+(CYU.pl==k?' on':''):'')+'" data-cyt="'+k+'"'+(clk?' data-cypl="'+k+'" role="button" tabindex="0" title="'+(CYU.pl==k?'Quitar filtro':'Ver solo estos ciclos')+'"':'')+'><div class="mu">'+CYT[k]+'</div><div class="num fl-v">'+T[k][0]+'</div><div class="mu" style="font-size:12px">'+T[k][1]+'</div></div>'}).join('')+'</div>';
  var cfg=CYU.cfg?'<div class="cyc-cfg">'+Object.keys(CYT).map(function(k){return '<label class="unlock"><input type="checkbox" data-cytile="'+k+'"'+(CYU.tiles[k]?' checked':'')+'>'+CYT[k]+'</label>'}).join('')+'</div>':'';
  var coins={},plats={};cs.forEach(function(x){coins[x.o.coin]=1;if(x.o.plat)plats[x.o.plat]=1});
  var seg=function(k,opts){return '<div class="seg" role="group">'+opts.map(function(o){return '<button type="button" data-cyf="'+k+'" data-v="'+o[0]+'" aria-pressed="'+(CYU[k]==o[0])+'">'+o[1]+'</button>'}).join('')+'</div>'};
@@ -1195,20 +1205,22 @@ function cycTopHtml(cs){
    '<label class="unlock"><input type="checkbox" data-cyf="lastPlat"'+(CYU.lastPlat?' checked':'')+'>Separar por broker</label>'+
    (CYU.coin||CYU.plat?'<button type="button" class="sm x" data-cyclear="1">Quitar filtros</button>':'')+'</div>':(
   seg('type',[['','Todos'],['rec','Esperan recompra'],['ven','Esperan venta']])+
+  seg('pl',[['','Todo resultado'],['up','En ganancia'],['down','En pérdida']])+
   sel('coin','Todas las monedas',Object.keys(coins).sort())+sel('plat','Todos los brokers',Object.keys(plats).sort())+
   '<select data-cyf="sort" class="cyc-sel">'+[['recent','Más recientes'],['old','Más antiguos'],['pend','Mayor monto pendiente'],['opp','Mejor oportunidad'],['gain','Mayor ganancia']].map(function(o){return '<option value="'+o[0]+'"'+(CYU.sort==o[0]?' selected':'')+'>'+o[1]+'</option>'}).join('')+'</select>'+
   '<label class="unlock"><input type="checkbox" data-cyf="opp"'+(CYU.opp?' checked':'')+'>Solo con precio a favor</label>'+
   '<input type="search" data-cyf="q" class="cyc-q" placeholder="Buscar folio, moneda o broker" value="'+esc(CYU.q||'')+'">'+
-  (CYU.type||CYU.coin||CYU.plat||CYU.opp||CYU.q?'<button type="button" class="sm x" data-cyclear="1">Quitar filtros</button>':'')+'</div>'));
+  (CYU.type||CYU.coin||CYU.plat||CYU.opp||CYU.q||CYU.pl?'<button type="button" class="sm x" data-cyclear="1">Quitar filtros</button>':'')+'</div>'));
  return '<div class="card cyc-top"><div class="row"><h2 style="margin:0">Ciclos</h2><span class="sp"></span>'+
   '<button type="button" class="sm" data-cydash="1">'+(CYU.dash?'Ocultar resumen':'Mostrar resumen')+'</button>'+(CYU.dash?'<button type="button" class="sm" data-cycfg="1">'+(CYU.cfg?'Listo':'Elegir indicadores')+'</button>':'')+'</div>'+
   (CYU.dash?cfg+dash:'')+bar+'</div>';
 }
 document.addEventListener('click',function(e){
+ var tp=e.target.closest&&e.target.closest('[data-cypl]');if(tp&&$('#tab1')&&!$('#tab1').hidden){var k=tp.getAttribute('data-cypl');CYU.pl=CYU.pl==k?'':k;if(CYU.pl){CYU.view='active';CYU.sort='gain'}saveCyu();render();return}
  var b=e.target.closest&&e.target.closest('[data-cyf][data-v],[data-cydash],[data-cycfg],[data-cyclear]');if(!b||!$('#tab1')||$('#tab1').hidden)return;
  if(b.hasAttribute('data-cydash')){CYU.dash=!CYU.dash;if(!CYU.dash)CYU.cfg=false}
  else if(b.hasAttribute('data-cycfg'))CYU.cfg=!CYU.cfg;
- else if(b.hasAttribute('data-cyclear')){CYU.type='';CYU.coin='';CYU.plat='';CYU.opp=false;CYU.q=''}
+ else if(b.hasAttribute('data-cyclear')){CYU.type='';CYU.coin='';CYU.plat='';CYU.opp=false;CYU.q='';CYU.pl=''}
  else CYU[b.getAttribute('data-cyf')]=b.getAttribute('data-v');
  saveCyu();render();
 });
@@ -3447,10 +3459,11 @@ var WIDGETS={
  unassigned:{n:'Ventas sin entrada asignada',d:'Aparece solo cuando hay ventas por asignar',w:12},
  lots:{n:'Entradas por moneda',d:'Cada entrada con su ganancia o pérdida',w:12},
  hold:{n:'Actualizar lo que tengo',d:'Formulario para capturar tenencias y saldos',w:12,single:true},
- note:{n:'Nota',d:'Un bloque de texto libre para tus apuntes',w:4}
+ note:{n:'Nota',d:'Un bloque de texto libre para tus apuntes',w:4},
+ cycplat:{n:'Ciclos abiertos por broker',d:'Cuánto hay en cada broker solo en ciclos abiertos, con ganancia y pérdida sin cerrar',w:12}
 };
 var WIDTHS=[[3,'¼'],[4,'⅓'],[6,'½'],[8,'⅔'],[9,'¾'],[12,'Completo']];
-var REST=[{t:'brokers',w:12},{t:'flows',w:12},{t:'cash',w:12},{t:'unassigned',w:12},{t:'lots',w:12},{t:'hold',w:12}];
+var REST=[{t:'cycplat',w:12},{t:'brokers',w:12},{t:'flows',w:12},{t:'cash',w:12},{t:'unassigned',w:12},{t:'lots',w:12},{t:'hold',w:12}];
 var PRESETS={
  p1:{name:'Propuesta 1 · Clásica',nav:'tabs',kstyle:'plain',items:[{t:'kpi',w:3,o:{m:'total'}},{t:'kpi',w:3,o:{m:'cripto'}},{t:'kpi',w:3,o:{m:'pl'}},{t:'kpi',w:3,o:{m:'realized'}},{t:'detail',w:12},{t:'comp',w:12}].concat(REST)},
  p2:{name:'Propuesta 2 · Tendencia',nav:'tabs',kstyle:'icon',items:[{t:'hero',w:12},{t:'kpi',w:4,o:{m:'cripto'}},{t:'kpi',w:4,o:{m:'usdt'}},{t:'kpi',w:4,o:{m:'pesos'}},{t:'kpi',w:3,o:{m:'cost'}},{t:'kpi',w:3,o:{m:'valor'}},{t:'kpi',w:3,o:{m:'aportado'}},{t:'kpi',w:3,o:{m:'realized'}},{t:'comp',w:12}].concat(REST)},
@@ -3463,6 +3476,7 @@ var DASH;
 try{DASH=JSON.parse(localStorage.getItem(KDASH)||'null')}catch(e){DASH=null}
 if(!DASH||!Array.isArray(DASH.items)){var _sv=DASH&&DASH.saved;DASH=fromPreset('p4');if(_sv)DASH.saved=_sv}
 DASH.saved=DASH.saved||{};
+if(!DASH.cpAdded){DASH.cpAdded=1;if(!DASH.items.some(function(x){return x.t=='cycplat'})){var _ix=DASH.items.findIndex(function(x){return x.t!='kpi'&&x.t!='hero'});DASH.items.splice(_ix<0?DASH.items.length:_ix,0,{id:dUid(),t:'cycplat',w:12,o:{}})}try{localStorage.setItem(KDASH,JSON.stringify(DASH))}catch(e){}}
 function saveDash(){try{localStorage.setItem(KDASH,JSON.stringify(DASH))}catch(e){}}
 var DEDIT=false;
 
@@ -3538,7 +3552,34 @@ function kpiData(m,c){
   case 'entradas':return{v:c.win+' / '+c.loss,s:'entradas en ganancia / en pérdida'};
  }
  return{v:'—',s:''};
+}/* ciclos abiertos agrupados por broker: lo que está "dentro" de cada aplicación según los ciclos */
+var CPX={};
+function cycInUsd(x){return x.o.action=='VENTA'?x.remUsd:(x.byQ&&x.p?x.rem*x.p:x.remUsd)}
+function wCycPlat(){
+ var act=cycles().filter(function(x){return x.st!='cerrado'}),by={};
+ act.forEach(function(x){var p=x.o.plat||'SIN BROKER',o=by[p]||(by[p]={plat:p,n:0,rec:0,recN:0,ven:0,venN:0,venMiss:0,up:0,dn:0,upN:0,dnN:0,miss:0,list:[]});
+  o.n++;o.list.push(x);var g=cycOpenUsd(x),u=cycInUsd(x);
+  if(x.o.action=='VENTA'){o.rec+=u||0;o.recN++}else{o.venN++;if(u!=null)o.ven+=u;else o.venMiss++}
+  if(g==null)o.miss++;else if(g>0){o.up+=g;o.upN++}else if(g<0){o.dn+=g;o.dnN++}});
+ var rows=Object.keys(by).map(function(k){return by[k]}).sort(function(a,b){return (b.rec+b.ven)-(a.rec+a.ven)});
+ if(!rows.length)return '<div class="wh"><h3>Ciclos abiertos por broker</h3></div><p class="mu">No tienes ciclos abiertos.</p>';
+ var T={n:0,rec:0,ven:0,up:0,dn:0};rows.forEach(function(r){T.n+=r.n;T.rec+=r.rec;T.ven+=r.ven;T.up+=r.up;T.dn+=r.dn});
+ var sg=function(v){return Math.abs(v)<0.005?'<span class="mu">0.00</span>':'<span style="color:'+col(v)+'">'+(v>0?'+':'−')+n(Math.abs(v),2)+'</span>'};
+ var body=rows.map(function(r){var open=CPX[r.plat],net=r.up+r.dn;
+  var det=open?'<tr class="cp-det"><td colspan="8"><table class="ptable cp-sub"><thead><tr><th>Folio</th><th>Moneda</th><th>Espera</th><th class="r">Pendiente</th><th class="r">En USD hoy</th><th class="r">Si cierras hoy</th></tr></thead><tbody>'+
+   r.list.slice().sort(function(a,b){return (cycOpenUsd(b)||0)-(cycOpenUsd(a)||0)}).map(function(x){var g=cycOpenUsd(x),usd=cycInUsd(x);
+    return '<tr><td>'+folio(x.o.id)+'</td><td>'+coinIcon(x.o.coin,14)+esc(x.o.coin)+'</td><td>'+(x.o.action=='VENTA'?'Recompra':'Venta')+'</td><td class="num">'+(x.byQ?n(x.rem,6)+' '+esc(x.o.coin):n(x.rem,2)+' USD')+'</td><td class="num">'+(usd!=null?n(usd,2):'—')+'</td><td class="num">'+(g==null?'<span class="mu">sin precio</span>':sg(g))+'</td></tr>'}).join('')+'</tbody></table></td></tr>':'';
+  return '<tr class="cp-row" data-cpx="'+esc(r.plat)+'"><td><span class="cp-car">'+(open?'▾':'▸')+'</span> <b>'+esc(r.plat)+'</b></td><td class="num">'+r.n+'</td>'+
+   '<td class="num">'+(r.recN?n(r.rec,2)+'<div class="mu" style="font-size:11px">'+r.recN+' ciclo'+(r.recN==1?'':'s')+'</div>':'—')+'</td>'+
+   '<td class="num">'+(r.venN?n(r.ven,2)+(r.venMiss?'*':'')+'<div class="mu" style="font-size:11px">'+r.venN+' ciclo'+(r.venN==1?'':'s')+'</div>':'—')+'</td>'+
+   '<td class="num"><b>'+n(r.rec+r.ven,2)+'</b></td><td class="num">'+(r.upN?sg(r.up):'—')+'</td><td class="num">'+(r.dnN?sg(r.dn):'—')+'</td><td class="num"><b>'+sg(net)+'</b>'+(r.miss?'<div class="mu" style="font-size:11px">'+r.miss+' sin precio</div>':'')+'</td></tr>'+det}).join('');
+ return '<div class="wh"><h3>Ciclos abiertos por broker</h3><span class="sp"></span><span class="mu" style="font-size:12px">Toca un broker para ver sus ciclos</span></div>'+
+  '<div class="wrap"><table class="ptable cp-table"><thead><tr><th>Broker</th><th class="r">Ciclos</th><th class="r">Esperando recompra (USD)</th><th class="r">Cripto esperando venta (USD hoy)</th><th class="r">Total en ciclos</th><th class="r">Ganancia sin cerrar</th><th class="r">Pérdida sin cerrar</th><th class="r">Neto</th></tr></thead><tbody>'+body+'</tbody>'+
+  '<tfoot><tr><td><b>Total</b></td><td class="num"><b>'+T.n+'</b></td><td class="num"><b>'+n(T.rec,2)+'</b></td><td class="num"><b>'+n(T.ven,2)+'</b></td><td class="num"><b>'+n(T.rec+T.ven,2)+'</b></td><td class="num"><b>'+sg(T.up)+'</b></td><td class="num"><b>'+sg(T.dn)+'</b></td><td class="num"><b>'+sg(T.up+T.dn)+'</b></td></tr></tfoot></table></div>'+
+  '<p class="mu" style="font-size:12px;margin:6px 0 0">Solo cuenta lo que sigue pendiente en ciclos abiertos: los dólares de ventas que esperan recompra y la cripto de compras que espera venta, a precio de hoy. Ganancia y pérdida son lo que harías si cerraras cada ciclo ahora.</p>';
 }
+document.addEventListener('click',function(e){var r=e.target.closest&&e.target.closest('[data-cpx]');if(!r||DEDIT)return;var k=r.getAttribute('data-cpx');CPX[k]=!CPX[k];renderPositions()});
+
 function wKpi(it,c){
  var m=(it.o&&it.o.m)||'total',K=KPI_METRICS[m]||KPI_METRICS.total,d=kpiData(m,c),icon=d.i||K.i,ic=DASH.kstyle!='plain';
  var colr=m=='pl'?(c.totPL<0?'#C8553D':'#1F8A7E'):K.c;
@@ -3603,7 +3644,7 @@ function wLots(it,c){
 }
 function wHold(){return '<details class="hold-wrap" id="holdWrap"'+(holdOpen?' open':'')+' style="margin:0;border:0;padding:0"><summary><b>Actualizar lo que tengo en los brokers</b> <span class="mu">· para cuando deposites o quieras corregir cantidades</span></summary><div id="holdSlot"></div></details>'}
 function wNote(it){var t=(it.o&&it.o.text)||'';return '<div class="wh"><h3>'+esc((it.o&&it.o.title)||'Nota')+'</h3></div><textarea class="dnote" data-note="'+it.id+'" placeholder="Escribe aquí tus apuntes…">'+esc(t)+'</textarea>'}
-var WRENDER={kpi:wKpi,hero:wHero,detail:wDetail,comp:wComp,history:wHistory,table:wTable,brokers:wBrokers,flows:wFlows,cash:wCash,unassigned:wUnassigned,lots:wLots,hold:wHold,note:wNote};
+var WRENDER={cycplat:wCycPlat,kpi:wKpi,hero:wHero,detail:wDetail,comp:wComp,history:wHistory,table:wTable,brokers:wBrokers,flows:wFlows,cash:wCash,unassigned:wUnassigned,lots:wLots,hold:wHold,note:wNote};
 
 /* --- pintar --- */
 function applyNav(){document.body.classList.toggle('nav-side',DASH.nav=='side')}
