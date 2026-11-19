@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Registro de actividad</title>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <style>
@@ -155,6 +155,48 @@ button.sm,.lbtn{padding:5px 9px;font-size:13px}
 .rep-head{display:flex;gap:12px;align-items:center;margin-bottom:8px}
 .rep-head img{width:56px;height:56px;border-radius:10px}
 @media print{body.printing #ovl{display:none!important}}
+
+/* ===== Estilo minimal ===== */
+:root[data-theme="minimal"]{--bg:#F8FAFC;--sf:#FFFFFF;--ink:#0F172A;--mu:#64748B;--ln:#E2E8F0;--sell:#DC2626;--buy:#059669;--amb:#B45309;--sell-bg:#FEE2E2;--buy-bg:#D1FAE5;--amb-bg:#FEF3C7;--acc:#2563EB;--hm:#2563EB}
+:root[data-theme="minimal-oscuro"]{--bg:#0B1220;--sf:#111A2E;--ink:#E2E8F0;--mu:#94A3B8;--ln:#1F2A44;--sell:#F87171;--buy:#34D399;--amb:#FBBF24;--sell-bg:#3B1C22;--buy-bg:#0F2F27;--amb-bg:#33280F;--acc:#60A5FA;--hm:#60A5FA}
+html.ui-min{--acc-d:var(--acc,#2563EB)}
+html.ui-min body{font-family:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;letter-spacing:-.003em}
+html.ui-min h1{font-size:30px;font-weight:700;letter-spacing:-.02em}
+html.ui-min h2{font-size:17px;font-weight:700;letter-spacing:-.01em}
+html.ui-min .card,html.ui-min .dw,html.ui-min details.cyc{border:1px solid var(--ln);border-radius:12px;box-shadow:none}
+html.ui-min .card{padding:20px 22px;margin-bottom:16px}
+html.ui-min .topbar{padding-bottom:14px;margin-bottom:0;border-bottom:1px solid var(--ln)}
+html.ui-min .topbar .sub{color:var(--mu)}
+/* navegación como texto, activo subrayado */
+html.ui-min .tabs{gap:2px;border-bottom:1px solid var(--ln);width:100%;padding:0 0 0;margin-top:4px}
+html.ui-min .tabs button{border:0!important;background:transparent!important;border-radius:0!important;color:var(--mu)!important;padding:12px 12px 11px;font-size:14px;box-shadow:none!important}
+html.ui-min .tabs button:hover{color:var(--ink)!important}
+html.ui-min .tabs button[aria-pressed=true]{color:var(--ink)!important;font-weight:600;box-shadow:inset 0 -2px 0 var(--acc-d)!important;background:transparent!important}
+html.ui-min .tabs .tab-ord{min-width:0;opacity:.6}
+/* campos */
+html.ui-min label,html.ui-min .lt{color:var(--ink);font-weight:600;font-size:13px}
+html.ui-min label .mu,html.ui-min .lt .mu{font-weight:400}
+html.ui-min input,html.ui-min select,html.ui-min textarea{border:1px solid var(--ln);border-radius:8px;background:var(--sf);padding:10px 12px;margin-top:6px}
+html.ui-min input:focus,html.ui-min select:focus,html.ui-min textarea:focus{outline:2px solid color-mix(in srgb,var(--acc-d) 35%,transparent);outline-offset:0;border-color:var(--acc-d)}
+html.ui-min input[type=checkbox],html.ui-min input[type=radio]{accent-color:var(--acc-d)}
+/* botones */
+html.ui-min button:not([class]),html.ui-min button.sm,html.ui-min button.x,html.ui-min .btnlike{border:1px solid var(--ln);border-radius:8px;background:var(--sf);font-weight:500}
+html.ui-min button:not([class]):hover,html.ui-min button.sm:hover,html.ui-min button.x:hover{border-color:color-mix(in srgb,var(--ink) 30%,var(--ln))}
+html.ui-min button.p{background:var(--sf)!important;color:var(--acc-d)!important;border:1.5px solid var(--acc-d)!important;font-weight:600}
+html.ui-min button.p:hover:not(:disabled){background:color-mix(in srgb,var(--acc-d) 8%,var(--sf))!important}
+html.ui-min button.p:disabled{color:var(--mu)!important;border-color:var(--ln)!important;opacity:1}
+html.ui-min .seg{background:var(--bg);border:1px solid var(--ln)}
+html.ui-min .seg button{border:0;background:transparent;border-radius:999px}html.ui-min .seg button[aria-pressed=true]{background:var(--sf)}
+html.ui-min .seg button[aria-pressed=true]{box-shadow:0 1px 2px rgba(15,23,42,.08),inset 0 -2px 0 var(--acc-d)}
+/* secciones numeradas como 01, 02, 03 */
+html.ui-min main{counter-reset:sec}html.ui-min main>[id^="tab"],html.ui-min main>[id^="w"]{counter-reset:sec}
+html.ui-min main .card>h2::before,html.ui-min main .card>.row>h2:first-child::before{counter-increment:sec;content:counter(sec,decimal-leading-zero);color:var(--acc-d);font-size:12px;font-weight:700;margin-right:10px;font-family:"IBM Plex Mono",ui-monospace,monospace;vertical-align:2px}
+/* tablas y tarjetas de indicadores */
+html.ui-min th{font-weight:600;color:var(--mu);font-size:12px;text-transform:none}
+html.ui-min .fl-stat,html.ui-min .kpi{border-radius:10px;box-shadow:none}
+html.ui-min .brand-logo{border-radius:10px}
+html.ui-min .req.invalid{background:var(--sf);border-color:color-mix(in srgb,var(--sell) 55%,var(--ln))}html.ui-min .req.valid{background:var(--sf);border-color:color-mix(in srgb,var(--buy) 60%,var(--ln))}
+
 .avg-table th.r,.avg-table td.num{text-align:right}.avg-table td{vertical-align:middle}.avg-pct{font-weight:700;font-size:15px}
 .tc-leg{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;margin:8px 0 4px;align-items:center}.tc-leg i{display:inline-block;width:14px;height:10px;margin-right:5px;vertical-align:middle}
 .tc-leg i.tc-up{background:#1E88E5;clip-path:polygon(50% 0,100% 100%,0 100%)}.tc-leg i.tc-dn{background:#F59E0B;clip-path:polygon(0 0,100% 0,50% 100%)}
@@ -699,15 +741,21 @@ var theme=localStorage.getItem(KTHEME)||'auto';applyTheme(theme);
 
 /* ================= Preferencias: acento, tema por hora, cielo, campo calculado, perfil ================= */
 var KPREF='registro-cripto.prefs',KLOGO='registro-cripto.logo';
-var PREF={calc:'amt',accent:'',hourly:false,dayTheme:'light',nightTheme:'dark',dayStart:'07:00',nightStart:'19:00',sky:true,font:100,density:'normal',title:''};
+var PREF={ui:'min',calc:'amt',accent:'',hourly:false,dayTheme:'light',nightTheme:'dark',dayStart:'07:00',nightStart:'19:00',sky:true,font:100,density:'normal',title:''};
 try{var _p=JSON.parse(localStorage.getItem(KPREF)||'null');if(_p)Object.keys(_p).forEach(function(k){PREF[k]=_p[k]})}catch(e){}
+/* estilo minimal (una sola vez): fondo claro, líneas finas, acento azul y secciones numeradas */
+if(!PREF.uiv){PREF.uiv=1;PREF.ui='min';PREF.accent='';PREF.sky=false;
+ if(PREF.hourly){PREF.dayTheme='minimal';PREF.nightTheme='minimal-oscuro'}else{theme='minimal';try{localStorage.setItem(KTHEME,theme)}catch(e){}}
+ try{localStorage.setItem(KPREF,JSON.stringify(PREF))}catch(e){}}
 function savePref(){try{localStorage.setItem(KPREF,JSON.stringify(PREF))}catch(e){}}
 var ACCENTS=[['','Del tema'],['#1F8A7E','Turquesa'],['#2E93BE','Azul'],['#5F6FCC','Índigo'],['#8058C4','Morado'],['#C73B78','Rosa'],['#C8553D','Coral'],['#DB7A2C','Naranja'],['#D4AF37','Oro'],['#2F9E62','Verde']];
 function hm(s){var a=String(s||'0:0').split(':');return (+a[0]||0)*60+(+a[1]||0)}
 function isDay(){var d=new Date(),m=d.getHours()*60+d.getMinutes(),a=hm(PREF.dayStart),b=hm(PREF.nightStart);return a<b?(m>=a&&m<b):!(m>=b&&m<a)}
+
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-pui]');if(!b)return;PREF.ui=b.getAttribute('data-pui');try{localStorage.setItem(KPREF,JSON.stringify(PREF))}catch(err){}applyAll();try{renderPrefCards()}catch(err){}});
 function effTheme(){return PREF.hourly?(isDay()?PREF.dayTheme:PREF.nightTheme):theme}
 function applyAll(){
- applyTheme(effTheme());
+ applyTheme(effTheme());document.documentElement.classList.toggle('ui-min',PREF.ui!='classic');
  var st=$('#prefStyle');if(!st){st=document.createElement('style');st.id='prefStyle';document.head.appendChild(st)}
  var a=PREF.accent,css='';
  if(a)css+=':root{--acc:'+a+';--hm:'+a+'}.tabs button[aria-pressed=true]{background:'+a+'!important;color:#fff!important;border-color:'+a+'!important}button.p{background:'+a+';border-color:'+a+';color:#fff}'+
@@ -770,6 +818,7 @@ function prefCardsHtml(){
    '<span class="mu" style="font-size:12px">Se recorta cuadrada y se guarda en tu nube con tus datos.</span></div>'+
    '<label style="flex:1;min-width:220px;margin:0"><span class="lt">Nombre que aparece arriba</span><input id="prefTitle" placeholder="Registro de actividad" value="'+esc(PREF.title||'')+'"></label></div></div>'+
   '<div class="card"><h2>Color y tema automático</h2>'+
+   '<span class="lt" style="display:block">Estilo de la interfaz</span><div style="margin:6px 0 14px"><div class="seg" role="group"><button type="button" data-pui="min" aria-pressed="'+(PREF.ui!='classic')+'">Minimal</button><button type="button" data-pui="classic" aria-pressed="'+(PREF.ui=='classic')+'">Clásico</button></div></div>'+
    '<span class="lt">Color de acento</span><div class="acc-row">'+ACCENTS.map(function(a){return '<button type="button" class="acc-sw'+(PREF.accent==a[0]?' on':'')+'" data-acc="'+a[0]+'" title="'+a[1]+'" style="background:'+(a[0]||'linear-gradient(135deg,var(--ink) 50%,var(--sf) 50%)')+'"></button>'}).join('')+
    '<label class="acc-custom" title="Elegir otro color"><input type="color" id="accPick" value="'+(PREF.accent||'#1F8A7E')+'"><span>Otro…</span></label></div>'+
    '<div class="fgrid c3" style="margin-top:14px">'+
@@ -2618,6 +2667,8 @@ $('#hTimePick').onclick=function(){openDTP('hTime')};
 
 /* ---------- temas ---------- */
 var THEMES=[
+ ['minimal','Minimal claro',['#F8FAFC','#ffffff','#0F172A','#2563EB','#DC2626']],
+ ['minimal-oscuro','Minimal oscuro',['#0B1220','#111A2E','#E2E8F0','#60A5FA','#F87171']],
  ['auto','Automático',['#E9EEF2','#ffffff','#16212C','#1B7F79','#B23A48']],
  ['light','Claro',['#E9EEF2','#ffffff','#16212C','#1B7F79','#B23A48']],
  ['dark','Oscuro',['#0F1720','#18232F','#E6EDF3','#5CC7BF','#F0808C']],
