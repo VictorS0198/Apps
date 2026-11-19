@@ -190,6 +190,51 @@
   .tile.rec{border-color:var(--accent);}
   .tile.rec b::after{content:" · recomendado"; font-size:11px; font-weight:400; color:var(--accent);}
   .linkbtn{background:none; border:none; padding:0; color:var(--accent); font-size:13px; font-weight:600; text-decoration:underline; cursor:pointer;}
+
+  /* ---- v18: interfaz minimal (según referencia) ---- */
+  [data-theme="minimal"]{color-scheme:light; --bg:#f6f7f9; --panel:#ffffff; --border:#e3e6ec; --text:#111827; --muted:#6b7280; --accent:#2563eb; --accent2:#d92d3f; --ok:#12805c; --warn:#9a6700; --input:#ffffff; --th:#f3f4f7; --banner:#fff7e0; --on-accent:#ffffff;}
+  [data-theme="minimal-oscuro"]{color-scheme:dark; --bg:#0f1720; --panel:#18232f; --border:#2c3b4a; --text:#e6edf3; --muted:#93a3b3; --accent:#5b9bff; --accent2:#f0808c; --ok:#5cc7bf; --warn:#e5b45a; --input:#121c26; --th:#1e2b38; --banner:#372d18; --on-accent:#0b1220;}
+  body{padding:0; font-family:"Inter","IBM Plex Sans",-apple-system,Segoe UI,Roboto,sans-serif;}
+  .topbar{display:flex; align-items:center; justify-content:space-between; gap:16px; flex-wrap:wrap; padding:0 28px; background:var(--panel); border-bottom:1px solid var(--border);}
+  .brand{font-weight:700; font-size:15px; display:flex; align-items:center; gap:6px; padding:14px 0;}
+  .brand .star{color:var(--accent);}
+  .topbar .tabs{margin:0; border:0; flex:1; justify-content:flex-end; align-items:center; gap:4px;}
+  .topbar .tabbtn{font-weight:500; font-size:13px; padding:16px 12px; color:var(--muted); border-bottom:2px solid transparent;}
+  .topbar .tabbtn:hover{color:var(--text);}
+  .topbar .tabbtn.active{color:var(--accent); border-bottom-color:var(--accent); font-weight:600;}
+  .topbar .tabs-main{justify-content:flex-end;}
+  .page{max-width:1180px; margin:0 auto; padding:26px 28px 60px;}
+  .notes{margin:0; padding:8px 28px; background:var(--panel);}
+  .noteslist{left:28px; right:28px;}
+  .pagehead{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:20px;}
+  .pagehead h1{font-size:28px; font-weight:700; margin:0 0 4px; letter-spacing:-.01em;}
+  .pagehead p{margin:0; color:var(--muted); font-size:13px;}
+  .pagehead .actions{margin:0;}
+  .btn-primary,.btn-secondary{border-radius:8px; padding:9px 18px;}
+  .btn-secondary{background:var(--panel);}
+  #btnAdd{background:var(--panel); color:var(--accent); border:1px solid var(--accent);}
+  #btnAdd:not(:disabled){background:var(--accent); color:var(--on-accent);}
+  #btnAdd:disabled{opacity:1; color:var(--muted); border-color:var(--border); background:var(--panel);}
+  #formGrid{display:grid; grid-template-columns:repeat(auto-fit,minmax(380px,1fr)); gap:16px; align-items:start;}
+  #formGrid .sect{margin:0; border-radius:14px; padding:18px 18px 20px; background:var(--panel); border:1px solid var(--border);}
+  #formGrid .sect:nth-child(n){grid-column:auto;}
+  .sect h3{font-size:16px; text-transform:none; letter-spacing:0; color:var(--text); font-weight:700; margin-bottom:14px;}
+  .sect h3 .sn{font-size:11px; font-weight:700; color:var(--accent); letter-spacing:.04em;}
+  .sect .grid{grid-template-columns:repeat(auto-fill,minmax(170px,1fr));}
+  label{color:var(--text); font-weight:600; font-size:12px;}
+  .rv{font-weight:400;}
+  input,select,textarea{border-radius:8px; padding:9px 11px;}
+  .chipbox{border-radius:8px;}
+  .progress{margin-top:18px; padding:14px 18px; border:1px solid var(--border); border-radius:14px; background:var(--panel);}
+  .progress .pt{font-weight:600; font-size:13px; display:flex; justify-content:space-between; gap:8px; align-items:center;}
+  .progress .pt span.mu{color:var(--muted); font-weight:400;}
+  .progress .pb{height:6px; border-radius:4px; background:var(--th); margin-top:10px; overflow:hidden;}
+  .progress .pb i{display:block; height:100%; background:var(--accent); width:0; transition:width .25s;}
+  .progress.review{border-color:var(--warn);}
+  .foot{color:var(--muted); font-size:12px; margin-top:22px;}
+  .panel,.card,.kpi,.chart,.iocard{border-radius:14px;}
+  @media(max-width:760px){.topbar{padding:0 14px; display:block;} .brand{padding:10px 0 0;} .topbar .tabs{flex-wrap:nowrap; overflow-x:auto; justify-content:flex-start;} .topbar .tabs-main{flex-wrap:nowrap; justify-content:flex-start;} .topbar .tabbtn{white-space:nowrap; padding:10px 10px;}}
+  @media(max-width:640px){.topbar{padding:0 14px;} .page{padding:18px 14px 50px;} .notes{padding:8px 14px;} #formGrid{grid-template-columns:1fr;}}
 </style>
 </head>
 <body>
@@ -204,8 +249,14 @@
   <div class="noteslist" id="notesList"></div>
 </div>
 
-<h1>🗝️ <span id="appName">Llavero</span></h1>
-<p class="sub">Control y auditoría de tus cuentas. Todo se guarda solo en este navegador (localStorage); nada se envía a internet.</p>
+<header class="topbar">
+  <div class="brand"><span class="star">✦</span> <span id="appName">Llavero</span></div>
+  <div class="tabs" id="tabbar">
+    <div class="tabs-main" id="tabsMain"></div>
+    <div><button class="tabbtn" id="tabCfg" data-tab="config" title="Nombre, tema, orden de pestañas y preferencias">Configuración</button></div>
+  </div>
+</header>
+<div class="page">
 <div id="storageWarn"></div>
 
 <div class="toast" id="toast"></div>
@@ -239,11 +290,6 @@
   </div>
 </div>
 
-<div class="tabs" id="tabbar">
-  <div class="tabs-main" id="tabsMain"></div>
-  <div><button class="tabbtn" id="tabCfg" data-tab="config" title="Nombre, tema, orden de pestañas y preferencias">⚙ Configuración</button></div>
-</div>
-
 <div class="tabpage active" id="tab-buscar">
   <div class="filters">
     <input id="q" type="search" placeholder="Buscar por app, correo, usuario, categoría, notas…" autocomplete="off">
@@ -257,12 +303,15 @@
 </div>
 
 <div class="tabpage" id="tab-agregar">
-  <div id="trackBanner"></div>
-  <div id="formGrid"></div>
-  <div class="actions">
-    <button class="btn-primary" id="btnAdd">+ Agregar cuenta nueva</button>
-    <button class="btn-secondary" id="btnClearForm">Limpiar formulario</button>
+  <div class="pagehead">
+    <div><h1 id="formTitle">Agregar cuenta</h1><p id="formSub">Registra y organiza tus accesos de forma segura.</p></div>
+    <div class="actions">
+      <button class="btn-secondary" id="btnClearForm">Cancelar</button>
+      <button class="btn-primary" id="btnAdd">Guardar</button>
+    </div>
   </div>
+  <div id="formGrid"></div>
+  <div id="trackBanner"></div>
 </div>
 
 <div class="tabpage" id="tab-datos">
@@ -384,8 +433,11 @@
   </div>
 </div>
 
+<p class="foot">Control y auditoría de tus cuentas. Todo se guarda solo en este navegador (localStorage); nada se envía a internet.</p>
+</div>
+
 <script>
-const APP_VERSION = "17";
+const APP_VERSION = "18";
 const $ = id => document.getElementById(id);
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 const esc = escapeHtml;
@@ -469,7 +521,7 @@ const DB_META = [
 ];
 const DB_KEYS = {}; DB_META.forEach(m => DB_KEYS[m.k] = m.key);
 
-let rows = [], DB = {}, notes = [], hist = [], snaps = [], cfg = {theme:"oscuro", clip:30, mask:true, appName:"", tabOrder:null, staleDays:180};
+let rows = [], DB = {}, notes = [], hist = [], snaps = [], cfg = {theme:"minimal", clip:30, mask:true, appName:"", tabOrder:null, staleDays:180};
 DB_META.forEach(m => DB[m.k] = []);
 let reviewIndex = null;      // null = cuenta nueva
 let reviewed = {};           // key -> true cuando el campo se modificó o se confirmó
@@ -932,6 +984,8 @@ function logEvent(r, tipo, fecha){ hist.push({id:r.id, app:r.app||"", fecha:fech
 
 /* ---------- configuración y temas ---------- */
 const THEMES = [
+  {id:"minimal", name:"Minimal claro", c:["#f6f7f9","#ffffff","#2563eb"]},
+  {id:"minimal-oscuro", name:"Minimal oscuro", c:["#0f1720","#18232f","#5b9bff"]},
   {id:"oscuro", name:"Oscuro", c:["#0f1115","#171a21","#4f8cff"]},
   {id:"claro", name:"Claro", c:["#f4f5f7","#ffffff","#2f6fed"]},
   {id:"medianoche", name:"Medianoche", c:["#0a1020","#111a30","#6aa3ff"]},
@@ -942,7 +996,8 @@ const THEMES = [
 ];
 function loadConfig(){
   try{ const c = JSON.parse(lsGet(CONFIG_KEY) || "null"); if(c) cfg = Object.assign(cfg, c); }catch(e){}
-  if(!THEMES.some(t => t.id === cfg.theme)) cfg.theme = "oscuro";
+  if(!cfg.uiv){ cfg.uiv = 18; cfg.theme = "minimal"; saveConfig(); }   // v18: estrena la interfaz minimal una sola vez
+  if(!THEMES.some(t => t.id === cfg.theme)) cfg.theme = "minimal";
   if(!cfg.appName) cfg.appName = document.documentElement.dataset.appname || "";
   if(!Array.isArray(cfg.tabOrder)) cfg.tabOrder = null;
   if(![90,180,365].includes(Number(cfg.staleDays))) cfg.staleDays = 180;
@@ -1227,9 +1282,9 @@ function refreshDbUsers(k){
 
 /* ---------- formulario ---------- */
 function buildForm(){
-  $("formGrid").innerHTML = GROUPS.map(g => {
+  $("formGrid").innerHTML = GROUPS.map((g) => {
     const fs = FIELDS.filter(f => f.g === g.id);
-    return `<section class="sect"><h3>${esc(g.title)}<span class="sp" id="gp_${g.id}"></span></h3><div class="grid">` +
+    return `<section class="sect"><h3><span class="sn">${String(GROUPS.indexOf(g)+1).padStart(2,"0")}</span>${esc(g.title)}<span class="sp" id="gp_${g.id}"></span></h3><div class="grid">` +
       fs.map(f => `<div class="field${f.wide ? " wide" : ""}" data-key="${f.key}"><label><span class="lt">${esc(f.label)}${f.help ? info(f.help) : ""}</span><span class="rv"></span></label>${T[f.type].build(f)}</div>`).join("") +
       `</div></section>`;
   }).join("");
@@ -1276,6 +1331,7 @@ function touchField(key, ev){
 function updateProgress(){
   const n = FIELDS.filter(f => isDone(f.key)).length, all = n === FIELDS.length;
   const c = $("trackCount"); if(c) c.textContent = n;
+  const pbar = $("trackBar"); if(pbar) pbar.style.width = Math.round(100*n/FIELDS.length) + "%";
   GROUPS.forEach(g => {
     const fs = FIELDS.filter(f => f.g === g.id), d = fs.filter(f => isDone(f.key)).length, el = $("gp_"+g.id);
     if(el) el.textContent = (d === fs.length ? "✔ " : "") + d + " / " + fs.length;
@@ -1284,11 +1340,11 @@ function updateProgress(){
   $("btnAdd").title = all ? "" : "Faltan campos por llenar o confirmar.";
 }
 function renderBanner(){
-  const N = FIELDS.length;
+  const N = FIELDS.length, rev = reviewIndex !== null;
   const help = info("Cada casilla se marca en rojo hasta que la llenes o la confirmes, y pasa a verde cuando está lista. En los campos que vienen desactivados (Face ID, PIN de transacciones…) solo confirma «no aplica». Para guardar, todas deben estar en verde.");
-  $("trackBanner").innerHTML = reviewIndex === null
-    ? `<div class="banner">➕ <b>Cuenta nueva</b> — <b><span id="trackCount">0</span> de ${N}</b> campos listos ${help}</div>`
-    : `<div class="banner">🔍 <b>Modo revisión:</b> ${esc((rows[reviewIndex] && rows[reviewIndex].app) || "(sin nombre)")} — <b><span id="trackCount">0</span> de ${N}</b> campos revisados ${help}</div>`;
+  $("trackBanner").innerHTML = `<div class="progress${rev ? " review" : ""}"><div class="pt"><span>Progreso del registro ${help}</span><span class="mu">${rev ? "Revisando: " + esc((rows[reviewIndex] && rows[reviewIndex].app) || "(sin nombre)") + " · " : ""}<b id="trackCount">0</b> de ${N} campos ${rev ? "revisados" : "listos"}</span></div><div class="pb"><i id="trackBar"></i></div></div>`;
+  $("formTitle").textContent = rev ? "Revisar cuenta" : "Agregar cuenta";
+  $("formSub").textContent = rev ? "Confirma cada casilla para sobrescribir esta cuenta." : "Registra y organiza tus accesos de forma segura.";
 }
 function clearForm(){
   reviewed = {};
@@ -1299,14 +1355,14 @@ function startReview(i){
   reviewIndex = i; reviewed = {};
   const r = rows[i];
   FIELDS.forEach(f => setFieldValue(f, r[f.key] !== undefined ? r[f.key] : defaultValue(f)));
-  $("btnAdd").textContent = "💾 Guardar revisión (sobreescribir)";
-  $("btnClearForm").textContent = "Cancelar revisión";
+  $("btnAdd").textContent = "Guardar revisión";
+  $("btnClearForm").textContent = "Cancelar";
   renderBanner(); refreshAllTracking(); markTab();
 }
 function exitReview(){
   reviewIndex = null;
-  $("btnAdd").textContent = "+ Agregar cuenta nueva";
-  $("btnClearForm").textContent = "Limpiar formulario";
+  $("btnAdd").textContent = "Guardar";
+  $("btnClearForm").textContent = "Cancelar";
   clearForm();
   if(returnTab){ const t = returnTab; returnTab = null; goTab(t); } else markTab();
 }
