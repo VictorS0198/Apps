@@ -136,7 +136,7 @@
   .tabs-main .tabbtn{cursor:grab;}
   .tabbtn.dragging{opacity:.4;}
   .tabbtn.dragover{box-shadow:inset 3px 0 0 var(--accent);}
-  .cards{display:grid; grid-template-columns:repeat(auto-fill,minmax(310px,1fr)); gap:12px;}
+  .cards{display:flex; flex-direction:column; gap:8px;}
   .card{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:12px 14px; display:flex; flex-direction:column; gap:6px;}
   .card h3{margin:0; font-size:15px; display:flex; gap:8px; align-items:center; flex-wrap:wrap;}
   .pill{display:inline-block; font-size:11px; border:1px solid var(--border); border-radius:10px; padding:1px 8px; color:var(--muted); font-weight:400;}
@@ -203,7 +203,7 @@
   .topbar .tabbtn:hover{color:var(--text);}
   .topbar .tabbtn.active{color:var(--accent); border-bottom-color:var(--accent); font-weight:600;}
   .topbar .tabs-main{justify-content:flex-end;}
-  .page{max-width:1180px; margin:0 auto; padding:26px 28px 60px;}
+  .page{max-width:1180px; margin:0 auto; padding:26px 28px 90px;}
   .notes{margin:0; padding:8px 28px; background:var(--panel);}
   .noteslist{left:28px; right:28px;}
   .pagehead{display:flex; align-items:flex-start; justify-content:space-between; gap:16px; flex-wrap:wrap; margin-bottom:20px;}
@@ -235,20 +235,43 @@
   .panel,.card,.kpi,.chart,.iocard{border-radius:14px;}
   @media(max-width:760px){.topbar{padding:0 14px; display:block;} .brand{padding:10px 0 0;} .topbar .tabs{flex-wrap:nowrap; overflow-x:auto; justify-content:flex-start;} .topbar .tabs-main{flex-wrap:nowrap; justify-content:flex-start;} .topbar .tabbtn{white-space:nowrap; padding:10px 10px;}}
   @media(max-width:640px){.topbar{padding:0 14px;} .page{padding:18px 14px 50px;} .notes{padding:8px 14px;} #formGrid{grid-template-columns:1fr;}}
+
+  /* ---- v19: notas flotantes + tarjeta emergente ---- */
+  .notes{position:fixed; right:20px; bottom:20px; top:auto; left:auto; margin:0; padding:0; background:none; border:0; z-index:60; display:flex; flex-direction:column; align-items:flex-end; gap:10px;}
+  .notefab{width:52px; height:52px; border-radius:50%; padding:0; font-size:22px; line-height:1; background:var(--accent); color:var(--on-accent); box-shadow:0 6px 20px rgba(0,0,0,.28); position:relative; display:flex; align-items:center; justify-content:center;}
+  .notefab .nb{position:absolute; top:-4px; right:-4px; min-width:20px; height:20px; border-radius:10px; background:var(--accent2); color:#fff; font-size:11px; font-weight:700; display:flex; align-items:center; justify-content:center; padding:0 5px;}
+  .notesbox{display:none; width:min(360px,calc(100vw - 40px)); background:var(--panel); border:1px solid var(--border); border-radius:14px; box-shadow:0 12px 40px rgba(0,0,0,.3); padding:12px;}
+  .notes.open .notesbox{display:block;}
+  .noteslist{display:block; position:static; max-height:50vh; overflow:auto; border:0; border-radius:0; padding:0; margin-top:10px; background:none; box-shadow:none; left:auto; right:auto;}
+  .notes.open .noteslist{display:block;}
+  .rlist{display:flex; flex-direction:column; gap:8px;}
+  .rrow{display:flex; align-items:center; gap:10px; flex-wrap:wrap; padding:11px 16px; background:var(--panel); border:1px solid var(--border); border-radius:12px; cursor:pointer; user-select:none;}
+  .rrow:hover,.rrow:focus{border-color:var(--accent); outline:none;}
+  .rrow .rn{font-weight:600; font-size:14px;}
+  .rrow .rm{color:var(--muted); font-size:12px; margin-left:auto; word-break:break-all;}
+  .cardmodal{position:fixed; inset:0; z-index:70; display:none; align-items:center; justify-content:center; padding:20px; background:rgba(15,20,30,.35); -webkit-backdrop-filter:blur(10px); backdrop-filter:blur(10px);}
+  .cardmodal.open{display:flex;}
+  .cardmodal-in{width:100%; max-width:460px; position:relative;}
+  .cardmodal-in .card{box-shadow:0 20px 60px rgba(0,0,0,.4); padding:18px 20px; gap:9px;}
+  .cardmodal .xclose{position:absolute; top:10px; right:12px; background:none; border:1px solid var(--border); color:var(--muted); border-radius:50%; width:28px; height:28px; padding:0; font-size:14px; z-index:2;}
+  .cardmodal .xclose:hover{color:var(--text); border-color:var(--accent);}
+  body.modal-open{overflow:hidden;}
 </style>
 </head>
 <body>
 
 <div class="notes" id="notesPanel">
-  <div class="notesbar">
-    <span title="Notas generales de mejoras para la app">💡</span>
-    <input id="noteInput" type="text" placeholder="Anota una mejora para la app mientras la usas… (Enter para guardar)" autocomplete="off">
-    <button class="btn-primary rowbtn" id="noteAdd">Agregar</button>
-    <button class="btn-secondary rowbtn" id="notesToggle" title="Ver, marcar como hechas, copiar o exportar tus notas"></button>
+  <div class="notesbox">
+    <div class="notesbar">
+      <input id="noteInput" type="text" placeholder="Anota una mejora… (Enter)" autocomplete="off">
+      <button class="btn-primary rowbtn" id="noteAdd">Agregar</button>
+    </div>
+    <div class="noteslist" id="notesList"></div>
   </div>
-  <div class="noteslist" id="notesList"></div>
+  <button class="notefab" id="notesToggle" title="Notas de mejoras para la app" aria-label="Notas"></button>
 </div>
 
+<div class="cardmodal" id="cardModal" aria-hidden="true"><div class="cardmodal-in" id="cardModalIn"></div></div>
 <header class="topbar">
   <div class="brand"><span class="star">✦</span> <span id="appName">Llavero</span></div>
   <div class="tabs" id="tabbar">
@@ -437,7 +460,7 @@
 </div>
 
 <script>
-const APP_VERSION = "18";
+const APP_VERSION = "19";
 const $ = id => document.getElementById(id);
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 const esc = escapeHtml;
@@ -1810,7 +1833,8 @@ function loadNotes(){ try{ notes = JSON.parse(lsGet(NOTES_KEY) || "[]"); if(!Arr
 function saveNotes(){ lsSet(NOTES_KEY, JSON.stringify(notes)); }
 function renderNotes(){
   const pend = notes.filter(n => !n.done).length;
-  $("notesToggle").textContent = "📝 " + pend + " pendiente" + (pend === 1 ? "" : "s") + " · " + notes.length + " en total " + ($("notesPanel").classList.contains("open") ? "▴" : "▾");
+  $("notesToggle").innerHTML = "📝" + (pend ? `<span class="nb">${pend}</span>` : "");
+  $("notesToggle").title = pend + " pendiente" + (pend === 1 ? "" : "s") + " · " + notes.length + " nota(s) en total";
   $("notesList").innerHTML = (notes.length
     ? notes.slice().reverse().map(n => `<div class="noteitem ${n.done ? "done" : ""}"><input type="checkbox" data-ndone="${esc(n.id)}" ${n.done ? "checked" : ""} title="Marcar como hecha"><span class="nt">${esc(n.text)}</span><span class="nd">${esc(n.date)}</span><button data-ndel="${esc(n.id)}" title="Borrar">✕</button></div>`).join("")
     : '<p class="sub" style="margin:4px 0;">Aún no hay notas. Escribe una arriba y pulsa Enter.</p>') +
@@ -1823,7 +1847,7 @@ function addNote(){
 }
 $("noteAdd").addEventListener("click", addNote);
 $("noteInput").addEventListener("keydown", e => { if(e.key === "Enter"){ e.preventDefault(); addNote(); } });
-$("notesToggle").addEventListener("click", () => { $("notesPanel").classList.toggle("open"); renderNotes(); });
+$("notesToggle").addEventListener("click", () => { $("notesPanel").classList.toggle("open"); renderNotes(); if($("notesPanel").classList.contains("open")) $("noteInput").focus(); });
 $("notesList").addEventListener("click", e => {
   const dn = e.target.closest("[data-ndone]");
   if(dn){ const n = notes.find(x => x.id === dn.dataset.ndone); if(n){ n.done = dn.checked; saveNotes(); renderNotes(); } return; }
@@ -1928,12 +1952,24 @@ function renderSearch(){
   $("qCount").textContent = rows.length ? list.length + " de " + rows.length + " cuenta(s)" + (list.length > LIM ? " · mostrando las primeras " + LIM + ": afina la búsqueda" : "") : "";
   if(!rows.length){ $("results").innerHTML = '<div class="banner" style="grid-column:1/-1;">Aún no hay cuentas. Agrégalas en <b>Agregar cuenta</b> o restaura un backup en <b>Importar / Exportar</b>.</div>'; return; }
   if(!list.length){ $("results").innerHTML = '<p class="sub" style="grid-column:1/-1;">Sin resultados.</p>'; return; }
-  $("results").innerHTML = list.slice(0, LIM).map(r => {
-    const is = M.issueMap[r.id] || [], us = (r.usuarios && r.usuarios.values) || [];
-    const d = daysSince(r.fecha);
-    const pwOk = r.password && !r.password.na && r.password.value;
-    return `<div class="card">
+  $("results").innerHTML = '<div class="sub" style="margin:0 0 4px;">Doble clic (o Enter) en una cuenta para abrir su tarjeta.</div>' + list.slice(0, LIM).map(r => {
+    const is = M.issueMap[r.id] || [];
+    return `<div class="rrow" tabindex="0" data-open="${esc(r.id)}" title="Doble clic para abrir">
+      <span class="rn">${esc(r.app || "(sin nombre)")}</span>
+      <span class="pill">${esc((r.categoria||"").replace(/^\d+_/,"") || "sin categoría")}</span>
+      ${r.estado ? `<span class="pill ${r.estado === "ACTIVA" ? "ok" : ""}">${esc(r.estado)}</span>` : ""}
+      ${is.length ? `<span class="pill bad">⚠ ${is.length}</span>` : ""}
+      <span class="rm">${esc(r.correo || "")}</span>
+    </div>`;
+  }).join("");
+}
+function accountCardHtml(r, M){
+  const is = M.issueMap[r.id] || [], us = (r.usuarios && r.usuarios.values) || [];
+  const d = daysSince(r.fecha);
+  const pwOk = r.password && !r.password.na && r.password.value;
+  return `<div class="card">
       <h3>${esc(r.app || "(sin nombre)")} <span class="pill">${esc((r.categoria||"").replace(/^\d+_/,"") || "sin categoría")}</span> ${r.estado ? `<span class="pill ${r.estado === "ACTIVA" ? "ok" : ""}">${esc(r.estado)}</span>` : ""} ${is.length ? `<span class="pill bad" title="${esc(is.map(x => x.t).join(" · "))}">⚠ ${is.length}</span>` : ""}</h3>
+      ${is.length ? `<div class="kv">${esc(is.map(x => x.t).join(" · "))}</div>` : ""}
       <div class="kv">Usuario: <b>${esc(us[0] || (r.usuarios && r.usuarios.na ? "No aplica" : "—"))}${us.length > 1 ? " +" + (us.length-1) : ""}</b>${us.length ? `<button class="cpbtn" data-qcopy="usuario" data-id="${r.id}" title="Copiar usuario">📋</button>` : ""}</div>
       <div class="kv">Correo: <b>${esc(r.correo || "—")}</b>${r.correo && !RESERVED.includes(r.correo) ? `<button class="cpbtn" data-qcopy="correo" data-id="${r.id}" title="Copiar correo">📋</button>` : ""}</div>
       <div class="kv">Contraseña: <b>${r.password && r.password.na ? "No aplica" : (pwOk ? "••••••" : "—")}</b>${pwOk ? `<button class="cpbtn" data-qcopy="password" data-id="${r.id}" title="Copiar contraseña sin mostrarla">📋</button>` : ""}</div>
@@ -1941,8 +1977,32 @@ function renderSearch(){
       <div class="kv">Modificada: <b>${esc(r.fecha || "—")}</b>${d !== null ? " (hace " + d + " día" + (d === 1 ? "" : "s") + ")" : ""}</div>
       <div><button class="rowbtn btn-secondary" data-qreview="${r.id}">Revisar / actualizar</button></div>
     </div>`;
-  }).join("");
 }
+let openCardId = null;
+function openCardModal(id){
+  const r = rows.find(x => x.id === id); if(!r) return;
+  openCardId = id;
+  $("cardModalIn").innerHTML = '<button class="xclose" id="cardClose" title="Cerrar (Esc)" aria-label="Cerrar">✕</button>' + accountCardHtml(r, computeMetrics());
+  $("cardModal").classList.add("open"); $("cardModal").setAttribute("aria-hidden","false"); document.body.classList.add("modal-open");
+  $("cardClose").focus();
+}
+function closeCardModal(){
+  openCardId = null; $("cardModal").classList.remove("open"); $("cardModal").setAttribute("aria-hidden","true"); document.body.classList.remove("modal-open");
+}
+$("results").addEventListener("dblclick", e => { const r = e.target.closest("[data-open]"); if(r) openCardModal(r.dataset.open); });
+$("results").addEventListener("keydown", e => { if(e.key === "Enter"){ const r = e.target.closest("[data-open]"); if(r) openCardModal(r.dataset.open); } });
+document.addEventListener("keydown", e => { if(e.key === "Escape" && openCardId) closeCardModal(); });
+$("cardModal").addEventListener("click", e => {
+  if(e.target.closest("#cardClose")){ closeCardModal(); return; }
+  const rv = e.target.closest("[data-qreview]");
+  if(rv){ const i = rows.findIndex(r => r.id === rv.dataset.qreview); if(i >= 0){ closeCardModal(); requestReview(i); } return; }
+  const cp = e.target.closest("[data-qcopy]"); if(!cp) return;
+  const r = rows.find(x => x.id === cp.dataset.id); if(!r) return;
+  const k = cp.dataset.qcopy;
+  if(k === "correo") copyText(r.correo, "Correo");
+  if(k === "password") copyText(r.password.value, "Contraseña");
+  if(k === "usuario") copyText(r.usuarios.values[0], "Usuario");
+});
 $("results").addEventListener("click", e => {
   const rv = e.target.closest("[data-qreview]");
   if(rv){ const i = rows.findIndex(r => r.id === rv.dataset.qreview); if(i >= 0) requestReview(i); return; }
