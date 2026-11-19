@@ -2137,7 +2137,8 @@ window.addEventListener('hashchange',function(){if(/[#&]corregir=/.test(location
  var raw=null;try{raw=sessionStorage.getItem(KP)}catch(e){}
  if(!raw)return;
  var P=null;try{var b=raw.replace(/-/g,'+').replace(/_/g,'/');while(b.length%4)b+='=';P=JSON.parse(decodeURIComponent(escape(atob(b))))}catch(e){P=null}
- if(!P||!Array.isArray(P.movs)){try{sessionStorage.removeItem(KP)}catch(e){}return}
+ if(!P||!(Array.isArray(P.movs)||Array.isArray(P.add))){try{sessionStorage.removeItem(KP)}catch(e){}return}
+ P.movs=P.movs||[];P.add=P.add||[];
  var LBL={time:'Fecha y hora',qty:'Cantidad',price:'Precio',fee:'Comisión (USD)',feePct:'Comisión %',amountOrig:'Monto',usdt:'USD',coin:'Moneda',action:'Acción',plat:'Broker'};
  function fmtV(k,v){return k=='time'?fmtDT(v):typeof v=='number'?n(v,k=='qty'?8:k=='price'?6:4):esc(String(v))}
  function show(){
@@ -2146,18 +2147,30 @@ window.addEventListener('hashchange',function(){if(/[#&]corregir=/.test(location
    if(!m||(it.coin&&m.coin!=it.coin)||(it.plat&&(m.plat||'')!=it.plat)){bad.push(it);return}
    var ch=Object.keys(it.set||{}).filter(function(k){return String(m[k])!==String(it.set[k])});
    rows.push({m:m,it:it,ch:ch})});
-  var nch=rows.filter(function(r){return r.ch.length}).length;
+  /* movimientos nuevos: se omiten los que ya existen (misma moneda, broker y acción, cantidad ±0.5% y hora ±36 h) */
+  var adds=P.add.map(function(a){var r=a.rec,t=new Date(r.time).getTime();
+   var dup=M.filter(function(m){return m.coin==r.coin&&(m.plat||'')==(r.plat||'')&&m.action==r.action&&Math.abs(new Date(m.time).getTime()-t)<1296e5&&m.qty>0&&Math.abs(m.qty/r.qty-1)<0.005})[0];
+   var badc=typeof a.ciclo=='number'&&!M.some(function(m){return m.id==a.ciclo});
+   return{a:a,dup:dup,bad:badc}});
+  var addN=adds.filter(function(x){return !x.dup&&!x.bad}).length;
+  var nch=rows.filter(function(r){return r.ch.length}).length+addN;
+  var addHtml=adds.length?'<h3 style="margin:14px 0 6px;font-size:15px">Movimientos que faltan ('+addN+' nuevo'+(addN==1?'':'s')+')</h3><div class="wrap"><table class="pc-table"><thead><tr><th>Estado</th><th>Fecha</th><th>Acción</th><th>Moneda</th><th class="r">Cantidad</th><th class="r">Precio</th><th class="r">Monto</th><th>Broker</th><th>Ciclo</th></tr></thead><tbody>'+
+   adds.map(function(x){var r=x.a.rec;return '<tr'+(x.dup||x.bad?' class="mu"':'')+'><td>'+(x.dup?'Ya existe ('+folio(x.dup.ciclo)+'), se omite':x.bad?'Ciclo no encontrado, se omite':'<b>Nuevo</b>')+'</td><td>'+fmtDT(r.time).slice(0,16)+'</td><td class="'+r.action+'">'+r.action+'</td><td>'+coinIcon(r.coin,14)+esc(r.coin)+'</td><td class="num">'+n(r.qty,8)+'</td><td class="num">'+px(r.price)+'</td><td class="num">'+n(r.amountOrig,2)+' '+esc(r.curr||'USD')+'</td><td>'+esc(r.plat||'')+'</td><td>'+(typeof x.a.ciclo=='number'?'cierra '+folio(x.a.ciclo):'nuevo')+'</td></tr>'}).join('')+'</tbody></table></div>':'';
   openOvl('<div class="row" style="margin-bottom:6px"><h2 style="margin:0">Aplicar corrección</h2><span class="sp"></span><button type="button" id="pcCancel">No aplicar</button></div>'+
    '<p class="mu" style="margin:0 0 8px">'+esc(P.title||'Corrección de movimientos')+'. Revisa los cambios; nada se guarda hasta que escribas CONFIRMAR.</p>'+
    (bad.length?'<p class="al-bad">'+bad.length+' movimiento(s) no coinciden con tus datos y se van a omitir.</p>':'')+
    '<div class="wrap"><table class="pc-table"><thead><tr><th>Folio</th><th>Moneda</th><th>Dato</th><th class="r">Antes</th><th class="r">Después</th></tr></thead><tbody>'+
-   rows.map(function(r){if(!r.ch.length)return '<tr><td>'+folio(r.m.ciclo)+'</td><td>'+esc(r.m.coin)+'</td><td colspan="3" class="mu">ya está correcto</td></tr>';
-    return r.ch.map(function(k,i){return '<tr>'+(i==0?'<td rowspan="'+r.ch.length+'">'+folio(r.m.ciclo)+'</td><td rowspan="'+r.ch.length+'">'+coinIcon(r.m.coin,14)+esc(r.m.coin)+'</td>':'')+'<td>'+(LBL[k]||k)+'</td><td class="num mu">'+fmtV(k,r.m[k])+'</td><td class="num"><b>'+fmtV(k,r.it.set[k])+'</b></td></tr>'}).join('')}).join('')+'</tbody></table></div>'+
+   rows.filter(function(r){return r.ch.length||!adds.length}).map(function(r){if(!r.ch.length)return '<tr><td>'+folio(r.m.ciclo)+'</td><td>'+esc(r.m.coin)+'</td><td colspan="3" class="mu">ya está correcto</td></tr>';
+    return r.ch.map(function(k,i){return '<tr>'+(i==0?'<td rowspan="'+r.ch.length+'">'+folio(r.m.ciclo)+'</td><td rowspan="'+r.ch.length+'">'+coinIcon(r.m.coin,14)+esc(r.m.coin)+'</td>':'')+'<td>'+(LBL[k]||k)+'</td><td class="num mu">'+fmtV(k,r.m[k])+'</td><td class="num"><b>'+fmtV(k,r.it.set[k])+'</b></td></tr>'}).join('')}).join('')+'</tbody></table></div>'+addHtml+
    (nch?'<div class="row" style="margin-top:12px;gap:8px;align-items:flex-end"><label style="margin:0"><span class="lt">Escribe CONFIRMAR</span><input id="pcConfirm" autocomplete="off" placeholder="CONFIRMAR" style="width:200px;text-transform:uppercase"></label><button type="button" class="p" id="pcGo" disabled>Aplicar '+nch+' corrección'+(nch==1?'':'es')+'</button></div>':'<p class="mu">No hay nada que cambiar: tus movimientos ya tienen estos datos.</p>'),true);
   var ci=$('#pcConfirm');if(ci)ci.addEventListener('input',function(){$('#pcGo').disabled=this.value.trim().toUpperCase()!='CONFIRMAR'});
   $('#pcCancel').onclick=function(){try{sessionStorage.removeItem(KP)}catch(e){}closeOvl()};
   var go=$('#pcGo');if(go)go.onclick=function(){
    rows.forEach(function(r){r.ch.forEach(function(k){r.m[k]=r.it.set[k]})});
+   var next=M.reduce(function(a,m){return Math.max(a,m.id)},0)+1,ids={};
+   adds.forEach(function(x){if(!x.dup&&!x.bad)ids[x.a.key||('_'+next)]=x.id=next++});
+   adds.forEach(function(x){if(x.id==null)return;var c=x.a.ciclo,cid=typeof c=='number'?c:(typeof c=='string'&&c.indexOf('ref:')==0&&ids[c.slice(4)])?ids[c.slice(4)]:x.id;
+    M.push(Object.assign({otype:'taker',fxRate:1,lote:''},x.a.rec,{id:x.id,ciclo:cid}))});
    save();try{sessionStorage.removeItem(KP)}catch(e){}closeOvl();render();try{renderPositions()}catch(e){}
    var mm=$('#msg');if(mm)mm.textContent='Corrección aplicada a '+nch+' movimiento'+(nch==1?'':'s')+'.';
    try{alToast('Corrección aplicada a '+nch+' movimiento'+(nch==1?'':'s')+'. Se guarda en tu nube.',true)}catch(e){}
