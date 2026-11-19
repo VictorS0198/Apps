@@ -256,6 +256,28 @@
   .cardmodal .xclose{position:absolute; top:10px; right:12px; background:none; border:1px solid var(--border); color:var(--muted); border-radius:50%; width:28px; height:28px; padding:0; font-size:14px; z-index:2;}
   .cardmodal .xclose:hover{color:var(--text); border-color:var(--accent);}
   body.modal-open{overflow:hidden;}
+
+  /* ---- v20: iconos SVG + barra fija en Agregar cuenta ---- */
+  .ic{width:1.15em; height:1.15em; fill:none; stroke:currentColor; stroke-width:2; stroke-linecap:round; stroke-linejoin:round; vertical-align:-.2em; flex:none; pointer-events:none;}
+  [data-ic]{display:inline-flex; align-items:center; vertical-align:middle;}
+  .cpbtn .ic,.rvbtn .ic,.pill .ic,.tag button .ic,.dbitem button .ic{width:13px; height:13px; vertical-align:-.15em;}
+  .cpbtn,.tag button{display:inline-flex; align-items:center; gap:4px;}
+  .secttitle .ic,.iocard h2 .ic{width:1.1em; height:1.1em; margin-right:6px; color:var(--accent);}
+  .brand .ic{width:18px; height:18px; color:var(--accent);}
+  .notefab .ic{width:24px; height:24px;}
+  .xclose .ic{width:14px; height:14px;}
+  .rvdone .ic{width:13px; height:13px;}
+  .alertrow .ic{color:var(--warn);}
+  .topbar{position:sticky; top:0; z-index:40;}
+  .formbar{position:sticky; top:var(--tb,53px); z-index:35; background:var(--bg); margin:-26px -28px 18px; padding:14px 28px 12px; border-bottom:1px solid var(--border);}
+  .formbar .pagehead{margin-bottom:8px; align-items:center; flex-wrap:nowrap;}
+  .formbar .pagehead h1{font-size:22px; margin:0;}
+  .formbar .pagehead p{font-size:12px;}
+  .formbar .progress{margin:0; padding:0; border:0; background:none; border-radius:0;}
+  .formbar .progress .pt{font-size:12px;}
+  .formbar .progress .pb{margin-top:6px;}
+  #formGrid{margin-top:0;}
+  @media(max-width:760px){.formbar{margin:-18px -14px 14px; padding:10px 14px;} .formbar .pagehead{flex-wrap:wrap;} .formbar .pagehead h1{font-size:18px;} .formbar .pagehead p{display:none;}}
 </style>
 </head>
 <body>
@@ -273,7 +295,7 @@
 
 <div class="cardmodal" id="cardModal" aria-hidden="true"><div class="cardmodal-in" id="cardModalIn"></div></div>
 <header class="topbar">
-  <div class="brand"><span class="star">✦</span> <span id="appName">Llavero</span></div>
+  <div class="brand"><span class="star"><span data-ic="key"></span></span> <span id="appName">Llavero</span></div>
   <div class="tabs" id="tabbar">
     <div class="tabs-main" id="tabsMain"></div>
     <div><button class="tabbtn" id="tabCfg" data-tab="config" title="Nombre, tema, orden de pestañas y preferencias">Configuración</button></div>
@@ -301,7 +323,7 @@
 
 <div class="modal" id="sbModal">
   <div class="modalbox">
-    <h2>☁ Entrar a Supabase</h2>
+    <h2><span data-ic="cloud"></span> Entrar a Supabase</h2>
     <p class="sub" style="margin:0 0 4px;">Usa la misma cuenta que en tus otras apps.</p>
     <input type="email" id="sbEmail" placeholder="Correo" autocomplete="username">
     <input type="password" id="sbPass" placeholder="Contraseña de Supabase" autocomplete="current-password">
@@ -326,15 +348,17 @@
 </div>
 
 <div class="tabpage" id="tab-agregar">
-  <div class="pagehead">
-    <div><h1 id="formTitle">Agregar cuenta</h1><p id="formSub">Registra y organiza tus accesos de forma segura.</p></div>
-    <div class="actions">
-      <button class="btn-secondary" id="btnClearForm">Cancelar</button>
-      <button class="btn-primary" id="btnAdd">Guardar</button>
+  <div class="formbar">
+    <div class="pagehead">
+      <div><h1 id="formTitle">Agregar cuenta</h1><p id="formSub">Registra y organiza tus accesos de forma segura.</p></div>
+      <div class="actions">
+        <button class="btn-secondary" id="btnClearForm">Cancelar</button>
+        <button class="btn-primary" id="btnAdd">Guardar</button>
+      </div>
     </div>
+    <div id="trackBanner"></div>
   </div>
   <div id="formGrid"></div>
-  <div id="trackBanner"></div>
 </div>
 
 <div class="tabpage" id="tab-datos">
@@ -342,7 +366,7 @@
     <div class="toolbar">
       <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
         <input class="search" id="search" placeholder="Filtrar la tabla...">
-        <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Pulsa «Revisar» en una fila para auditarla en la pestaña Agregar cuenta: cada campo sale en rojo hasta que lo modifiques o lo confirmes. Usa 📋 para copiar correo o contraseña sin mostrarlos.">i</i>
+        <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Pulsa «Revisar» en una fila para auditarla en la pestaña Agregar cuenta: cada campo sale en rojo hasta que lo modifiques o lo confirmes. Usa el botón de copiar para copiar correo o contraseña sin mostrarlos.">i</i>
         <span class="count" id="count"></span>
       </div>
     </div>
@@ -394,10 +418,10 @@
     </div>
   </div>
   <div class="panel">
-    <h2 class="secttitle">☁ Supabase (copia cifrada) <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Sube una copia cifrada con tu clave maestra (AES-256) a tu Supabase personal. Supabase solo guarda texto cifrado: sin la clave nadie puede leerla. Usa internet solo cuando pulsas estos botones; el resto de la app funciona sin conexión. Se conserva también la copia anterior.">i</i></h2>
+    <h2 class="secttitle"><span data-ic="cloud"></span> Supabase (copia cifrada) <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Sube una copia cifrada con tu clave maestra (AES-256) a tu Supabase personal. Supabase solo guarda texto cifrado: sin la clave nadie puede leerla. Usa internet solo cuando pulsas estos botones; el resto de la app funciona sin conexión. Se conserva también la copia anterior.">i</i></h2>
     <div class="actions" style="margin-top:0;">
-      <button class="btn-primary" id="btnCloudUp">⬆ Subir copia cifrada</button>
-      <button class="btn-secondary" id="btnCloudDown">⬇ Restaurar desde Supabase</button>
+      <button class="btn-primary" id="btnCloudUp"><span data-ic="upload"></span> Subir copia cifrada</button>
+      <button class="btn-secondary" id="btnCloudDown"><span data-ic="download"></span> Restaurar desde Supabase</button>
       <button class="btn-secondary" id="btnCloudPrev">Restaurar copia anterior</button>
       <button class="btn-secondary" id="btnCloudOut">Cerrar sesión</button>
     </div>
@@ -411,26 +435,26 @@
 
 <div class="tabpage" id="tab-config">
   <div class="panel">
-    <h2 class="secttitle">🏷️ Nombre de la aplicación <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="El navegador no puede renombrar el archivo en tu disco. Este nombre cambia el título de la app y los nombres de los archivos que exportas. Para tener el archivo .html con ese nombre, descarga la copia. Ojo: en Firefox los datos se guardan por archivo; si renombras o mueves el original, haz primero un backup cifrado.">i</i></h2>
+    <h2 class="secttitle"><span data-ic="tag"></span> Nombre de la aplicación <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="El navegador no puede renombrar el archivo en tu disco. Este nombre cambia el título de la app y los nombres de los archivos que exportas. Para tener el archivo .html con ese nombre, descarga la copia. Ojo: en Firefox los datos se guardan por archivo; si renombras o mueves el original, haz primero un backup cifrado.">i</i></h2>
     <div class="cfgrow">
       <input id="cfgAppName" type="text" maxlength="40" style="max-width:280px;" autocomplete="off">
       <button class="btn-primary rowbtn" id="cfgAppSave">Guardar nombre</button>
       <button class="btn-secondary rowbtn" id="cfgAppReset">Restablecer</button>
     </div>
     <div class="sub" style="margin:4px 0 10px;">Archivo sugerido: <b id="cfgFileName"></b></div>
-    <button class="btn-secondary rowbtn" id="cfgSaveCopy" title="Descarga una copia de la app con el nombre elegido">⬇ Descargar copia de la app con este nombre</button>
+    <button class="btn-secondary rowbtn" id="cfgSaveCopy" title="Descarga una copia de la app con el nombre elegido"><span data-ic="download"></span> Descargar copia de la app con este nombre</button>
   </div>
   <div class="panel">
-    <h2 class="secttitle">🎨 Tema de colores</h2>
+    <h2 class="secttitle"><span data-ic="palette"></span> Tema de colores</h2>
     <div class="themes" id="themeCards"></div>
   </div>
   <div class="panel">
-    <h2 class="secttitle">↕ Orden de las pestañas <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Arrastra las pestañas de la barra superior o usa las flechas. Configuración siempre queda a la derecha. La app siempre abre en Buscador.">i</i></h2>
+    <h2 class="secttitle"><span data-ic="sort"></span> Orden de las pestañas <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Arrastra las pestañas de la barra superior o usa las flechas. Configuración siempre queda a la derecha. La app siempre abre en Buscador.">i</i></h2>
     <div id="orderList"></div>
     <button class="btn-secondary rowbtn" id="orderReset" style="margin-top:6px;">Restablecer orden</button>
   </div>
   <div class="panel">
-    <h2 class="secttitle">🔐 Privacidad y seguridad</h2>
+    <h2 class="secttitle"><span data-ic="shield"></span> Privacidad y seguridad</h2>
     <div class="cfgrow">
       <label style="margin:0;" for="cfgClip">Borrar el portapapeles después de copiar <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Si copiaste otra cosa en ese tiempo, también se vacía. No funciona si la pestaña está en segundo plano.">i</i></label>
       <select id="cfgClip">
@@ -448,11 +472,11 @@
         <option value="365">365 días</option>
       </select>
     </div>
-    <label class="checkline" style="margin-top:12px;"><input type="checkbox" id="cfgMask"> Ocultar en la tabla los datos sensibles <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Oculta contraseñas, PIN, códigos y respuestas de seguridad en la pestaña Datos. Siempre puedes copiarlos con 📋.">i</i></label>
+    <label class="checkline" style="margin-top:12px;"><input type="checkbox" id="cfgMask"> Ocultar en la tabla los datos sensibles <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Oculta contraseñas, PIN, códigos y respuestas de seguridad en la pestaña Datos. Siempre puedes copiarlos con el botón de copiar.">i</i></label>
   </div>
   <div class="panel">
-    <h2 class="secttitle">ℹ️ Acerca de</h2>
-    <p class="sub" style="margin:0;"><span id="appVersionName"></span> · versión <span id="appVersion"></span>. Uso local en tu navegador. Haz un 🔒 Backup cifrado después de cada sesión de revisión.</p>
+    <h2 class="secttitle"><span data-ic="info"></span> Acerca de</h2>
+    <p class="sub" style="margin:0;"><span id="appVersionName"></span> · versión <span id="appVersion"></span>. Uso local en tu navegador. Haz un <span data-ic="lock"></span> Backup cifrado después de cada sesión de revisión.</p>
   </div>
 </div>
 
@@ -460,7 +484,38 @@
 </div>
 
 <script>
-const APP_VERSION = "19";
+const APP_VERSION = "20";
+/* ---------- iconos (SVG de línea, estilo Lucide) ---------- */
+const IC = {
+  copy:'<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
+  download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" x2="12" y1="15" y2="3"/>',
+  upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" x2="12" y1="3" y2="15"/>',
+  lock:'<rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>',
+  alert:'<path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/>',
+  check:'<path d="M20 6 9 17l-5-5"/>',
+  x:'<path d="M18 6 6 18"/><path d="m6 6 12 12"/>',
+  cloud:'<path d="M17.5 19H9a7 7 0 1 1 6.71-9h1.79a4.5 4.5 0 1 1 0 9Z"/>',
+  pencil:'<path d="M21.17 6.81a1 1 0 0 0-3.99-3.99L3.84 16.17a2 2 0 0 0-.5.83l-1.32 4.35a.5.5 0 0 0 .62.62l4.35-1.32a2 2 0 0 0 .83-.5z"/><path d="m15 5 4 4"/>',
+  tag:'<path d="M12.59 2.59A2 2 0 0 0 11.17 2H4a2 2 0 0 0-2 2v7.17a2 2 0 0 0 .59 1.41l8.7 8.7a2.43 2.43 0 0 0 3.42 0l6.58-6.58a2.43 2.43 0 0 0 0-3.42z"/><circle cx="7.5" cy="7.5" r=".5" fill="currentColor"/>',
+  palette:'<circle cx="13.5" cy="6.5" r=".5" fill="currentColor"/><circle cx="17.5" cy="10.5" r=".5" fill="currentColor"/><circle cx="8.5" cy="7.5" r=".5" fill="currentColor"/><circle cx="6.5" cy="12.5" r=".5" fill="currentColor"/><path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.44-.18-.84-.44-1.13-.29-.29-.44-.65-.44-1.13a1.64 1.64 0 0 1 1.67-1.67h2c3.05 0 5.56-2.5 5.56-5.55C21.97 6.01 17.46 2 12 2z"/>',
+  sort:'<path d="m21 16-4 4-4-4"/><path d="M17 20V4"/><path d="m3 8 4-4 4 4"/><path d="M7 4v16"/>',
+  shield:'<path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1z"/><path d="m9 12 2 2 4-4"/>',
+  info:'<circle cx="12" cy="12" r="10"/><path d="M12 16v-4"/><path d="M12 8h.01"/>',
+  mail:'<rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/>',
+  user:'<path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>',
+  phone:'<rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/>',
+  key:'<path d="M2.59 17.41A2 2 0 0 0 2 18.83V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.17a2 2 0 0 0 1.41-.59l.81-.81a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/>',
+  card:'<rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>',
+  eye:'<path d="M2.06 12.35a1 1 0 0 1 0-.7 10.75 10.75 0 0 1 19.88 0 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-19.88 0"/><circle cx="12" cy="12" r="3"/>',
+  note:'<path d="M15.5 3H5a2 2 0 0 0-2 2v14c0 1.1.9 2 2 2h14a2 2 0 0 0 2-2V8.5L15.5 3Z"/><path d="M15 3v6h6"/>',
+  up:'<path d="m18 15-6-6-6 6"/>',
+  down:'<path d="m6 9 6 6 6-6"/>',
+  clock:'<circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>',
+  repeat:'<path d="m17 2 4 4-4 4"/><path d="M3 11v-1a4 4 0 0 1 4-4h14"/><path d="m7 22-4-4 4-4"/><path d="M21 13v1a4 4 0 0 1-4 4H3"/>',
+};
+const ic = n => `<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">${IC[n] || ""}</svg>`;
+function hydrateIcons(root){ (root || document).querySelectorAll("[data-ic]").forEach(e => { e.innerHTML = ic(e.dataset.ic); }); }
+
 const $ = id => document.getElementById(id);
 function escapeHtml(s){ return String(s).replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
 const esc = escapeHtml;
@@ -495,7 +550,7 @@ const FIELDS = [
 
   {g:"acc", key:"usuarios", label:"USUARIO", type:"chipmulti", db:"usuarios", splitRe:/[;,|]/, help:"Puedes guardar varios usuarios por cuenta. Elige de la lista o agrega uno nuevo."},
   {g:"acc", key:"correo", label:"CORREO", type:"dbselect", db:"correos", extra:["No aplica"], help:"Elige un correo de tu base de datos o «+ Agregar nuevo…». «No aplica» si la cuenta no usa correo."},
-  {g:"acc", key:"password", label:"PASSWORD", type:"password", help:"Usa 📋 para copiarla sin mostrarla. Marca «No aplica» si la cuenta no tiene contraseña."},
+  {g:"acc", key:"password", label:"PASSWORD", type:"password", help:"Usa el botón de copiar para copiarla sin mostrarla. Marca «No aplica» si la cuenta no tiene contraseña."},
   {g:"acc", key:"pwlen", label:"LONGITUD DE CONTRASEÑA", type:"pwlen", defaultOff:true, statuses:["SI","NA"], siLabel:"El sitio indica límites", naLabel:"No indicado", help:"Regístralo solo cuando la página indique expresamente una longitud mínima o máxima. Viene como «No indicado»: confírmalo si no aplica."},
 
   {g:"2fa", key:"app2fa", label:"2FA APP", type:"dbselect", db:"apps2fa", extra:["No","No aplica"], help:"App de autenticación en dos pasos. «No» = no la tiene, pero podrías activarla. «No aplica» = el sitio no lo permite."},
@@ -523,24 +578,24 @@ function lsSet(k,v){
   try{ localStorage.setItem(k,v); }
   catch(e){
     storageOk = false; showStorageWarn();
-    if(!storageAlerted){ storageAlerted = true; alert("Este navegador no permite guardar datos: lo que captures se perderá al cerrar. Abre el archivo directo en tu navegador, o usa 🔒 Backup cifrado antes de salir."); }
+    if(!storageAlerted){ storageAlerted = true; alert("Este navegador no permite guardar datos: lo que captures se perderá al cerrar. Abre el archivo directo en tu navegador, o usa Backup cifrado antes de salir."); }
   }
 }
 function showStorageWarn(){
   $("storageWarn").innerHTML = storageOk ? "" :
-    '<div class="banner" style="border-color:var(--accent2); color:var(--accent2);">⚠️ Este navegador/visor NO permite guardar datos. Abre el archivo descargado directo en tu navegador (Chrome, Edge, Firefox) para que se conserve lo que captures.</div>';
+    '<div class="banner" style="border-color:var(--accent2); color:var(--accent2);">' + ic("alert") + ' Este navegador/visor NO permite guardar datos. Abre el archivo descargado directo en tu navegador (Chrome, Edge, Firefox) para que se conserve lo que captures.</div>';
 }
 
 const DATA_KEY = "llavero_data_v4", V3_KEY = "credenciales_data_v3", V2_KEY = "credenciales_data_v2";
 const NOTES_KEY = "llavero_mejoras_v1", CONFIG_KEY = "llavero_config_v1", BACKUP_KEY = "credenciales_last_backup_v1";
 const CAT_KEY = "llavero_catalogos_v2", HIST_KEY = "llavero_historial_v1", SNAP_KEY = "llavero_snapshots_v1";
 const DB_META = [
-  {k:"correos",   key:"credenciales_emails_v1",    icon:"📧", title:"Correos",   ph:"correo@ejemplo.com", type:"email", help:"Alimenta los desplegables CORREO y CORREO DE RECUPERACIÓN."},
-  {k:"usuarios",  key:"credenciales_usuarios_v1",  icon:"🧑", title:"Usuarios",  ph:"nombre.usuario", help:"Alimenta el campo USUARIO (puedes elegir varios por cuenta)."},
-  {k:"telefonos", key:"credenciales_telefonos_v1", icon:"📱", title:"Teléfonos", ph:"449...", help:"Alimenta el campo TELÉFONO."},
-  {k:"passkeys",  key:"llavero_passkeys_v1",       icon:"🔑", title:"Passkeys",  ph:"Ej. 1Password", defaults:["Windows Hello","Google Password Manager"], help:"Alimenta el campo PASSKEY (puedes elegir varios por cuenta)."},
-  {k:"apps2fa",   key:"llavero_apps2fa_v1",        icon:"🛡️", title:"Apps 2FA",  ph:"Ej. Authy", defaults:["Google Authenticator","Microsoft Authenticator"], help:"Alimenta el desplegable 2FA APP."},
-  {k:"tarjetas",  key:"llavero_tarjetas_v1",       icon:"💳", title:"Tarjetas",  ph:"Ej. Visa ···4417", help:"Alimenta TARJETA/MÉTODO DE PAGO. Guarda solo un alias o los últimos 4 dígitos. Nunca el número completo ni el CVV."},
+  {k:"correos",   key:"credenciales_emails_v1",    icon:"mail", title:"Correos",   ph:"correo@ejemplo.com", type:"email", help:"Alimenta los desplegables CORREO y CORREO DE RECUPERACIÓN."},
+  {k:"usuarios",  key:"credenciales_usuarios_v1",  icon:"user", title:"Usuarios",  ph:"nombre.usuario", help:"Alimenta el campo USUARIO (puedes elegir varios por cuenta)."},
+  {k:"telefonos", key:"credenciales_telefonos_v1", icon:"phone", title:"Teléfonos", ph:"449...", help:"Alimenta el campo TELÉFONO."},
+  {k:"passkeys",  key:"llavero_passkeys_v1",       icon:"key", title:"Passkeys",  ph:"Ej. 1Password", defaults:["Windows Hello","Google Password Manager"], help:"Alimenta el campo PASSKEY (puedes elegir varios por cuenta)."},
+  {k:"apps2fa",   key:"llavero_apps2fa_v1",        icon:"shield", title:"Apps 2FA",  ph:"Ej. Authy", defaults:["Google Authenticator","Microsoft Authenticator"], help:"Alimenta el desplegable 2FA APP."},
+  {k:"tarjetas",  key:"llavero_tarjetas_v1",       icon:"card", title:"Tarjetas",  ph:"Ej. Visa ···4417", help:"Alimenta TARJETA/MÉTODO DE PAGO. Guarda solo un alias o los últimos 4 dígitos. Nunca el número completo ni el CVV."},
 ];
 const DB_KEYS = {}; DB_META.forEach(m => DB_KEYS[m.k] = m.key);
 
@@ -653,7 +708,7 @@ T.dbselect = {
 /* chips (usuarios, teléfonos, passkeys, tarjetas) */
 function renderChips(f){
   $("chips_"+f.key).innerHTML = chips[f.key].length
-    ? chips[f.key].map((v,i) => `<span class="tag">${esc(v)} <button type="button" data-chip="${f.key}" data-i="${i}" title="Quitar">✕</button></span>`).join("")
+    ? chips[f.key].map((v,i) => `<span class="tag">${esc(v)} <button type="button" data-chip="${f.key}" data-i="${i}" title="Quitar">${ic("x")}</button></span>`).join("")
     : '<span class="sub" style="font-size:11px;">Sin valores.</span>';
 }
 function rebuildChipSelect(f){
@@ -740,7 +795,7 @@ T.statusvalue = {
       ? `<textarea class="mk2" id="f_${f.key}" rows="3" placeholder="${esc(f.placeholder||"")}" disabled></textarea>`
       : `<input class="mk2" id="f_${f.key}" type="text" placeholder="${esc(f.placeholder||"")}" autocomplete="off" disabled>`;
     return statusSelHtml(f, "status_"+f.key) + `<div style="margin-top:6px;">${ctl}</div>` +
-      (f.exportTxt ? `<button type="button" class="btn-secondary rowbtn" id="exp_${f.key}" style="margin-top:6px;" title="Descarga los códigos en un archivo .txt">⬇ Exportar códigos (.txt)</button>` : "");
+      (f.exportTxt ? `<button type="button" class="btn-secondary rowbtn" id="exp_${f.key}" style="margin-top:6px;" title="Descarga los códigos en un archivo .txt">${ic("download")} Exportar códigos (.txt)</button>` : "");
   },
   wire:f => {
     $("status_"+f.key).addEventListener("change", e => {
@@ -858,7 +913,7 @@ T.pwlen = {
 };
 
 T.password = {
-  build:f => `<div style="display:flex; gap:6px;"><input class="mk" id="f_${f.key}" type="password" autocomplete="new-password" style="flex:1;"><button type="button" class="btn-secondary rowbtn" id="eye_${f.key}" title="Mostrar / ocultar">👁</button><button type="button" class="btn-secondary rowbtn" id="copy_${f.key}" title="Copiar sin mostrar">📋</button></div>
+  build:f => `<div style="display:flex; gap:6px;"><input class="mk" id="f_${f.key}" type="password" autocomplete="new-password" style="flex:1;"><button type="button" class="btn-secondary rowbtn" id="eye_${f.key}" title="Mostrar / ocultar">${ic("eye")}</button><button type="button" class="btn-secondary rowbtn" id="copy_${f.key}" title="Copiar sin mostrar">${ic("copy")}</button></div>
     <label class="checkline"><input type="checkbox" id="na_${f.key}"> No aplica (cuenta sin contraseña)</label>`,
   wire:f => {
     $("eye_"+f.key).addEventListener("click", () => { const i = $("f_"+f.key); i.type = i.type === "password" ? "text" : "password"; });
@@ -1076,7 +1131,7 @@ function buildConfig(){
 function markTheme(){ document.querySelectorAll(".themecard").forEach(b => b.classList.toggle("active", b.dataset.themeId === cfg.theme)); }
 function buildOrderList(){
   const o = tabOrder();
-  $("orderList").innerHTML = o.map((id,i) => { const t = TABS.find(x => x.id === id); return `<div class="orderrow"><span>${esc(t.label)}</span><button class="cpbtn" data-mv="-1" data-id="${id}" ${i===0?"disabled":""} title="Subir">▲</button><button class="cpbtn" data-mv="1" data-id="${id}" ${i===o.length-1?"disabled":""} title="Bajar">▼</button></div>`; }).join("") +
+  $("orderList").innerHTML = o.map((id,i) => { const t = TABS.find(x => x.id === id); return `<div class="orderrow"><span>${esc(t.label)}</span><button class="cpbtn" data-mv="-1" data-id="${id}" ${i===0?"disabled":""} title="Subir">${ic("up")}</button><button class="cpbtn" data-mv="1" data-id="${id}" ${i===o.length-1?"disabled":""} title="Bajar">${ic("down")}</button></div>`; }).join("") +
     `<div class="orderrow" style="opacity:.6;"><span>Configuración</span><span style="flex:none;font-size:11px;">fija a la derecha</span></div>`;
 }
 
@@ -1243,16 +1298,16 @@ function renderDBManager(){
     nO += orphans[m.k].length; nU += unused[m.k].length; nD += dups[m.k].length;
   });
   const lines = [];
-  if(nO) lines.push(`<div class="alertrow"><span>⚠ <b>${nO}</b> valor(es) usados en tus cuentas que no están en la base de datos.</span><button class="rowbtn btn-secondary" data-dbfix="orphans">Agregar a la base</button></div>`);
-  if(nD) lines.push(`<div class="alertrow"><span>⚠ Posibles duplicados (mismo texto con otras mayúsculas o espacios): resaltados abajo. Usa ✎ para fusionarlos.</span></div>`);
-  if(nU) lines.push(`<div class="alertrow"><span>ℹ <b>${nU}</b> valor(es) sin uso en ninguna cuenta.</span><button class="rowbtn btn-secondary" data-dbfix="unused">Quitar sin uso</button></div>`);
-  $("dbCheck").innerHTML = `<h2 class="secttitle">Consistencia ${info("Renombrar un valor (✎) lo actualiza en todas las cuentas que lo usan; si el nuevo nombre ya existe, se fusionan. El contador muestra en cuántas cuentas se usa cada valor.")}</h2>` +
-    (lines.length ? lines.join("") : '<p class="sub" style="margin:0;">✔ Los valores de tus cuentas y de la base de datos coinciden.</p>');
+  if(nO) lines.push(`<div class="alertrow"><span>${ic("alert")} <b>${nO}</b> valor(es) usados en tus cuentas que no están en la base de datos.</span><button class="rowbtn btn-secondary" data-dbfix="orphans">Agregar a la base</button></div>`);
+  if(nD) lines.push(`<div class="alertrow"><span>${ic("alert")} Posibles duplicados (mismo texto con otras mayúsculas o espacios): resaltados abajo. Usa el lápiz para fusionarlos.</span></div>`);
+  if(nU) lines.push(`<div class="alertrow"><span>${ic("info")} <b>${nU}</b> valor(es) sin uso en ninguna cuenta.</span><button class="rowbtn btn-secondary" data-dbfix="unused">Quitar sin uso</button></div>`);
+  $("dbCheck").innerHTML = `<h2 class="secttitle">Consistencia ${info("Renombrar un valor (lápiz) lo actualiza en todas las cuentas que lo usan; si el nuevo nombre ya existe, se fusionan. El contador muestra en cuántas cuentas se usa cada valor.")}</h2>` +
+    (lines.length ? lines.join("") : '<p class="sub" style="margin:0;">'+ic("check")+' Los valores de tus cuentas y de la base de datos coinciden.</p>');
   $("dbPanels").innerHTML = DB_META.map(m => {
     const items = DB[m.k].map((v,i) => ({v,i})).sort((a,b) => a.v.localeCompare(b.v, "es"));
-    return `<div><h2 class="secttitle">${m.icon} ${esc(m.title)} <span class="count">${DB[m.k].length}</span>${info(m.help)}</h2>
+    return `<div><h2 class="secttitle">${ic(m.icon)} ${esc(m.title)} <span class="count">${DB[m.k].length}</span>${info(m.help)}</h2>
       <div class="dbrow"><input id="new_${m.k}" type="${m.type||"text"}" placeholder="${esc(m.ph)}"><button class="btn-secondary" data-dbadd="${m.k}">+ Agregar</button></div>
-      <div>${items.length ? items.map(({v,i}) => { const n = used[m.k].get(v) || 0; return `<div class="dbitem"><span class="dbv">${esc(v)}${dups[m.k].includes(v) ? ' <span class="pill warn">dup.</span>' : ""}</span><span class="dbn">${n ? n + " cuenta" + (n === 1 ? "" : "s") : "sin uso"}</span><button class="cpbtn" data-dbren="${m.k}" data-i="${i}" title="Renombrar o fusionar">✎</button><button class="cpbtn" data-dbdel="${m.k}" data-i="${i}" title="Borrar de la lista">✕</button></div>`; }).join("") : '<p class="sub" style="margin:4px 0;">Aún no hay registros.</p>'}</div></div>`;
+      <div>${items.length ? items.map(({v,i}) => { const n = used[m.k].get(v) || 0; return `<div class="dbitem"><span class="dbv">${esc(v)}${dups[m.k].includes(v) ? ' <span class="pill warn">dup.</span>' : ""}</span><span class="dbn">${n ? n + " cuenta" + (n === 1 ? "" : "s") : "sin uso"}</span><button class="cpbtn" data-dbren="${m.k}" data-i="${i}" title="Renombrar o fusionar">${ic("pencil")}</button><button class="cpbtn" data-dbdel="${m.k}" data-i="${i}" title="Borrar de la lista">${ic("x")}</button></div>`; }).join("") : '<p class="sub" style="margin:4px 0;">Aún no hay registros.</p>'}</div></div>`;
   }).join("");
 }
 function renameDbItem(k, i){
@@ -1331,10 +1386,10 @@ function refreshTrack(key, skipProgress){
   const f = FMAP[key], el = fieldEl(key), rv = el.querySelector(".rv");
   const v = getFieldValue(f), filled = isFilled(f, v), done = !!reviewed[key] && filled;
   el.classList.toggle("done", done); el.classList.toggle("pending", !done);
-  if(done) rv.innerHTML = '<span class="rvdone">✔ Listo</span>';
+  if(done) rv.innerHTML = '<span class="rvdone">' + ic("check") + ' Listo</span>';
   else if(filled){
-    const txt = (f.defaultOff && v.status === "NA") ? "✓ Confirmar: " + (f.naLabel || "No aplica").toLowerCase() : "✓ Correcto";
-    rv.innerHTML = `<button type="button" class="rvbtn" data-confirm="${key}">${esc(txt)}</button>`;
+    const txt = (f.defaultOff && v.status === "NA") ? "Confirmar: " + (f.naLabel || "No aplica").toLowerCase() : "Correcto";
+    rv.innerHTML = `<button type="button" class="rvbtn" data-confirm="${key}">${ic("check")} ${esc(txt)}</button>`;
   } else rv.innerHTML = `<span class="rvmiss">${esc(T[f.type].hint ? T[f.type].hint(f, v) : "Falta llenar")}</span>`;
   if(!skipProgress) updateProgress();
 }
@@ -1357,7 +1412,7 @@ function updateProgress(){
   const pbar = $("trackBar"); if(pbar) pbar.style.width = Math.round(100*n/FIELDS.length) + "%";
   GROUPS.forEach(g => {
     const fs = FIELDS.filter(f => f.g === g.id), d = fs.filter(f => isDone(f.key)).length, el = $("gp_"+g.id);
-    if(el) el.textContent = (d === fs.length ? "✔ " : "") + d + " / " + fs.length;
+    if(el) el.innerHTML = (d === fs.length ? ic("check") + " " : "") + d + " / " + fs.length;
   });
   $("btnAdd").disabled = !all;
   $("btnAdd").title = all ? "" : "Faltan campos por llenar o confirmar.";
@@ -1425,9 +1480,9 @@ $("btnClearAll").addEventListener("click", () => {
 /* ---------- tabla ---------- */
 function cellHtml(f, r, i){
   const v = r[f.key], txt = esc(fieldDisplay(f, v, cfg.mask));
-  if(f.key === "correo" && v && v !== "No aplica") return txt + `<button class="cpbtn" data-copy="correo" data-i="${i}" title="Copiar correo">📋</button>`;
-  if(f.key === "password" && v && !v.na && v.value) return txt + `<button class="cpbtn" data-copy="password" data-i="${i}" title="Copiar contraseña sin mostrarla">📋</button>`;
-  if(f.key === "recoverykey" && v && v.status === "SI" && v.value) return txt + `<button class="cpbtn" data-copy="recoverykey" data-i="${i}" title="Copiar códigos">📋</button><button class="cpbtn" data-txt="${i}" title="Exportar códigos a .txt">⬇</button>`;
+  if(f.key === "correo" && v && v !== "No aplica") return txt + `<button class="cpbtn" data-copy="correo" data-i="${i}" title="Copiar correo">${ic("copy")}</button>`;
+  if(f.key === "password" && v && !v.na && v.value) return txt + `<button class="cpbtn" data-copy="password" data-i="${i}" title="Copiar contraseña sin mostrarla">${ic("copy")}</button>`;
+  if(f.key === "recoverykey" && v && v.status === "SI" && v.value) return txt + `<button class="cpbtn" data-copy="recoverykey" data-i="${i}" title="Copiar códigos">${ic("copy")}</button><button class="cpbtn" data-txt="${i}" title="Exportar códigos a .txt">⬇</button>`;
   return txt;
 }
 function renderTable(){
@@ -1485,7 +1540,7 @@ function downloadBlob(content, filename, type){
 $("btnExportCSV").addEventListener("click", () => downloadBlob("\uFEFF" + toCSV(), slug(appName()) + "_cuentas_" + todayLocal() + ".csv", "text/csv;charset=utf-8;"));
 function backupPayload(){ return {rows, DB, mejoras:notes, historial:hist}; }
 $("btnExportJSON").addEventListener("click", () => {
-  if(!confirm("Este archivo guarda tus contraseñas en TEXTO SIMPLE (sin cifrar).\n\n¿Continuar? Si no lo necesitas, usa 🔒 Backup cifrado.")) return;
+  if(!confirm("Este archivo guarda tus contraseñas en TEXTO SIMPLE (sin cifrar).\n\n¿Continuar? Si no lo necesitas, usa Backup cifrado.")) return;
   downloadBlob(JSON.stringify(backupPayload(), null, 2), slug(appName()) + "_backup_sin_cifrar_" + todayLocal() + ".json", "application/json");
   markBackup("sin cifrar");
 });
@@ -1538,7 +1593,7 @@ function askPassword({title, msg, confirmField}){
 $("btnExportEnc").addEventListener("click", async () => {
   if(!cryptoOk()) return;
   if(rows.length === 0 && !confirm("No hay cuentas guardadas. ¿Crear el backup cifrado de todos modos?")) return;
-  const pass = await askPassword({title:"🔒 Clave maestra del backup", msg:"Con esta clave se cifra el archivo. Si la olvidas NO hay forma de recuperarlo: guárdala en un lugar seguro, aparte del backup.", confirmField:true});
+  const pass = await askPassword({title:"Clave maestra del backup", msg:"Con esta clave se cifra el archivo. Si la olvidas NO hay forma de recuperarlo: guárdala en un lugar seguro, aparte del backup.", confirmField:true});
   if(pass === null) return;
   try{
     const file = await encryptBackup(pass, backupPayload());
@@ -1551,7 +1606,7 @@ function showBackupInfo(){
   let info = null; try{ info = JSON.parse(lsGet(BACKUP_KEY) || "null"); }catch(e){}
   $("backupInfo").innerHTML = info
     ? "Último backup en este navegador: <b>" + esc(info.d) + "</b> (" + esc(info.kind) + ")."
-    : "<span style='color:var(--warn)'>Aún no has hecho ningún backup desde este navegador.</span> Usa 🔒 Backup cifrado.";
+    : "<span style='color:var(--warn)'>Aún no has hecho ningún backup desde este navegador.</span> Usa Backup cifrado.";
 }
 
 /* ---------- importar backup (cifrado o no) ---------- */
@@ -1593,7 +1648,7 @@ $("importJSONInput").addEventListener("change", e => {
       let data = JSON.parse(evt.target.result);
       if(data && data.format === ENC_FORMAT){
         if(!cryptoOk()) return;
-        const pass = await askPassword({title:"🔓 Backup cifrado", msg:"Escribe la clave maestra con la que se creó este backup.", confirmField:false});
+        const pass = await askPassword({title:"Backup cifrado", msg:"Escribe la clave maestra con la que se creó este backup.", confirmField:false});
         if(pass === null) return;
         try{ data = await decryptBackup(pass, data); }
         catch(err){ alert("Clave incorrecta o el archivo está dañado. No se importó nada."); return; }
@@ -1833,12 +1888,12 @@ function loadNotes(){ try{ notes = JSON.parse(lsGet(NOTES_KEY) || "[]"); if(!Arr
 function saveNotes(){ lsSet(NOTES_KEY, JSON.stringify(notes)); }
 function renderNotes(){
   const pend = notes.filter(n => !n.done).length;
-  $("notesToggle").innerHTML = "📝" + (pend ? `<span class="nb">${pend}</span>` : "");
+  $("notesToggle").innerHTML = ic("note") + (pend ? `<span class="nb">${pend}</span>` : "");
   $("notesToggle").title = pend + " pendiente" + (pend === 1 ? "" : "s") + " · " + notes.length + " nota(s) en total";
   $("notesList").innerHTML = (notes.length
-    ? notes.slice().reverse().map(n => `<div class="noteitem ${n.done ? "done" : ""}"><input type="checkbox" data-ndone="${esc(n.id)}" ${n.done ? "checked" : ""} title="Marcar como hecha"><span class="nt">${esc(n.text)}</span><span class="nd">${esc(n.date)}</span><button data-ndel="${esc(n.id)}" title="Borrar">✕</button></div>`).join("")
+    ? notes.slice().reverse().map(n => `<div class="noteitem ${n.done ? "done" : ""}"><input type="checkbox" data-ndone="${esc(n.id)}" ${n.done ? "checked" : ""} title="Marcar como hecha"><span class="nt">${esc(n.text)}</span><span class="nd">${esc(n.date)}</span><button data-ndel="${esc(n.id)}" title="Borrar">${ic("x")}</button></div>`).join("")
     : '<p class="sub" style="margin:4px 0;">Aún no hay notas. Escribe una arriba y pulsa Enter.</p>') +
-    `<div class="notesfoot"><button class="btn-secondary rowbtn" data-nact="copy">📋 Copiar pendientes</button><button class="btn-secondary rowbtn" data-nact="txt">⬇ Exportar .txt</button><button class="btn-secondary rowbtn" data-nact="clean">Borrar las hechas</button></div>`;
+    `<div class="notesfoot"><button class="btn-secondary rowbtn" data-nact="copy">${ic("copy")} Copiar pendientes</button><button class="btn-secondary rowbtn" data-nact="txt">${ic("download")} Exportar .txt</button><button class="btn-secondary rowbtn" data-nact="clean">Borrar las hechas</button></div>`;
 }
 function addNote(){
   const inp = $("noteInput"), text = inp.value.trim(); if(!text) return;
@@ -1958,7 +2013,7 @@ function renderSearch(){
       <span class="rn">${esc(r.app || "(sin nombre)")}</span>
       <span class="pill">${esc((r.categoria||"").replace(/^\d+_/,"") || "sin categoría")}</span>
       ${r.estado ? `<span class="pill ${r.estado === "ACTIVA" ? "ok" : ""}">${esc(r.estado)}</span>` : ""}
-      ${is.length ? `<span class="pill bad">⚠ ${is.length}</span>` : ""}
+      ${is.length ? `<span class="pill bad">${ic("alert")} ${is.length}</span>` : ""}
       <span class="rm">${esc(r.correo || "")}</span>
     </div>`;
   }).join("");
@@ -1968,11 +2023,11 @@ function accountCardHtml(r, M){
   const d = daysSince(r.fecha);
   const pwOk = r.password && !r.password.na && r.password.value;
   return `<div class="card">
-      <h3>${esc(r.app || "(sin nombre)")} <span class="pill">${esc((r.categoria||"").replace(/^\d+_/,"") || "sin categoría")}</span> ${r.estado ? `<span class="pill ${r.estado === "ACTIVA" ? "ok" : ""}">${esc(r.estado)}</span>` : ""} ${is.length ? `<span class="pill bad" title="${esc(is.map(x => x.t).join(" · "))}">⚠ ${is.length}</span>` : ""}</h3>
+      <h3>${esc(r.app || "(sin nombre)")} <span class="pill">${esc((r.categoria||"").replace(/^\d+_/,"") || "sin categoría")}</span> ${r.estado ? `<span class="pill ${r.estado === "ACTIVA" ? "ok" : ""}">${esc(r.estado)}</span>` : ""} ${is.length ? `<span class="pill bad" title="${esc(is.map(x => x.t).join(" · "))}">${ic("alert")} ${is.length}</span>` : ""}</h3>
       ${is.length ? `<div class="kv">${esc(is.map(x => x.t).join(" · "))}</div>` : ""}
-      <div class="kv">Usuario: <b>${esc(us[0] || (r.usuarios && r.usuarios.na ? "No aplica" : "—"))}${us.length > 1 ? " +" + (us.length-1) : ""}</b>${us.length ? `<button class="cpbtn" data-qcopy="usuario" data-id="${r.id}" title="Copiar usuario">📋</button>` : ""}</div>
-      <div class="kv">Correo: <b>${esc(r.correo || "—")}</b>${r.correo && !RESERVED.includes(r.correo) ? `<button class="cpbtn" data-qcopy="correo" data-id="${r.id}" title="Copiar correo">📋</button>` : ""}</div>
-      <div class="kv">Contraseña: <b>${r.password && r.password.na ? "No aplica" : (pwOk ? "••••••" : "—")}</b>${pwOk ? `<button class="cpbtn" data-qcopy="password" data-id="${r.id}" title="Copiar contraseña sin mostrarla">📋</button>` : ""}</div>
+      <div class="kv">Usuario: <b>${esc(us[0] || (r.usuarios && r.usuarios.na ? "No aplica" : "—"))}${us.length > 1 ? " +" + (us.length-1) : ""}</b>${us.length ? `<button class="cpbtn" data-qcopy="usuario" data-id="${r.id}" title="Copiar usuario">${ic("copy")}</button>` : ""}</div>
+      <div class="kv">Correo: <b>${esc(r.correo || "—")}</b>${r.correo && !RESERVED.includes(r.correo) ? `<button class="cpbtn" data-qcopy="correo" data-id="${r.id}" title="Copiar correo">${ic("copy")}</button>` : ""}</div>
+      <div class="kv">Contraseña: <b>${r.password && r.password.na ? "No aplica" : (pwOk ? "••••••" : "—")}</b>${pwOk ? `<button class="cpbtn" data-qcopy="password" data-id="${r.id}" title="Copiar contraseña sin mostrarla">${ic("copy")}</button>` : ""}</div>
       <div class="kv">2FA: <b>${esc(twofaText(r))}</b> · Passkey: <b>${r.passkey && r.passkey.status === "SI" ? esc(r.passkey.values.join(", ") || "Sí") : "No"}</b></div>
       <div class="kv">Modificada: <b>${esc(r.fecha || "—")}</b>${d !== null ? " (hace " + d + " día" + (d === 1 ? "" : "s") + ")" : ""}</div>
       <div><button class="rowbtn btn-secondary" data-qreview="${r.id}">Revisar / actualizar</button></div>
@@ -1982,7 +2037,7 @@ let openCardId = null;
 function openCardModal(id){
   const r = rows.find(x => x.id === id); if(!r) return;
   openCardId = id;
-  $("cardModalIn").innerHTML = '<button class="xclose" id="cardClose" title="Cerrar (Esc)" aria-label="Cerrar">✕</button>' + accountCardHtml(r, computeMetrics());
+  $("cardModalIn").innerHTML = '<button class="xclose" id="cardClose" title="Cerrar (Esc)" aria-label="Cerrar">' + ic("x") + '</button>' + accountCardHtml(r, computeMetrics());
   $("cardModal").classList.add("open"); $("cardModal").setAttribute("aria-hidden","false"); document.body.classList.add("modal-open");
   $("cardClose").focus();
 }
@@ -2064,8 +2119,8 @@ function renderStats(){
   for(let i = 11; i >= 0; i--){ const d = new Date(now.getFullYear(), now.getMonth()-i, 1); keys.push(d.getFullYear() + "-" + String(d.getMonth()+1).padStart(2,"0")); months.push(String(d.getMonth()+1).padStart(2,"0") + "/" + String(d.getFullYear()).slice(2)); }
   const evs = monthlyEvents(), perMonth = keys.map(k => evs.filter(e => (e.fecha||"").startsWith(k)).length);
   const sn = snaps.slice(-24);
-  const dupHtml = M.dupGroups.length ? M.dupGroups.map(g => `<div class="alertrow"><div><b>${g.rows.length} cuentas</b> comparten la misma contraseña <span class="pill">${g.len} caracteres</span><div class="sub" style="margin:2px 0 0;">${g.rows.map(r => esc(r.app || "(sin nombre)")).join(" · ")}</div></div><div>${g.rows.map(r => `<button class="rowbtn btn-secondary" data-sreview="${r.id}" title="Revisar ${esc(r.app||"")}">${esc((r.app||"?").slice(0,14))}</button>`).join(" ")}</div></div>`).join("") : '<p class="sub" style="margin:0;">✔ No hay contraseñas repetidas.</p>';
-  const attHtml = M.flagged.length ? M.flagged.slice(0, 40).map(f => `<div class="alertrow"><div><b>${esc(f.r.app || "(sin nombre)")}</b> <span class="pill">${esc((f.r.categoria||"").replace(/^\d+_/,""))}</span><div style="margin-top:4px;">${f.issues.map(x => `<span class="pill ${x.sev >= 2 ? "bad" : "warn"}">${esc(x.t)}</span>`).join(" ")}</div></div><button class="rowbtn btn-secondary" data-sreview="${f.r.id}">Revisar</button></div>`).join("") + (M.flagged.length > 40 ? `<p class="sub">…y ${M.flagged.length - 40} más.</p>` : "") : '<p class="sub" style="margin:0;">✔ Ninguna cuenta requiere atención.</p>';
+  const dupHtml = M.dupGroups.length ? M.dupGroups.map(g => `<div class="alertrow"><div><b>${g.rows.length} cuentas</b> comparten la misma contraseña <span class="pill">${g.len} caracteres</span><div class="sub" style="margin:2px 0 0;">${g.rows.map(r => esc(r.app || "(sin nombre)")).join(" · ")}</div></div><div>${g.rows.map(r => `<button class="rowbtn btn-secondary" data-sreview="${r.id}" title="Revisar ${esc(r.app||"")}">${esc((r.app||"?").slice(0,14))}</button>`).join(" ")}</div></div>`).join("") : '<p class="sub" style="margin:0;">'+ic("check")+' No hay contraseñas repetidas.</p>';
+  const attHtml = M.flagged.length ? M.flagged.slice(0, 40).map(f => `<div class="alertrow"><div><b>${esc(f.r.app || "(sin nombre)")}</b> <span class="pill">${esc((f.r.categoria||"").replace(/^\d+_/,""))}</span><div style="margin-top:4px;">${f.issues.map(x => `<span class="pill ${x.sev >= 2 ? "bad" : "warn"}">${esc(x.t)}</span>`).join(" ")}</div></div><button class="rowbtn btn-secondary" data-sreview="${f.r.id}">Revisar</button></div>`).join("") + (M.flagged.length > 40 ? `<p class="sub">…y ${M.flagged.length - 40} más.</p>` : "") : '<p class="sub" style="margin:0;">'+ic("check")+' Ninguna cuenta requiere atención.</p>';
   const recent = hist.slice(-15).reverse();
   const evHtml = recent.length ? recent.map(e => `<div class="alertrow"><span><b>${esc(e.app || "(sin nombre)")}</b> <span class="pill">${esc(e.tipo)}</span></span><span class="sub" style="margin:0;">${esc(e.fecha)}</span></div>`).join("") : '<p class="sub" style="margin:0;">Se registrará cada alta, revisión e importación a partir de ahora.</p>';
   $("statsRoot").innerHTML = `
@@ -2085,9 +2140,9 @@ function renderStats(){
       <div class="chart"><h2 class="secttitle">% con 2FA en el tiempo ${info("Se guarda una foto al día cada vez que cambias tus cuentas.")}</h2>${lineChart(sn.map(x => ({l:x.fecha, y:pct(x.con2fa, x.total)})), 100, "%", "Porcentaje con 2FA en el tiempo")}</div>
       <div class="chart"><h2 class="secttitle">Cuentas con alertas en el tiempo</h2>${lineChart(sn.map(x => ({l:x.fecha, y:x.atencion})), Math.max(1, ...sn.map(x => x.atencion)), "", "Cuentas con alertas en el tiempo")}</div>
     </div>
-    <div class="panel"><h2 class="secttitle">🔁 Contraseñas repetidas ${info("No se muestran las contraseñas: solo qué cuentas comparten la misma.")}</h2>${dupHtml}</div>
-    <div class="panel"><h2 class="secttitle">⚠ Cuentas que requieren atención (${M.attention})</h2>${attHtml}</div>
-    <div class="panel"><h2 class="secttitle">🕘 Actividad reciente</h2>${evHtml}</div>`;
+    <div class="panel"><h2 class="secttitle">${ic("repeat")} Contraseñas repetidas ${info("No se muestran las contraseñas: solo qué cuentas comparten la misma.")}</h2>${dupHtml}</div>
+    <div class="panel"><h2 class="secttitle">${ic("alert")} Cuentas que requieren atención (${M.attention})</h2>${attHtml}</div>
+    <div class="panel"><h2 class="secttitle">${ic("clock")} Actividad reciente</h2>${evHtml}</div>`;
 }
 $("statsRoot").addEventListener("click", e => {
   const rv = e.target.closest("[data-sreview]"); if(!rv) return;
@@ -2139,7 +2194,7 @@ async function cloudUpload(){
   if(!cryptoOk()) return;
   try{
     const user = await cloudUser(); if(!user) return;
-    const pass = await askPassword({title:"☁ Clave maestra de la copia", msg:"Cifra la copia antes de subirla. Si la olvidas no hay forma de recuperarla. Puede ser la misma de tus backups.", confirmField:true});
+    const pass = await askPassword({title:"Clave maestra de la copia", msg:"Cifra la copia antes de subirla. Si la olvidas no hay forma de recuperarla. Puede ser la misma de tus backups.", confirmField:true});
     if(pass === null) return;
     showCloudInfo("Subiendo…");
     const file = await encryptBackup(pass, backupPayload());
@@ -2164,7 +2219,7 @@ async function cloudRestore(id){
     const { data, error } = await c.from(SUPA.table).select("data").eq("app", SUPA.app).eq("id", id).maybeSingle();
     if(error) throw error;
     if(!data || !data.data){ alert("No hay " + (id === "respaldo" ? "ninguna copia" : "copia anterior") + " en Supabase."); return; }
-    const pass = await askPassword({title:"🔓 Copia de Supabase", msg:"Escribe la clave maestra con la que se cifró esta copia.", confirmField:false});
+    const pass = await askPassword({title:"Copia de Supabase", msg:"Escribe la clave maestra con la que se cifró esta copia.", confirmField:false});
     if(pass === null) return;
     let plain;
     try{ plain = await decryptBackup(pass, data.data); }catch(e){ alert("Clave incorrecta o la copia está dañada. No se importó nada."); return; }
@@ -2183,7 +2238,7 @@ loadConfig(); applyTheme();
 loadDB(); loadRows(); loadHist(); loadNotes();
 if(!snaps.length && rows.length) takeSnapshot();
 applyAppName(); buildTabs(); buildSearchControls();
-buildForm(); buildHeader(); buildConfig();
+hydrateIcons(); const setTb = () => document.documentElement.style.setProperty("--tb", document.querySelector(".topbar").offsetHeight + "px"); setTb(); window.addEventListener("resize", setTb); buildForm(); buildHeader(); buildConfig();
 FIELDS.forEach(f => { if(f.type === "dbselect") rebuildDbSelect(f); });
 clearForm(); renderTable(); renderNotes(); showStorageWarn(); showBackupInfo(); showCloudInfo(); renderIO();
 goTab("buscar");
