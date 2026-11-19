@@ -155,6 +155,21 @@ button.sm,.lbtn{padding:5px 9px;font-size:13px}
 .rep-head{display:flex;gap:12px;align-items:center;margin-bottom:8px}
 .rep-head img{width:56px;height:56px;border-radius:10px}
 @media print{body.printing #ovl{display:none!important}}
+.avg-table th.r,.avg-table td.num{text-align:right}.avg-table td{vertical-align:middle}.avg-pct{font-weight:700;font-size:15px}
+.tc-leg{display:flex;flex-wrap:wrap;gap:14px;font-size:12px;margin:8px 0 4px;align-items:center}.tc-leg i{display:inline-block;width:14px;height:10px;margin-right:5px;vertical-align:middle}
+.tc-leg i.tc-up{background:#1E88E5;clip-path:polygon(50% 0,100% 100%,0 100%)}.tc-leg i.tc-dn{background:#F59E0B;clip-path:polygon(0 0,100% 0,50% 100%)}
+.tc-leg i.tc-lb{border-top:2px dashed #2F9E62;height:0}.tc-leg i.tc-ls{border-top:2px dashed #E8845C;height:0}
+.tc-box{position:relative;width:100%;overflow:hidden;touch-action:pan-y;user-select:none}.tc-svg{display:block;width:100%;height:auto;cursor:grab}.tc-svg:active{cursor:grabbing}
+.tc-grid{stroke:var(--ln);stroke-width:1;opacity:.6}.tc-ax{font-size:11px;fill:var(--mu);font-family:ui-monospace,monospace}.tc-axw{fill:#fff}
+.tc-cu{fill:#26A69A;stroke:#26A69A}.tc-cd{fill:#EF5350;stroke:#EF5350}
+.tc-lb{stroke:#2F9E62;stroke-width:1.5;stroke-dasharray:6 4}.tc-lb-bg{fill:#2F9E62}.tc-lb-t{fill:#2F9E62;font-weight:700}
+.tc-ls{stroke:#E8845C;stroke-width:1.5;stroke-dasharray:6 4}.tc-ls-bg{fill:#E8845C}.tc-ls-t{fill:#E8845C;font-weight:700}
+.tc-last{stroke:var(--mu);stroke-width:1;stroke-dasharray:2 3}.tc-last-bg{fill:#5C6878}
+.tc-up{fill:#1E88E5;stroke:#fff;stroke-width:1}.tc-dn{fill:#F59E0B;stroke:#fff;stroke-width:1}.tc-mku{stroke:#1E88E5;stroke-width:2}.tc-mkd{stroke:#F59E0B;stroke-width:2}
+.tc-mk{cursor:pointer}.tc-mk:hover path,.tc-mk.on path{stroke:var(--ink);stroke-width:2}
+.tc-xh{stroke:var(--mu);stroke-width:1;stroke-dasharray:3 3;pointer-events:none}.tc-xh-bg{fill:var(--ink);pointer-events:none}#tcCross text{fill:var(--sf)}
+.tc-info{margin-top:8px;font-size:13px;display:flex;flex-wrap:wrap;gap:12px}.tc-note{font-size:12px;margin-top:4px}
+
 .cyc-click{cursor:pointer;transition:border-color .12s}.cyc-click:hover{border-color:var(--acc,#2E93BE)}.cyc-click.on{border-color:var(--acc,#2E93BE);box-shadow:0 0 0 3px color-mix(in srgb,var(--acc,#2E93BE) 22%,transparent)}
 .cp-table th.r,.cp-table td.num,.cp-sub th.r,.cp-sub td.num{text-align:right}.cp-row{cursor:pointer}.cp-row:hover td{background:color-mix(in srgb,var(--acc,#2E93BE) 8%,transparent)}.cp-car{display:inline-block;width:12px;color:var(--mu)}.cp-det>td{padding:4px 8px 10px 22px!important;background:var(--bg)}.cp-sub{min-width:0!important}.cp-sub td,.cp-sub th{font-size:12px}
 
@@ -1200,9 +1215,9 @@ function cycTopHtml(cs){
  var coins={},plats={};cs.forEach(function(x){coins[x.o.coin]=1;if(x.o.plat)plats[x.o.plat]=1});
  var seg=function(k,opts){return '<div class="seg" role="group">'+opts.map(function(o){return '<button type="button" data-cyf="'+k+'" data-v="'+o[0]+'" aria-pressed="'+(CYU[k]==o[0])+'">'+o[1]+'</button>'}).join('')+'</div>'};
  var sel=function(k,ph,vals){return '<select data-cyf="'+k+'" class="cyc-sel"><option value="">'+ph+'</option>'+vals.map(function(v){return '<option'+(CYU[k]==v?' selected':'')+'>'+esc(v)+'</option>'}).join('')+'</select>'};
- var bar='<div class="cyc-bar">'+seg('view',[['active','Activos ('+act.length+')'],['closed','Cerrados ('+cl.length+')'],['all','Todos'],['last','Último movimiento']])+
-  (CYU.view=='last'?sel('coin','Todas las monedas',Object.keys(coins).sort())+sel('plat','Todos los brokers',Object.keys(plats).sort())+
-   '<label class="unlock"><input type="checkbox" data-cyf="lastPlat"'+(CYU.lastPlat?' checked':'')+'>Separar por broker</label>'+
+ var bar='<div class="cyc-bar">'+seg('view',[['active','Activos ('+act.length+')'],['closed','Cerrados ('+cl.length+')'],['all','Todos'],['avg','Precio promedio'],['last','Último movimiento']])+
+  (CYU.view=='last'||CYU.view=='avg'?sel('coin','Todas las monedas',Object.keys(coins).sort())+sel('plat','Todos los brokers',Object.keys(plats).sort())+
+   (CYU.view=='avg'?'<label class="unlock"><input type="checkbox" data-cyf="avgPlat"'+(CYU.avgPlat?' checked':'')+'>Separar por broker</label><label class="unlock">Meta de ganancia <input id="avgMeta" type="number" min="0.1" step="0.5" value="'+(+CYU.avgMeta||3)+'" style="width:70px;height:32px"> %</label>':'<label class="unlock"><input type="checkbox" data-cyf="lastPlat"'+(CYU.lastPlat?' checked':'')+'>Separar por broker</label>')+
    (CYU.coin||CYU.plat?'<button type="button" class="sm x" data-cyclear="1">Quitar filtros</button>':'')+'</div>':(
   seg('type',[['','Todos'],['rec','Esperan recompra'],['ven','Esperan venta']])+
   seg('pl',[['','Todo resultado'],['up','En ganancia'],['down','En pérdida']])+
@@ -1253,6 +1268,176 @@ function lastMovesHtml(){
  return '<div class="card wrap"><table class="lm-table"><thead><tr><th>Moneda</th><th>Último</th><th class="r">Cantidad</th><th class="r">Cambio</th><th class="r">Precio de ese movimiento</th><th class="r">Precio hoy</th><th></th><th></th></tr></thead><tbody>'+body+'</tbody></table>'+
   '<p class="mu" style="font-size:12px;margin:8px 0 0">El cambio es el precio de hoy contra el precio de tu último movimiento de cada moneda, sea compra o venta. En verde cuando te favorece: si compraste, que suba; si vendiste, que baje.</p></div>';
 }
+/* ================= Precio promedio de los ciclos abiertos ================= */
+function avgGroups(byPlat){
+ var g={};
+ cycles().forEach(function(x){
+  if(x.st=='cerrado'||!(x.rem>0))return;var o=x.o;
+  if(CYU.coin&&o.coin!=CYU.coin)return;if(CYU.plat&&(o.plat||'')!=CYU.plat)return;
+  var k=o.coin+(byPlat?'|'+(o.plat||''):''),r=g[k]||(g[k]={coin:o.coin,plat:byPlat?o.plat||'':'',b:{n:0,q:0,cost:0,raw:0,miss:0,list:[]},s:{n:0,usd:0,coins:0,miss:0,list:[]}});
+  if(o.action=='VENTA'){var sp=o.qty>0&&o.usdt>0?o.usdt/o.qty:(o.price>0?o.price:null);r.s.n++;r.s.list.push(x);
+   if(sp){r.s.usd+=x.rem;r.s.coins+=x.rem/sp}else r.s.miss++}
+  else if(x.byQ){var nq=netQty(o),cpc=nq>0?o.usdt/nq:null,op=x.op;r.b.n++;r.b.list.push(x);
+   if(cpc){r.b.q+=x.rem;r.b.cost+=x.rem*cpc;r.b.raw+=x.rem*(op||cpc)}else r.b.miss++}
+  else{r.b.n++;r.b.miss++;r.b.list.push(x)}
+ });
+ return Object.keys(g).map(function(k){var r=g[k];r.b.avg=r.b.q>0?r.b.cost/r.b.q:null;r.b.avgRaw=r.b.q>0?r.b.raw/r.b.q:null;r.s.avg=r.s.coins>0?r.s.usd/r.s.coins:null;return r});
+}
+function avgHtml(){
+ var by=!!CYU.avgPlat,rows=avgGroups(by),meta=+CYU.avgMeta||3;
+ var buys=rows.filter(function(r){return r.b.n}).sort(function(a,b){return b.b.cost-a.b.cost}),sells=rows.filter(function(r){return r.s.n}).sort(function(a,b){return b.s.usd-a.s.usd});
+ var sg=function(v,d){return v==null?'—':'<span style="color:'+col(v)+'">'+(v>0?'+':v<0?'−':'')+n(Math.abs(v),d==null?2:d)+'</span>'};
+ var chartBtn=function(r){return '<button type="button" class="sm" data-avgchart="'+esc(r.coin)+'" data-avgplat="'+esc(r.plat)+'">Gráfica</button>'};
+ var bt=buys.length?'<div class="card wrap"><h3 style="margin:0 0 4px">Compras abiertas · precio promedio de entrada</h3><p class="mu" style="margin:0 0 8px;font-size:13px">Cada compra sigue siendo su propio ciclo; aquí se promedian las que siguen abiertas, ponderando por lo que te queda de cada una.</p>'+
+  '<table class="avg-table"><thead><tr><th>Moneda</th><th class="r">Compras</th><th class="r">Cantidad abierta</th><th class="r">Precio promedio</th><th class="r">Precio hoy</th><th class="r">vs. promedio</th><th class="r">Si vendes todo hoy</th><th class="r">Meta +'+n(meta,1)+'%</th><th></th></tr></thead><tbody>'+
+  buys.map(function(r){var b=r.b,p=refPrice(r.coin),pct=b.avg&&p?(p/b.avg-1)*100:null,g=b.avg&&p?b.q*p-b.cost:null,tgt=b.avg?b.avg*(1+meta/100):null,far=tgt&&p?(tgt/p-1)*100:null;
+   return '<tr><td>'+coinIcon(r.coin,16)+'<b>'+esc(r.coin)+'</b>'+(by?'<div class="mu" style="font-size:12px">'+esc(r.plat)+'</div>':'')+'</td><td class="num">'+b.n+(b.miss?'<div class="mu" style="font-size:11px">'+b.miss+' sin cantidad</div>':'')+'</td>'+
+    '<td class="num">'+n(b.q,b.q>=100?2:6)+'<div class="mu" style="font-size:11px">costo '+n(b.cost,2)+' USD</div></td>'+
+    '<td class="num"><b>'+px(b.avg)+'</b><div class="mu" style="font-size:11px">sin comisión '+px(b.avgRaw)+'</div></td><td class="num">'+px(p)+'</td>'+
+    '<td class="num avg-pct">'+(pct==null?'—':sg(pct)+'%')+'</td><td class="num">'+(g==null?'—':sg(g)+' USD')+'</td>'+
+    '<td class="num">'+px(tgt)+(far!=null?'<div class="mu" style="font-size:11px">'+(far<=0?'<span style="color:var(--buy)">ya la pasó</span>':'falta '+n(far,2)+'%')+'</div>':'')+'</td><td>'+chartBtn(r)+'</td></tr>'}).join('')+'</tbody></table></div>':'';
+ var st=sells.length?'<div class="card wrap"><h3 style="margin:0 0 4px">Ventas que esperan recompra · precio promedio de venta</h3><p class="mu" style="margin:0 0 8px;font-size:13px">Para recomprar con ganancia el precio tiene que estar por debajo de este promedio.</p>'+
+  '<table class="avg-table"><thead><tr><th>Moneda</th><th class="r">Ventas</th><th class="r">USD por recomprar</th><th class="r">Precio promedio de venta</th><th class="r">Precio hoy</th><th class="r">vs. promedio</th><th class="r">Si recompras todo hoy</th><th class="r">Meta −'+n(meta,1)+'%</th><th></th></tr></thead><tbody>'+
+  sells.map(function(r){var s=r.s,p=refPrice(r.coin),pct=s.avg&&p?(p/s.avg-1)*100:null,extra=s.avg&&p?s.usd/p-s.coins:null,tgt=s.avg?s.avg*(1-meta/100):null,far=tgt&&p?(1-tgt/p)*100:null;
+   return '<tr><td>'+coinIcon(r.coin,16)+'<b>'+esc(r.coin)+'</b>'+(by?'<div class="mu" style="font-size:12px">'+esc(r.plat)+'</div>':'')+'</td><td class="num">'+s.n+(s.miss?'<div class="mu" style="font-size:11px">'+s.miss+' sin cantidad</div>':'')+'</td>'+
+    '<td class="num">'+n(s.usd,2)+'</td><td class="num"><b>'+px(s.avg)+'</b></td><td class="num">'+px(p)+'</td>'+
+    '<td class="num avg-pct">'+(pct==null?'—':'<span style="color:'+col(-pct)+'">'+(pct>0?'+':pct<0?'−':'')+n(Math.abs(pct),2)+'</span>%')+'</td>'+
+    '<td class="num">'+(extra==null?'—':sg(extra,extra>=100?2:6)+' '+esc(r.coin)+'<div class="mu" style="font-size:11px">≈ '+sg(extra*p)+' USD</div>')+'</td>'+
+    '<td class="num">'+px(tgt)+(far!=null?'<div class="mu" style="font-size:11px">'+(far<=0?'<span style="color:var(--buy)">ya la pasó</span>':'falta bajar '+n(far,2)+'%')+'</div>':'')+'</td><td>'+chartBtn(r)+'</td></tr>'}).join('')+'</tbody></table></div>':'';
+ if(!bt&&!st)return '<div class="card empty">No hay ciclos abiertos con estos filtros.</div>';
+ return bt+st+'<p class="mu" style="font-size:12px;margin:0 4px 12px">El promedio de entrada incluye la comisión de cada compra (es tu punto de equilibrio); debajo va el precio sin comisión. "Si vendes todo hoy" no descuenta la comisión de la venta.</p>';
+}
+document.addEventListener('change',function(e){var t=e.target;if(t&&t.id=='avgMeta'){var v=parseFloat(t.value);if(v>0){CYU.avgMeta=v;saveCyu();render()}}});
+document.addEventListener('click',function(e){var b=e.target.closest&&e.target.closest('[data-avgchart]');if(!b)return;openTradeChart(b.getAttribute('data-avgchart'),b.getAttribute('data-avgplat')||'')});
+
+/* ================= Gráfica de precio (velas) con mis compras y ventas ================= */
+var TC={coin:null,plat:'',tf:'auto',open:false,bars:null,key:'',v0:0,v1:0,sel:null,hover:null,loading:false,err:''};
+var TC_TF=[['15m','15m',9e5],['1h','1h',36e5],['4h','4h',144e5],['1d','1D',864e5],['1w','1S',6048e5]];
+var TCCACHE={};
+function tcMs(tf){var t=TC_TF.filter(function(x){return x[0]==tf})[0];return t?t[2]:144e5}
+function tcTrades(){return M.filter(function(m){return m.coin==TC.coin&&(!TC.plat||(m.plat||'')==TC.plat)&&(m.action=='COMPRA'||m.action=='VENTA')})}
+function tcPrice(m){return m.price>0?m.price:(m.qty>0&&m.usdt>0?m.usdt/m.qty:null)}
+function tcAutoTf(){var tr=tcTrades().filter(function(m){return tcPrice(m)}),t0=tr.length?Math.min.apply(null,tr.map(function(m){return new Date(m.time).getTime()})):Date.now()-30*864e5,span=Date.now()-t0;
+ var c=[['1h',36e5],['4h',144e5],['1d',864e5],['1w',6048e5]].filter(function(x){return span*1.15<x[1]*990})[0];return c?c[0]:'1w'}
+function tcFetch(coin,tf){
+ var k=coin+'|'+tf,c=TCCACHE[k];if(c&&Date.now()-c.at<60000)return Promise.resolve(c.bars);
+ var bm={'15m':15,'1h':60,'4h':240,'1d':'D','1w':'W'}[tf];
+ var fromBinance=fetch('https://api.binance.com/api/v3/klines?symbol='+coin+'USDT&interval='+tf+'&limit=1000').then(function(r){return r.json()}).then(function(j){
+  if(!Array.isArray(j)||!j.length)throw 0;return{src:'Binance',bars:j.map(function(k){return{t:+k[0],o:+k[1],h:+k[2],l:+k[3],c:+k[4]}})}});
+ return fromBinance.catch(function(){
+  return fetch('https://api.bybit.com/v5/market/kline?category=spot&symbol='+coin+'USDT&interval='+bm+'&limit=1000').then(function(r){return r.json()}).then(function(j){
+   var L=j&&j.result&&j.result.list;if(!L||!L.length)throw 0;return{src:'Bybit',bars:L.map(function(k){return{t:+k[0],o:+k[1],h:+k[2],l:+k[3],c:+k[4]}}).reverse()}});
+ }).then(function(d){TCCACHE[k]={at:Date.now(),bars:d};return d}).catch(function(){return null});
+}
+function tcAvgs(){var o={};var rows=avgGroupsFor(TC.coin,TC.plat);o.buy=rows.b.avg;o.sell=rows.s.avg;return o}
+function avgGroupsFor(coin,plat){var sc=CYU.coin,sp=CYU.plat;CYU.coin=coin;CYU.plat=plat||'';var r=avgGroups(false);CYU.coin=sc;CYU.plat=sp;return r[0]||{b:{avg:null},s:{avg:null}}}
+function tcCardHtml(){
+ var coins={};M.forEach(function(m){if(m.coin)coins[m.coin]=1});var cl=Object.keys(coins).sort();if(!TC.coin)TC.coin=cl[0]||'BTC';
+ var plats={};M.forEach(function(m){if(m.coin==TC.coin&&m.plat)plats[m.plat]=1});
+ return '<div class="row" style="gap:8px;flex-wrap:wrap;align-items:center"><h2 style="margin:0">Precio con mis compras y ventas</h2><span class="sp"></span>'+
+  '<select id="tcCoin" class="cyc-sel">'+cl.map(function(c){return '<option'+(c==TC.coin?' selected':'')+'>'+esc(c)+'</option>'}).join('')+'</select>'+
+  '<select id="tcPlat" class="cyc-sel"><option value="">Todos los brokers</option>'+Object.keys(plats).sort().map(function(p){return '<option'+(p==TC.plat?' selected':'')+'>'+esc(p)+'</option>'}).join('')+'</select>'+
+  '<div class="seg" role="group" aria-label="Temporalidad"><button type="button" data-tctf="auto" aria-pressed="'+(TC.tf=='auto')+'">Auto</button>'+TC_TF.map(function(t){return '<button type="button" data-tctf="'+t[0]+'" aria-pressed="'+(TC.tf==t[0])+'">'+t[1]+'</button>'}).join('')+'</div>'+
+  '<button type="button" class="sm" data-tczoom="in" aria-label="Acercar">＋</button><button type="button" class="sm" data-tczoom="out" aria-label="Alejar">－</button><button type="button" class="sm" data-tczoom="fit">Ver mis operaciones</button></div>'+
+  '<div class="tc-leg mu"><span><i class="tc-up"></i>Compra</span><span><i class="tc-dn"></i>Venta</span><span><i class="tc-lb"></i>Promedio de compra (ciclos abiertos)</span><span><i class="tc-ls"></i>Promedio de venta (esperan recompra)</span><span id="tcOhlc" class="num"></span></div>'+
+  '<div id="tcBox" class="tc-box"><p class="mu empty">Cargando velas…</p></div><div id="tcInfo" class="tc-info"></div>'+
+  '<p class="mu" style="font-size:12px;margin:6px 0 0">Velas de Binance (o Bybit si Binance no tiene la moneda). Cada triángulo es un movimiento tuyo al precio y hora en que lo registraste. Arrastra para moverte, usa la rueda o ＋/－ para acercar, toca un triángulo para ver el movimiento.</p>';
+}
+function renderTradeChart(){
+ var card=$('#tcCard');if(!card)return;card.innerHTML=tcCardHtml();tcLoad();
+}
+function tcLoad(){
+ var tf=TC.tf=='auto'?tcAutoTf():TC.tf,key=TC.coin+'|'+tf;TC.curTf=tf;
+ if(TC.bars&&TC.key==key){tcDraw();return}
+ TC.loading=true;var box=$('#tcBox');if(box)box.innerHTML='<p class="mu empty">Cargando velas de '+esc(TC.coin)+'…</p>';
+ tcFetch(TC.coin,tf).then(function(d){TC.loading=false;
+  if(!d){TC.bars=null;TC.key='';var b=$('#tcBox');if(b)b.innerHTML='<p class="mu empty">No se pudieron traer las velas de '+esc(TC.coin)+' (ni Binance ni Bybit la tienen contra USDT, o no hay conexión).</p>';return}
+  TC.bars=d.bars;TC.src=d.src;TC.key=key;tcFit();tcDraw()});
+}
+function tcFit(){
+ var B=TC.bars;if(!B||!B.length)return;var tr=tcTrades().map(function(m){return new Date(m.time).getTime()}).filter(function(t){return t>=B[0].t});
+ var i0=B.length-120;if(tr.length){var t0=Math.min.apply(null,tr),j=0;while(j<B.length&&B[j].t<t0)j++;i0=Math.min(i0,j-8)}
+ TC.v0=Math.max(0,i0);TC.v1=B.length+2;if(TC.v1-TC.v0<40)TC.v0=Math.max(0,TC.v1-40);
+}
+function tcDraw(){
+ var box=$('#tcBox'),B=TC.bars;if(!box||!B)return;
+ var W=Math.max(320,box.clientWidth||900),H=window.innerWidth<700?320:440,rm=70,bm=24,tm=8,pw=W-rm,ph=H-bm-tm;
+ var i0=Math.max(0,Math.floor(TC.v0)),i1=Math.min(B.length-1,Math.ceil(TC.v1)),vis=B.slice(i0,i1+1),ms=tcMs(TC.curTf);
+ var lo=Infinity,hi=-Infinity;vis.forEach(function(b){if(b.l<lo)lo=b.l;if(b.h>hi)hi=b.h});
+ var tr=tcTrades(),av=tcAvgs(),tStart=B[i0]?B[i0].t:0,tEnd=(B[i1]?B[i1].t:0)+ms;
+ tr.forEach(function(m){var t=new Date(m.time).getTime(),p=tcPrice(m);if(p&&t>=tStart&&t<=tEnd){lo=Math.min(lo,p);hi=Math.max(hi,p)}});
+ [av.buy,av.sell].forEach(function(p){if(p&&p<hi*1.6&&p>lo/1.6){lo=Math.min(lo,p);hi=Math.max(hi,p)}});
+ if(!isFinite(lo)){box.innerHTML='<p class="mu empty">Sin velas en este rango.</p>';return}
+ var pad=(hi-lo)*0.06||hi*0.01;lo-=pad;hi+=pad;
+ var span=TC.v1-TC.v0,X=function(i){return (i-TC.v0)/span*pw},Y=function(p){return tm+(hi-p)/(hi-lo)*ph},bw=Math.max(1,pw/span*0.7);
+ TC.geo={W:W,H:H,pw:pw,ph:ph,tm:tm,lo:lo,hi:hi,span:span,ms:ms};
+ var out='<rect x="0" y="0" width="'+pw+'" height="'+(H-bm)+'" fill="transparent" class="tc-bg"/>';
+ /* rejilla de precios */
+ var step=Math.pow(10,Math.floor(Math.log10((hi-lo)/5))),nice=[1,2,2.5,5,10].map(function(k){return k*step}).filter(function(s){return (hi-lo)/s<=8})[0]||step*10;
+ for(var v=Math.ceil(lo/nice)*nice;v<=hi;v+=nice){var y=Y(v).toFixed(1);out+='<line x1="0" x2="'+pw+'" y1="'+y+'" y2="'+y+'" class="tc-grid"/><text x="'+(pw+6)+'" y="'+(+y+4)+'" class="tc-ax">'+tcFmt(v)+'</text>'}
+ /* fechas */
+ var lastLbl=-1e9;for(var i=i0;i<=i1;i++){var x=X(i);if(x-lastLbl<110)continue;var d=new Date(B[i].t);lastLbl=x;
+  out+='<line x1="'+x.toFixed(1)+'" x2="'+x.toFixed(1)+'" y1="'+tm+'" y2="'+(H-bm)+'" class="tc-grid"/><text x="'+x.toFixed(1)+'" y="'+(H-6)+'" text-anchor="middle" class="tc-ax">'+(ms>=864e5?d.getDate()+' '+MESES[d.getMonth()]+(d.getMonth()==0||ms>=6048e5?' '+String(d.getFullYear()).slice(2):''):p2(d.getDate())+'/'+p2(d.getMonth()+1)+' '+p2(d.getHours())+':'+p2(d.getMinutes()))+'</text>'}
+ /* velas */
+ vis.forEach(function(b,k){var i=i0+k,x=X(i)+bw/2,up=b.c>=b.o,cl=up?'tc-cu':'tc-cd',yo=Y(b.o),yc=Y(b.c);
+  out+='<line x1="'+x.toFixed(1)+'" x2="'+x.toFixed(1)+'" y1="'+Y(b.h).toFixed(1)+'" y2="'+Y(b.l).toFixed(1)+'" class="'+cl+'"/><rect x="'+X(i).toFixed(1)+'" y="'+Math.min(yo,yc).toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(1,Math.abs(yc-yo)).toFixed(1)+'" class="'+cl+'"/>'});
+ /* promedios */
+ var hl=function(p,cls,lbl){if(!p||p<lo||p>hi)return '';var y=Y(p).toFixed(1);return '<line x1="0" x2="'+pw+'" y1="'+y+'" y2="'+y+'" class="'+cls+'"/><rect x="'+(pw+1)+'" y="'+(y-9)+'" width="'+(rm-2)+'" height="18" rx="4" class="'+cls+'-bg"/><text x="'+(pw+6)+'" y="'+(+y+4)+'" class="tc-ax tc-axw">'+tcFmt(p)+'</text><text x="6" y="'+(y-5)+'" class="tc-ax '+cls+'-t">'+lbl+'</text>'};
+ out+=hl(av.buy,'tc-lb','Promedio de compra '+px(av.buy))+hl(av.sell,'tc-ls','Promedio de venta '+px(av.sell));
+ /* último precio */
+ var last=B[B.length-1];if(last&&last.c>=lo&&last.c<=hi){var yl=Y(last.c).toFixed(1);out+='<line x1="0" x2="'+pw+'" y1="'+yl+'" y2="'+yl+'" class="tc-last"/><rect x="'+(pw+1)+'" y="'+(yl-9)+'" width="'+(rm-2)+'" height="18" rx="4" class="tc-last-bg"/><text x="'+(pw+6)+'" y="'+(+yl+4)+'" class="tc-ax tc-axw">'+tcFmt(last.c)+'</text>'}
+ /* mis movimientos */
+ var older=0;
+ tr.forEach(function(m){var t=new Date(m.time).getTime(),p=tcPrice(m);if(!p)return;if(t<B[0].t){older++;return}
+  var fi=(t-B[0].t)/ms;if(fi<TC.v0-1||fi>TC.v1+1)return;var x=X(Math.floor(fi))+bw/2,y=Y(p),buy=m.action!='VENTA',s=7,on=TC.sel==m.id;
+  if(p<lo||p>hi)return;
+  out+='<g class="tc-mk'+(on?' on':'')+'" data-tcm="'+m.id+'"><line x1="'+(x-10)+'" x2="'+(x+10)+'" y1="'+y.toFixed(1)+'" y2="'+y.toFixed(1)+'" class="'+(buy?'tc-mku':'tc-mkd')+'"/>'+
+   (buy?'<path d="M'+x.toFixed(1)+' '+(y+2).toFixed(1)+' l'+(-s)+' '+(s*1.6).toFixed(1)+' h'+(2*s)+' z" class="tc-up"/>':'<path d="M'+x.toFixed(1)+' '+(y-2).toFixed(1)+' l'+(-s)+' '+(-s*1.6).toFixed(1)+' h'+(2*s)+' z" class="tc-dn"/>')+
+   '<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="12" fill="transparent"/><title>'+(buy?'Compra':'Venta')+' '+esc(m.coin)+' · '+fmtDT(m.time).slice(0,16)+' · '+px(p)+' · '+n(m.usdt,2)+' USD</title></g>'});
+ out+='<g id="tcCross"></g>';
+ box.innerHTML='<svg class="tc-svg" viewBox="0 0 '+W+' '+H+'" width="'+W+'" height="'+H+'">'+out+'</svg>'+(older?'<div class="tc-note mu">'+older+' movimiento'+(older==1?'':'s')+' anterior'+(older==1?'':'es')+' a estas velas: elige una temporalidad mayor para verlo'+(older==1?'':'s')+'.</div>':'');
+ tcInfo();
+}
+function tcFmt(v){return v>=1000?n(v,0):v>=100?n(v,2):v>=1?n(v,3):n(v,6)}
+function tcInfo(){
+ var el=$('#tcInfo');if(!el)return;var m=TC.sel!=null?M.filter(function(x){return x.id==TC.sel})[0]:null;
+ if(!m){var tr=tcTrades(),b=tr.filter(function(x){return x.action!='VENTA'}).length,s=tr.length-b,av=tcAvgs(),p=refPrice(TC.coin)||(TC.bars&&TC.bars.length?TC.bars[TC.bars.length-1].c:null);
+  el.innerHTML='<span class="mu">'+b+' compra'+(b==1?'':'s')+' y '+s+' venta'+(s==1?'':'s')+' de '+esc(TC.coin)+(TC.plat?' en '+esc(TC.plat):'')+'.</span>'+
+   (av.buy?' <span>Promedio de compra abierto: <b>'+px(av.buy)+'</b>'+(p?' (<span style="color:'+col(p-av.buy)+'">'+(p>=av.buy?'+':'')+n((p/av.buy-1)*100,2)+'%</span> hoy)':'')+'</span>':'')+
+   (av.sell?' <span>Promedio de venta abierto: <b>'+px(av.sell)+'</b>'+(p?' (<span style="color:'+col(av.sell-p)+'">'+(p>=av.sell?'+':'')+n((p/av.sell-1)*100,2)+'%</span> hoy)':'')+'</span>':'');return}
+ var p=tcPrice(m),now=refPrice(m.coin),chg=p&&now?(now/p-1)*100:null,buy=m.action!='VENTA';
+ el.innerHTML='<div class="sc-card"><b class="'+m.action+'">'+(buy?'COMPRA':'VENTA')+'</b> '+coinIcon(m.coin,16)+'<b>'+esc(m.coin)+'</b> · '+fmtDT(m.time).slice(0,16)+' · '+esc(m.plat||'')+' · '+folio(m.ciclo)+
+  '<br><span class="num">'+(m.qty?n(m.qty,8)+' '+esc(m.coin)+' · ':'')+'a '+px(p)+' · '+n(m.usdt,2)+' USD</span>'+(chg!=null?' · hoy <b style="color:'+col(buy?chg:-chg)+'">'+(chg>=0?'+':'')+n(chg,2)+'%</b> desde este movimiento':'')+
+  ' <button type="button" class="sm" data-edit="'+m.id+'">Editar</button> <button type="button" class="x sm" data-tcclose="1">Cerrar</button></div>';
+}
+function tcZoom(f,cx){var s=TC.v1-TC.v0,ns=Math.max(15,Math.min((TC.bars||[]).length+20,s*f)),c=cx==null?TC.v0+s*0.7:cx;var r=(c-TC.v0)/s;TC.v0=c-ns*r;TC.v1=TC.v0+ns;tcClamp();tcDraw()}
+function tcClamp(){var L=(TC.bars||[]).length,s=TC.v1-TC.v0;if(TC.v1>L+s*0.4){TC.v1=L+s*0.4;TC.v0=TC.v1-s}if(TC.v0<-s*0.3){TC.v0=-s*0.3;TC.v1=TC.v0+s}}
+function openTradeChart(coin,plat){TC.coin=coin;TC.plat=plat||'';TC.sel=null;TC.key='';setTab(3);setTimeout(function(){var c=$('#tcCard');if(c)c.scrollIntoView({behavior:'smooth',block:'start'})},60)}
+document.addEventListener('change',function(e){var t=e.target;if(!t)return;
+ if(t.id=='tcCoin'){TC.coin=t.value;TC.plat='';TC.sel=null;TC.key='';renderTradeChart()}
+ if(t.id=='tcPlat'){TC.plat=t.value;TC.sel=null;tcDraw()}});
+document.addEventListener('click',function(e){var t=e.target;if(!t.closest)return;
+ var b=t.closest('[data-tctf]');if(b){TC.tf=b.getAttribute('data-tctf');TC.key='';renderTradeChart();return}
+ b=t.closest('[data-tczoom]');if(b){var z=b.getAttribute('data-tczoom');if(z=='fit'){tcFit();tcDraw()}else tcZoom(z=='in'?0.7:1.45);return}
+ if(t.closest('[data-tcclose]')){TC.sel=null;tcDraw();return}
+ var mk=t.closest('[data-tcm]');if(mk&&!TC.dragged){TC.sel=+mk.getAttribute('data-tcm');tcDraw();return}
+});
+(function(){var drag=null;
+ document.addEventListener('pointerdown',function(e){var sv=e.target.closest&&e.target.closest('.tc-svg');if(!sv||e.button>0)return;drag={x:e.clientX,v0:TC.v0,v1:TC.v1,w:sv.getBoundingClientRect().width};TC.dragged=false});
+ document.addEventListener('pointermove',function(e){
+  if(drag){var dx=e.clientX-drag.x;if(Math.abs(dx)>3)TC.dragged=true;if(TC.dragged){var g=TC.geo,sh=-dx/(drag.w*g.pw/g.W)*(drag.v1-drag.v0);TC.v0=drag.v0+sh;TC.v1=drag.v1+sh;tcClamp();tcDraw()}return}
+  var sv=e.target.closest&&e.target.closest('.tc-svg');if(!sv||!TC.geo||!TC.bars)return;var r=sv.getBoundingClientRect(),g=TC.geo,x=(e.clientX-r.left)*g.W/r.width,y=(e.clientY-r.top)*g.H/r.height;
+  var cr=sv.querySelector('#tcCross');if(!cr)return;if(x>g.pw||y>g.tm+g.ph){cr.innerHTML='';return}
+  var fi=TC.v0+x/g.pw*g.span,i=Math.floor(fi),b=TC.bars[i],price=g.hi-(y-g.tm)/g.ph*(g.hi-g.lo);
+  cr.innerHTML='<line x1="'+x.toFixed(1)+'" x2="'+x.toFixed(1)+'" y1="'+g.tm+'" y2="'+(g.tm+g.ph)+'" class="tc-xh"/><line x1="0" x2="'+g.pw+'" y1="'+y.toFixed(1)+'" y2="'+y.toFixed(1)+'" class="tc-xh"/><rect x="'+(g.pw+1)+'" y="'+(y-9).toFixed(1)+'" width="'+(g.W-g.pw-2)+'" height="18" rx="4" class="tc-xh-bg"/><text x="'+(g.pw+6)+'" y="'+(y+4).toFixed(1)+'" class="tc-ax tc-axw">'+tcFmt(price)+'</text>';
+  var oh=$('#tcOhlc');if(oh&&b)oh.innerHTML=fmtDT(new Date(b.t)).slice(0,16)+' · A '+tcFmt(b.o)+' · Max '+tcFmt(b.h)+' · Min '+tcFmt(b.l)+' · C <b style="color:'+(b.c>=b.o?'var(--buy)':'var(--sell)')+'">'+tcFmt(b.c)+'</b>';
+ });
+ document.addEventListener('pointerup',function(){if(drag){drag=null;setTimeout(function(){TC.dragged=false},0)}});
+ document.addEventListener('wheel',function(e){var sv=e.target.closest&&e.target.closest('.tc-svg');if(!sv||!TC.geo)return;e.preventDefault();var r=sv.getBoundingClientRect(),g=TC.geo,x=(e.clientX-r.left)*g.W/r.width;tcZoom(e.deltaY>0?1.15:0.87,TC.v0+x/g.pw*g.span)},{passive:false});
+ document.addEventListener('dblclick',function(e){if(e.target.closest&&e.target.closest('.tc-svg')){tcFit();tcDraw()}});
+ window.addEventListener('resize',function(){if(tab==3&&TC.bars)tcDraw()});
+})();
+
 function render(){
  var cs=cycles(),fc=$('#fc').value;
  var open=cs.filter(function(x){return x.st!='cerrado'}).length;
@@ -1261,7 +1446,7 @@ function render(){
  $('#cycTop').innerHTML=cycTopHtml(cs);
  if(_aq){var _q=document.querySelector('.cyc-q');if(_q){_q.focus();_q.setSelectionRange(_q.value.length,_q.value.length)}}
  var list=cycSort(cycFilter(cs));
- if(CYU.view=='last')$('#v1').innerHTML=lastMovesHtml();else
+ if(CYU.view=='avg')$('#v1').innerHTML=avgHtml();else if(CYU.view=='last')$('#v1').innerHTML=lastMovesHtml();else
  $('#v1').innerHTML=list.length?list.map(cardHtml).join(''):'<div class="card empty">'+(CYU.view=='active'&&!open?'No tienes ciclos activos: todos están cerrados.':'No hay ciclos con estos filtros.')+'</div>';
  var mv=M.filter(function(m){return!fc||m.coin==fc}).sort(function(a,b){return a.time<b.time?1:-1});
  $('#v2').innerHTML='<div class="card wrap"><table><thead><tr><th>Folio</th><th>Cripto</th><th>Acción</th><th>Monto</th><th>USD</th><th>Cantidad</th><th>Precio</th><th>Orden</th><th>Comisión</th><th>Fecha</th><th>Plataforma</th><th></th></tr></thead><tbody>'+
@@ -1458,13 +1643,14 @@ function svgLine(values,opts){
  '<text x="'+pad+'" y="14">'+n(mx,2)+'</text><text x="'+pad+'" y="'+(h-2)+'">'+n(mn,2)+'</text></svg>';
 }
 var chartCoin=null;
-$('#v3').innerHTML='<div class="card" id="chHeat"></div><div class="card" id="chScatter"></div><div class="chartgrid">'+
+$('#v3').innerHTML='<div class="card" id="tcCard"></div><div class="card" id="chHeat"></div><div class="card" id="chScatter"></div><div class="chartgrid">'+
 '<div class="card"><h2>Precio últimas 24h (Binance)</h2><select id="chCoinSel" style="margin-bottom:8px"></select><div id="chPrice"></div></div>'+
 '<div class="card"><h2>Resultado % por ciclo cerrado</h2><div id="chResult"></div></div>'+
 '<div class="card"><h2>Volumen por moneda (USD)</h2><div id="chCoin"></div></div>'+
 '<div class="card"><h2>Volumen por plataforma (USD)</h2><div id="chPlat"></div></div>'+
 '</div>';
 function renderCharts(){
+ try{renderTradeChart()}catch(e){window.__showErr&&__showErr((e&&e.stack)||e,'gráfica de precio')}
  var _w=($('#v3').clientWidth||1000)-40;
  $('#chHeat').innerHTML=heatHtml('gHeat',M.map(function(m){return{t:m.time,v:m.usdt}}),'Qué días');
  $('#chScatter').innerHTML=scatterHtml('gScat',M.filter(function(m){return m.usdt>0}).map(function(m){return{t:m.time,v:m.usdt,k:m.action=='VENTA'?'SELL':'BUY',c:m.coin,d:m.plat+' · '+folio(m.ciclo),mid:m.id}}),'Cada movimiento',_w);
