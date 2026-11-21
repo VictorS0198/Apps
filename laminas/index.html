@@ -361,6 +361,13 @@ fieldset.lockfs[disabled] .sect{opacity:.55}
 .pr-grid img{max-width:100%;background:#fff}
 @media (prefers-reduced-motion:reduce){.pr-bar{transition:none}}
 
+
+.save-state.ok{color:var(--ink-2)}
+.save-state.ok::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:#2b9348;margin-right:6px;vertical-align:1px}
+.rec.legacy{border-style:dashed}
+.rec-x{opacity:.0;font-size:17px;line-height:20px}
+.rec:hover .rec-x,.rec:focus-within .rec-x{opacity:1}
+#homeStore{line-height:1.5}
 </style>
 </head>
 <body>
@@ -371,11 +378,10 @@ fieldset.lockfs[disabled] .sect{opacity:.55}
     </div>
     <input id="projectName" class="project-name" value="Proyecto sin nombre" spellcheck="false" title="Nombre del proyecto">
     <nav class="menu">
-      <button data-cmd="home" title="Inicio: recientes, nuevo, abrir y cerrar proyecto">Inicio</button>
       <button data-cmd="new" title="Nuevo proyecto">Nuevo</button>
-      <button data-cmd="open" title="Abrir proyecto (Ctrl+O)">Abrir</button>
-      <button data-cmd="save" title="Guardar en el mismo archivo (Ctrl+S)">Guardar</button>
-      <button data-cmd="saveAs" title="Guardar como (Ctrl+Shift+S)">Guardar como</button>
+      <button data-cmd="home" title="Mis proyectos guardados en la app (Ctrl+O)">Mis proyectos</button>
+      <button data-cmd="save" title="Guardar en la app (Ctrl+S) · también se guarda solo">Guardar</button>
+      <button data-cmd="backupMenu" title="Respaldos externos: descargar, importar, guardar copia">Respaldo ▾</button>
       <span class="sep"></span>
       <button data-cmd="import" title="Insertar imágenes (también puedes arrastrarlas o pegarlas)">Insertar imagen</button>
       <button data-cmd="cajetin" title="Insertar o guardar cajetín">Cajetín</button>
@@ -4568,7 +4574,7 @@ const SHORTCUTS = [
   ['Edición de imagen', [['M', 'Selección rectangular'], ['J', 'Selección elíptica'], ['P', 'Selección poligonal'], ['Q', 'Lazo'], ['W', 'Varita mágica'], ['B', 'Pincel de máscara (Alt invierte)'], ['K', 'Cuentagotas'], ['Supr', 'Ocultar selección de píxeles'], ['Ctrl+Mayús+I', 'Invertir selección'], ['Intro / Esc', 'Cerrar o cancelar polígono']]],
   ['Elementos', [['Ctrl+C / X / V', 'Copiar, cortar, pegar'], ['Ctrl+D', 'Duplicar'], ['Alt + arrastrar', 'Duplicar arrastrando'], ['Supr', 'Eliminar'], ['Flechas', 'Mover 1 mm (Mayús 10, Alt 0.1)'], ['Ctrl+G / Ctrl+Mayús+G', 'Agrupar / desagrupar'], ['Ctrl+] / Ctrl+[', 'Adelante / atrás'], ['Ctrl+Mayús+] / [', 'Al frente / al fondo'], ['Ctrl+Mayús+L', 'Bloquear'], ['Ctrl+Mayús+H', 'Ocultar'], ['Ctrl+A', 'Seleccionar todo'], ['Intro', 'Editar texto / recortar imagen']]],
   ['Al arrastrar', [['Mayús', 'Proporción, eje fijo o ángulos de 15°'], ['Alt', 'Desde el centro'], ['Ctrl', 'Desactivar el imán']]],
-  ['Proyecto y vista', [['Ctrl+Z / Ctrl+Y', 'Deshacer / rehacer'], ['Ctrl+S', 'Guardar (mismo archivo)'], ['Ctrl+Mayús+S', 'Guardar como'], ['Ctrl+O', 'Abrir'], ['Ctrl+E', 'Exportar'], ['Ctrl+Mayús+E', 'Exportar con el perfil del proyecto'], ['F5 / Mayús+F5', 'Presentación (inicio / esta lámina)'], ['Ctrl+Mayús+F', 'Pantalla completa'], ['Tab', 'Modo enfoque (ocultar paneles)'], ['Ctrl+0', 'Ajustar a la ventana'], ['Ctrl+1', 'Zoom 100 %'], ['Ctrl + rueda', 'Zoom'], ['RePág / AvPág', 'Lámina anterior / siguiente'], ['N', 'Notas'], ['F1 / ?', 'Esta ayuda']]],
+  ['Proyecto y vista', [['Ctrl+Z / Ctrl+Y', 'Deshacer / rehacer'], ['Ctrl+S', 'Guardar en la app'], ['Ctrl+Mayús+S', 'Guardar una copia en la app'], ['Ctrl+O', 'Mis proyectos'], ['Ctrl+E', 'Exportar'], ['Ctrl+Mayús+E', 'Exportar con el perfil del proyecto'], ['F5 / Mayús+F5', 'Presentación (inicio / esta lámina)'], ['Ctrl+Mayús+F', 'Pantalla completa'], ['Tab', 'Modo enfoque (ocultar paneles)'], ['Ctrl+0', 'Ajustar a la ventana'], ['Ctrl+1', 'Zoom 100 %'], ['Ctrl + rueda', 'Zoom'], ['RePág / AvPág', 'Lámina anterior / siguiente'], ['N', 'Notas'], ['F1 / ?', 'Esta ayuda']]],
 ];
 UI.shortcutsDialog = function () {
   UI.dialog({
@@ -5910,6 +5916,473 @@ async function buildPptx(items, o, prog) {
 /* =====================================================================
    Arranque
    ===================================================================== */
+/* =====================================================================
+   MIS PROYECTOS · Los proyectos se guardan dentro de la app (navegador).
+   Guardar (Ctrl+S) y el guardado automático escriben aquí. Los archivos
+   .laminas.json / .laminas.zip son solo respaldos externos.
+   ===================================================================== */
+function idsOfProject(p) {
+  const ids = new Set();
+  for (const l of p.laminas || []) { for (const e of l.elements || []) { if (e.assetId) ids.add(e.assetId); if (e.maskId) ids.add(e.maskId); } for (const v of l.versions || []) if (v.assetId) ids.add(v.assetId); }
+  for (const c of p.cajetines || []) for (const e of c.elements || []) { if (e.assetId) ids.add(e.assetId); if (e.maskId) ids.add(e.maskId); }
+  for (const f of p.fonts || []) if (f.assetId) ids.add(f.assetId);
+  return ids;
+}
+async function decodeStoredAsset(a) {
+  if (a.kind === 'image' || a.kind === 'version') await decodeImageAsset(a);
+  else if (a.kind === 'mask') await decodeMaskAsset(a);
+  else if (a.kind === 'font') await registerFont(a, a.family || a.name);
+  return a;
+}
+// arma un respaldo (.laminas.json o .laminas.zip) de cualquier proyecto
+async function buildBackup(proj, getAsset, fmt = 'json') {
+  proj = deep(proj); proj.saved = new Date().toISOString();
+  for (const c of proj.cajetines || []) c.assets = {};
+  const used = idsOfProject(proj);
+  if (fmt === 'zip') {
+    const enc = new TextEncoder(), files = [], assets = {};
+    for (const id of used) {
+      const a = await getAsset(id); if (!a) continue;
+      const ext = MIME_EXT[a.mime] || (a.name || '').split('.').pop().toLowerCase() || 'bin';
+      const file = `recursos/${a.kind}_${id}.${ext}`;
+      assets[id] = { kind: a.kind, name: a.name, mime: a.mime, family: a.family || null, file };
+      files.push({ name: file, bytes: new Uint8Array(await a.blob.arrayBuffer()) });
+    }
+    const json = JSON.stringify({ format: APP_FORMAT, version: APP_VERSION, packaging: 'zip', project: proj, assets }, null, 1);
+    return makeZip([{ name: 'proyecto.json', bytes: enc.encode(json) }, { name: 'LEEME.txt', bytes: enc.encode(LEEME) }, ...files], 'application/zip');
+  }
+  const assets = {};
+  for (const id of used) {
+    const a = await getAsset(id); if (!a) continue;
+    assets[id] = { kind: a.kind, name: a.name, mime: a.mime, family: a.family || null, data: await blobToDataURL(a.blob) };
+  }
+  return new Blob([JSON.stringify({ format: APP_FORMAT, version: APP_VERSION, project: proj, assets })], { type: 'application/json' });
+}
+const safeName = s => String(s || 'proyecto').replace(/[\\/:*?"<>|]+/g, '_').trim() || 'proyecto';
+
+/* ---------- almacenamiento ---------- */
+Object.assign(Store, {
+  _pending: false, _legacy: false, _thumb: '', _thumbAt: 0, _thumbId: null,
+  open() {
+    return new Promise((res) => {
+      if (!('indexedDB' in window)) return res(null);
+      let req;
+      try { req = indexedDB.open('editor-laminas', 4); } catch { return res(null); }
+      req.onupgradeneeded = () => {
+        const db = req.result;
+        for (const s of ['kv', 'assets', 'favs', 'recents', 'projects']) if (!db.objectStoreNames.contains(s)) db.createObjectStore(s);
+      };
+      req.onsuccess = () => { this.db = req.result; res(this.db); };
+      req.onerror = () => res(null);
+    });
+  },
+  schedule() { this._pending = true; clearTimeout(this.timer); this.timer = setTimeout(() => this.save(), 1000); UI.saveState('pending'); },
+  async save(force) {
+    if (!this.db || !S.project || S.closed) return false;
+    if (this.busy) { this.schedule(); return false; }
+    clearTimeout(this.timer); this.timer = null;
+    this.busy = true; this._pending = false;
+    try {
+      for (const [id, a] of S.assets) {
+        if (this.saved.has(id)) continue;
+        await this.put('assets', id, { id, kind: a.kind, name: a.name, mime: a.mime, blob: a.blob, family: a.family || null });
+        this.saved.add(id);
+      }
+      const p = S.project, now = Date.now();
+      if (!p.id) p.id = uid('p');
+      if (force || !this._thumb || this._thumbId !== p.id || now - this._thumbAt > 8000) { this._thumb = Recents.thumb(); this._thumbAt = now; this._thumbId = p.id; }
+      await this.put('projects', p.id, { id: p.id, name: p.name, modified: now, laminas: p.laminas.length, done: p.laminas.filter(l => l.done).length, curId: S.curId, thumb: this._thumb, project: JSON.stringify(p) });
+      await this.put('kv', 'lastOpen', p.id);
+      if (this._legacy) { this._legacy = false; this.del('kv', 'autosave').catch(() => { }); }
+      if (!this._pending) S.dirty = false;
+      this.lastAt = new Date();
+      UI.saveState();
+      return true;
+    } catch (err) {
+      console.error(err);
+      UI.saveState('error');
+      toast('No se pudo guardar en la app (el espacio del navegador puede estar lleno). Descarga un respaldo para no perder cambios.', 'error', 8000);
+      return false;
+    } finally { this.busy = false; }
+  },
+  async resetAssets() { /* los recursos se comparten entre proyectos: no se borran */ },
+  async load() {
+    const id = await this.get('kv', 'lastOpen');
+    const rec = id ? await this.get('projects', id) : null;
+    let project, curId, savedAt;
+    if (rec) { project = JSON.parse(rec.project); curId = rec.curId; savedAt = rec.modified; }
+    else {
+      const a = await this.get('kv', 'autosave'); // versión anterior de la app
+      if (!a) return null;
+      project = JSON.parse(a.project); curId = a.curId; savedAt = a.savedAt; this._legacy = true;
+    }
+    const assets = new Map();
+    for (const aid of idsOfProject(project)) { const a = await this.get('assets', aid); if (a) assets.set(aid, a); }
+    return { rec: { curId, savedAt, fileName: null, dirty: false, handle: null }, project, assets };
+  },
+  async gc() {
+    try {
+      const keep = new Set();
+      for (const r of (await this.getAll('projects')) || []) { try { idsOfProject(JSON.parse(r.project)).forEach(x => keep.add(x)); } catch { } }
+      if (!S.closed && S.project) idsOfProject(S.project).forEach(x => keep.add(x));
+      const leg = await this.get('kv', 'autosave'); if (leg) { try { idsOfProject(JSON.parse(leg.project)).forEach(x => keep.add(x)); } catch { } }
+      for (const k of (await this.keys('assets')) || []) if (!keep.has(k)) { await this.del('assets', k); this.saved.delete(k); }
+    } catch (err) { console.warn('limpieza', err); }
+  },
+});
+
+UI.saveState = function (st) {
+  const el = $('#stSave'); if (!el) return;
+  if (S.closed) { el.textContent = ''; el.className = 'save-state'; }
+  else if (st === 'error') { el.textContent = 'No se pudo guardar en la app'; el.className = 'save-state warn'; }
+  else if (st === 'pending' || S.dirty) { el.textContent = 'Guardando en la app…'; el.className = 'save-state'; }
+  else { el.textContent = 'Guardado en la app' + (Store.lastAt ? ' · ' + Store.lastAt.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : ''); el.className = 'save-state ok'; }
+  const u = $('[data-cmd=undo]'), r = $('[data-cmd=redo]');
+  if (u) u.disabled = S.histIdx <= 0; if (r) r.disabled = S.histIdx >= S.hist.length - 1;
+  document.title = (S.closed ? 'Editor de Láminas' : (S.project?.name || 'Proyecto') + ' — Editor de Láminas');
+};
+
+/* ---------- biblioteca ---------- */
+const Library = {
+  async list() { try { return ((await Store.getAll('projects')) || []).sort((a, b) => b.modified - a.modified); } catch { return []; } },
+  async legacy() { try { return ((await Store.getAll('recents')) || []).filter(r => r.data); } catch { return []; } },
+  async assetsOf(project) {
+    const map = new Map();
+    for (const id of idsOfProject(project)) {
+      const a = S.assets.get(id) || await Store.get('assets', id);
+      if (!a) continue;
+      try { if (!a.full && !a.canvas && !a.family) await decodeStoredAsset(a); map.set(id, a); Store.saved.add(id); } catch (err) { console.warn('recurso', id, err); }
+    }
+    return map;
+  },
+  async open(id) {
+    if (!S.closed && S.project && S.project.id === id) { Home.hide(); return; }
+    const rec = await Store.get('projects', id);
+    if (!rec) { toast('Ese proyecto ya no está en la app.', 'warn'); Home.render(); return; }
+    await IO.beforeSwitch();
+    const pt = progressToast(`Abriendo “${rec.name}”…`);
+    try {
+      const project = JSON.parse(rec.project);
+      S.assets = await this.assetsOf(project);
+      IO.load(project, null, null);
+      if (rec.curId && S.project.laminas.find(l => l.id === rec.curId)) { S.curId = rec.curId; zoomFit(); UI.all(); }
+      Store.lastAt = new Date(rec.modified); S.dirty = false; UI.saveState();
+      await Store.put('kv', 'lastOpen', id);
+    } catch (err) { console.error(err); toast('No se pudo abrir el proyecto: ' + err.message, 'error', 6000); }
+    finally { pt.done(); }
+  },
+  async rename(id) {
+    const rec = await Store.get('projects', id); if (!rec) return;
+    const n = await UI.prompt('Nombre del proyecto', rec.name); if (!n || !n.trim()) return;
+    if (!S.closed && S.project.id === id) { S.project.name = n.trim(); $('#projectName').value = S.project.name; await Store.save(true); }
+    else { const p = JSON.parse(rec.project); p.name = n.trim(); rec.name = p.name; rec.project = JSON.stringify(p); await Store.put('projects', id, rec); }
+    Home.render();
+  },
+  async duplicate(id) {
+    if (!S.closed && S.project.id === id) await Store.save(true);
+    const rec = await Store.get('projects', id); if (!rec) return;
+    const p = JSON.parse(rec.project); p.id = uid('p'); p.name = rec.name + ' (copia)';
+    await Store.put('projects', p.id, { ...rec, id: p.id, name: p.name, modified: Date.now(), project: JSON.stringify(p) });
+    toast(`Se creó “${p.name}”`); Home.render();
+  },
+  async remove(id) {
+    const rec = await Store.get('projects', id); if (!rec) return;
+    const r = await UI.dialog({
+      title: `¿Eliminar “${rec.name}”?`,
+      body: `<p style="margin:4px 0">Se borrará de la app en este navegador. Si no tienes un respaldo (.laminas.json o .laminas.zip) no se podrá recuperar.</p>`,
+      buttons: [{ label: 'Cancelar', value: null }, { label: 'Descargar respaldo primero', value: 'backup' }, { label: 'Eliminar', value: 'del', cls: 'primary danger-fill' }],
+    });
+    if (r === 'backup') { await this.backup(id); return this.remove(id); }
+    if (r !== 'del') return;
+    const isCur = !S.closed && S.project.id === id;
+    await Store.del('projects', id);
+    if (isCur) { S.closed = true; S.dirty = false; S.assets = new Map(); S.project = newProject(); S.curId = S.project.laminas[0].id; S.sel = []; histReset('—'); await Store.del('kv', 'lastOpen'); UI.all(); }
+    await Store.gc();
+    toast(`“${rec.name}” eliminado`); Home.render();
+  },
+  async backup(id, fmt) {
+    if (!S.closed && S.project.id === id) await Store.save(true);
+    const rec = await Store.get('projects', id); if (!rec) return;
+    if (!fmt) { fmt = await IO.askBackupFormat(rec.name); if (!fmt) return; }
+    const getAsset = async aid => S.assets.get(aid) || await Store.get('assets', aid);
+    const pt = progressToast('Preparando respaldo…');
+    try { const blob = await buildBackup(JSON.parse(rec.project), getAsset, fmt); await IO.writeBackup(blob, `${safeName(rec.name)}.laminas.${fmt}`, fmt); }
+    catch (err) { console.error(err); toast('No se pudo crear el respaldo: ' + err.message, 'error', 6000); }
+    finally { pt.done(); }
+  },
+  async backupAll() {
+    if (!S.closed) await Store.save(true);
+    const list = await this.list();
+    if (!list.length) { toast('No hay proyectos en la app todavía.', 'warn'); return; }
+    const pt = progressToast('Preparando respaldo de todos los proyectos…');
+    try {
+      const getAsset = async aid => S.assets.get(aid) || await Store.get('assets', aid);
+      const files = [], used = new Set();
+      for (let i = 0; i < list.length; i++) {
+        pt.set(`Respaldando ${i + 1} de ${list.length}: ${list[i].name}`); await tick();
+        const blob = await buildBackup(JSON.parse(list[i].project), getAsset, 'json');
+        let n = safeName(list[i].name), nn = n, c = 2; while (used.has(nn)) nn = `${n}_${c++}`; used.add(nn);
+        files.push({ name: `${nn}.laminas.json`, bytes: new Uint8Array(await blob.arrayBuffer()) });
+      }
+      const d = new Date(), stamp = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+      await IO.writeBackup(makeZip(files), `Respaldo_Editor_de_Laminas_${stamp}.zip`, 'zip');
+    } catch (err) { console.error(err); toast('No se pudo crear el respaldo: ' + err.message, 'error', 6000); }
+    finally { pt.done(); }
+  },
+  // guarda un respaldo leído en la biblioteca sin abrirlo
+  async storeParsed(d) {
+    for (const [id, a] of d.assets) { await Store.put('assets', id, { id, kind: a.kind, name: a.name, mime: a.mime, blob: a.blob, family: a.family || null }); Store.saved.add(id); }
+    const p = normalizeProject(d.project);
+    await Store.put('projects', p.id, { id: p.id, name: p.name, modified: Date.now(), laminas: p.laminas.length, done: p.laminas.filter(l => l.done).length, curId: p.laminas[0].id, thumb: '', project: JSON.stringify(p) });
+  },
+};
+
+/* ---------- archivo: guardar en la app; respaldos externos ---------- */
+Object.assign(IO, {
+  async askDiscard() { if (!S.closed) await Store.save(true); return true; },
+  async beforeSwitch() { if (!S.closed) await Store.save(true); },
+  async save() {
+    if (S.closed) return false;
+    if (S.editingText) finishTextEdit();
+    const ok = await Store.save(true);
+    if (ok) toast(`Guardado en la app · ${S.project.name}`, '', 1800);
+    return ok;
+  },
+  async saveAs() { return IO.saveCopy(); },
+  async saveCopy() {
+    if (S.closed) return;
+    if (S.editingText) finishTextEdit();
+    const n = await UI.prompt('Guardar una copia en la app con el nombre', `${S.project.name} (copia)`);
+    if (!n || !n.trim()) return;
+    await Store.save(true);
+    S.project.id = uid('p'); S.project.name = n.trim(); $('#projectName').value = S.project.name;
+    await Store.save(true);
+    toast(`Copia guardada. Ahora trabajas en “${S.project.name}”; el original quedó intacto en Mis proyectos.`, '', 4200);
+  },
+  async askBackupFormat(name) {
+    const prev = getPref('el-save-fmt', 'json');
+    return UI.dialog({
+      title: 'Descargar respaldo',
+      body: `<p style="margin:2px 0 10px">Respaldo externo de <b>${esc(name)}</b>. El proyecto sigue guardado en la app; este archivo sirve para guardarlo en tu computadora, en la nube o pasarlo a otra máquina.</p>
+        <div class="opt-list" style="margin:8px 0">
+          <label class="opt"><input type="radio" name="svF" value="json" ${prev === 'json' ? 'checked' : ''}><div><b>Archivo único · .laminas.json</b><div class="hint">JSON legible con todo adentro (las imágenes van en base64).</div></div></label>
+          <label class="opt"><input type="radio" name="svF" value="zip" ${prev === 'zip' ? 'checked' : ''}><div><b>Paquete · .laminas.zip</b><div class="hint">ZIP con <span class="tok">proyecto.json</span>, la carpeta <span class="tok">recursos/</span> con tus imágenes originales y un LEEME.</div></div></label>
+        </div>
+        <div class="hint">Para recuperarlo: Mis proyectos → Importar respaldo.</div>`,
+      buttons: [{ label: 'Cancelar', value: null }, { label: 'Descargar respaldo', value: 'ok', cls: 'primary' }],
+      validate: f => { const v = $('input[name=svF]:checked', f).value; setPref('el-save-fmt', v); f._v = v; },
+    }).then(r => r ? getPref('el-save-fmt', 'json') : null);
+  },
+  async writeBackup(blob, name, fmt) {
+    if (window.showSaveFilePicker) {
+      try {
+        const types = fmt === 'zip' ? [{ description: 'Respaldo ZIP', accept: { 'application/zip': ['.zip'] } }] : [{ description: 'Respaldo de Editor de Láminas (.laminas.json)', accept: { 'application/json': ['.json'] } }];
+        const h = await window.showSaveFilePicker({ suggestedName: name, types });
+        await IO.writeHandle(h, blob);
+        setPref('el-backup-at', String(Date.now()));
+        toast(`Respaldo guardado: ${h.name} · ${fmtBytes(blob.size)}`, '', 3200);
+        return true;
+      } catch (err) { if (err.name === 'AbortError') return false; console.warn('se descarga', err); }
+    }
+    downloadBlob(blob, name);
+    setPref('el-backup-at', String(Date.now()));
+    toast(`Respaldo descargado: ${name} · ${fmtBytes(blob.size)}`, '', 3200);
+    return true;
+  },
+  async backupCurrent() { if (S.closed) return; if (S.editingText) finishTextEdit(); return Library.backup(S.project.id); },
+  async openDialog() { Home.show(); },
+  async importDialog() {
+    if (window.showOpenFilePicker) {
+      try {
+        const [h] = await window.showOpenFilePicker({ types: [{ description: 'Respaldos de Editor de Láminas', accept: { 'application/json': ['.json'], 'application/zip': ['.zip'] } }] });
+        return IO.openFile(await h.getFile());
+      } catch (err) { if (err.name === 'AbortError') return; }
+    }
+    $('#fileProject').click();
+  },
+  // importa un respaldo a la app y lo abre
+  async openFile(file, handle = null, skipAsk = false, opts = {}) {
+    try {
+      // ¿es un respaldo de todos los proyectos?
+      const head = new Uint8Array(await file.slice(0, 4).arrayBuffer());
+      if (head[0] === 0x50 && head[1] === 0x4B) {
+        const zip = await readZip(await file.arrayBuffer());
+        const names = zip.names();
+        if (!names.some(n => /(^|\/)proyecto\.json$/i.test(n))) {
+          const many = names.filter(n => /\.json$/i.test(n));
+          if (many.length) return IO.importMany(zip, many);
+        }
+      }
+      const d = await IO.parseFile(file);
+      d.project.id = d.project.id || uid('p');
+      const ex = await Store.get('projects', d.project.id);
+      if (ex && !opts.replace) {
+        const r = await UI.dialog({
+          title: 'Ese proyecto ya está en la app',
+          body: `<p style="margin:4px 0">“${esc(ex.name)}” ya existe en Mis proyectos (guardado ${new Date(ex.modified).toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })}).</p><p class="hint">Reemplazar pone el contenido del respaldo en lugar del que tienes. Importar como copia conserva los dos.</p>`,
+          buttons: [{ label: 'Cancelar', value: null }, { label: 'Importar como copia', value: 'copy' }, { label: 'Reemplazar', value: 'replace', cls: 'primary' }],
+        });
+        if (!r) return false;
+        if (r === 'copy') { d.project.id = uid('p'); d.project.name = (d.project.name || 'Proyecto') + ' (respaldo)'; }
+        if (!S.closed && S.project.id === d.project.id) { S.closed = true; } // no volver a guardar la versión abierta encima
+      }
+      if (!S.closed) await Store.save(true);
+      S.assets = d.assets;
+      IO.load(d.project, null, null);
+      await Store.save(true);
+      toast(`Respaldo importado a la app: ${S.project.laminas.length} lámina(s)`, '', 3200);
+      if (d.failed) toast(`${d.failed} recurso(s) del archivo no se pudieron leer y se muestran como faltantes.`, 'warn', 6000);
+      return true;
+    } catch (err) {
+      console.error(err);
+      toast(err.message || 'No se pudo abrir el archivo.', 'error', 6000);
+      return false;
+    }
+  },
+  async importMany(zip, names) {
+    const pt = progressToast('Importando respaldos…');
+    let n = 0, skipped = 0;
+    try {
+      for (const name of names) {
+        pt.set(`Importando ${n + skipped + 1} de ${names.length}…`); await tick();
+        const f = new File([await zip.get(name)], name.split('/').pop(), { type: 'application/json' });
+        const d = await IO.parseFile(f);
+        const ex = d.project.id && await Store.get('projects', d.project.id);
+        if (ex && new Date(d.project.saved || 0).getTime() <= ex.modified) { skipped++; continue; }
+        await Library.storeParsed(d); n++;
+      }
+    } finally { pt.done(); }
+    toast(`${n} proyecto(s) importados${skipped ? ` · ${skipped} ya estaban al día en la app` : ''}`, '', 4000);
+    Home.show();
+    return true;
+  },
+  async closeProject() {
+    if (S.closed) { Home.show(); return; }
+    if (S.editingText) finishTextEdit();
+    await Store.save(true);
+    S.closed = true;
+    try { await Store.del('kv', 'lastOpen'); } catch { }
+    S.assets = new Map();
+    S.project = newProject(); S.curId = S.project.laminas[0].id; S.sel = [];
+    S.fileHandle = null; S.fileName = null; S.dirty = false;
+    Cfg.reset(); Pix.clear(true); histReset('—');
+    UI.all();
+    Home.show();
+  },
+});
+
+/* ---------- pantalla de inicio: Mis proyectos ---------- */
+Object.assign(Home, {
+  async render() {
+    const side = $('#homeCur');
+    side.innerHTML = S.closed ? '<div class="hint" style="padding:6px 2px">No hay ningún proyecto abierto.</div>' :
+      `<div class="home-cur"><div class="hint">Proyecto abierto</div><b>${esc(S.project.name)}</b><div class="hint">${S.project.laminas.length} lámina(s) · ${S.dirty ? 'guardando…' : 'guardado en la app'}</div>
+        <div class="btnrow fill" style="margin-top:8px"><button class="btn primary" data-h="continue" type="button">Continuar</button><button class="btn" data-h="close" type="button">Cerrar</button></div></div>`;
+    $('.home-close').hidden = S.closed;
+    const list = await Library.list(), legacy = (await Library.legacy()).filter(r => !list.some(p => p.id === r.id));
+    const last = +getPref('el-backup-at', '0');
+    let est = '';
+    try { const e = await navigator.storage?.estimate?.(); if (e && e.usage) est = ` Ocupan unos ${fmtBytes(e.usage)} en este navegador.`; } catch { }
+    $('#homeStore').innerHTML = `${list.length} proyecto(s) guardados en la app.${est} ${last ? 'Último respaldo externo: ' + new Date(last).toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: 'numeric' }) + '.' : '<span class="warn">Aún no descargas un respaldo externo.</span>'}`;
+    const q = this.q.toLowerCase();
+    const fmtD = ms => { const d = new Date(ms), now = new Date(); return d.toDateString() === now.toDateString() ? 'Hoy ' + d.toLocaleTimeString('es-MX', { hour: '2-digit', minute: '2-digit' }) : d.toLocaleDateString('es-MX', { day: 'numeric', month: 'short', year: d.getFullYear() === now.getFullYear() ? undefined : 'numeric' }); };
+    const card = (r, leg) => `<div class="rec ${!S.closed && r.id === S.project.id ? 'cur' : ''} ${leg ? 'legacy' : ''}" data-id="${r.id}" ${leg ? 'data-legacy="1"' : ''} tabindex="0">
+        <div class="rec-thumb">${r.thumb ? `<img src="${r.thumb}" alt="">` : '<span class="hint">Sin vista previa</span>'}</div>
+        <div class="rec-meta"><b title="${esc(r.name)}">${esc(r.name)}</b>
+          <span class="hint">${fmtD(r.modified)} · ${r.laminas} lámina(s)${r.done ? ` · ${r.done} terminada(s)` : ''}</span>
+          <span class="hint">${leg ? 'Copia de la versión anterior · clic para pasarla a la app' : !S.closed && r.id === S.project.id ? 'Abierto ahora' : 'Guardado en la app'}</span></div>
+        <button type="button" class="rec-x" data-more="${r.id}" title="Más opciones">⋯</button></div>`;
+    const shown = list.filter(r => !q || r.name.toLowerCase().includes(q)), shownL = legacy.filter(r => !q || r.name.toLowerCase().includes(q));
+    $('#homeRecents').innerHTML = (shown.length || shownL.length) ? shown.map(r => card(r)).join('') + shownL.map(r => card(r, true)).join('')
+      : `<div class="empty">${list.length ? 'Ningún proyecto coincide.' : 'Aún no hay proyectos en la app. Crea uno nuevo o importa un respaldo.'}</div>`;
+  },
+  init() {
+    const h = $('#home');
+    // textos de la pantalla de inicio
+    $('.home-rh h2', h).textContent = 'Mis proyectos';
+    const openBtn = $('[data-h=open]', h);
+    openBtn.dataset.h = 'import';
+    openBtn.innerHTML = '<b>Importar respaldo…</b><span>.laminas.json, .laminas.zip o un respaldo de todos · también puedes arrastrarlo aquí</span>';
+    openBtn.insertAdjacentHTML('afterend', '<button type="button" class="hbtn" data-h="backupAll"><b>Respaldar todos los proyectos</b><span>Descarga un .zip con un respaldo de cada proyecto</span></button>');
+    const note = $('.home-main > p.hint', h);
+    if (note) { note.id = 'homeStore'; }
+    h.addEventListener('click', async e => {
+      const b = e.target.closest('[data-h]');
+      if (b) {
+        const a = b.dataset.h;
+        if (a === 'new') return IO.newProject();
+        if (a === 'import') return IO.importDialog();
+        if (a === 'backupAll') return Library.backupAll();
+        if (a === 'continue') return this.hide();
+        if (a === 'close') return IO.closeProject().then(() => this.render());
+        if (a === 'preset') return IO.newProject({ sheet: b.dataset.s, orient: b.dataset.o, name: 'Proyecto sin nombre', count: 1 });
+      }
+      const more = e.target.closest('[data-more]');
+      if (more) { e.stopPropagation(); const r = more.getBoundingClientRect(); return this.recentMenu(more.closest('.rec'), r.left, r.bottom + 4); }
+      const c = e.target.closest('.rec');
+      if (c) return this.openCard(c);
+    });
+    h.addEventListener('keydown', e => { if (e.key === 'Enter' && e.target.classList.contains('rec')) e.target.click(); });
+    $('#homeQ').addEventListener('input', e => { this.q = e.target.value; this.render(); });
+    $('.home-close').onclick = () => this.hide();
+    $('#homePresets').innerHTML = this.presets.map(([n, s, o]) => `<button type="button" class="chip" data-h="preset" data-s="${s}" data-o="${o}">${n}</button>`).join('');
+  },
+  async openCard(c) {
+    if (c.dataset.legacy) {
+      const rec = (await Library.legacy()).find(r => r.id === c.dataset.id); if (!rec) return;
+      const ok = await IO.openFile(new File([rec.data], rec.name + '.laminas.json', { type: 'application/json' }), null, true, { replace: true });
+      if (ok) await Store.del('recents', rec.id).catch(() => { });
+      return;
+    }
+    return Library.open(c.dataset.id);
+  },
+  async recentMenu(card, x, y) {
+    const id = card.dataset.id;
+    if (card.dataset.legacy) return showCtx(x, y, [['Pasar a la app y abrir', () => this.openCard(card)], ['Quitar de la lista', async () => { await Store.del('recents', id); this.render(); }]]);
+    showCtx(x, y, [
+      ['Abrir', () => Library.open(id)],
+      ['Renombrar…', () => Library.rename(id)],
+      ['Duplicar', () => Library.duplicate(id)],
+      '-',
+      ['Descargar respaldo…', () => Library.backup(id)],
+      '-',
+      ['Eliminar…', () => Library.remove(id)],
+    ]);
+  },
+});
+
+/* ---------- comandos y menús ---------- */
+(() => {
+  const old = UI.cmd;
+  const extra = {
+    open: () => Home.show(), save: () => IO.save(), saveAs: () => IO.saveCopy(),
+    backupMenu: () => { const r = $('[data-cmd=backupMenu]').getBoundingClientRect(); UI.backupMenu(r.left, r.bottom + 4); },
+  };
+  UI.cmd = function (c) { return extra[c] ? extra[c]() : old.call(UI, c); };
+  UI.backupMenu = (x, y) => showCtx(x, y, [
+    ['Descargar respaldo de este proyecto…', () => IO.backupCurrent(), '', S.closed],
+    ['Importar respaldo…', () => IO.importDialog()],
+    '-',
+    ['Guardar una copia en la app…', () => IO.saveCopy(), 'Ctrl+Mayús+S', S.closed],
+    ['Respaldar todos los proyectos (.zip)', () => Library.backupAll()],
+  ]);
+  const oldApp = appMenuItems;
+  appMenuItems = function () {
+    const out = [];
+    for (const it of oldApp()) {
+      if (!Array.isArray(it)) { out.push(it); continue; }
+      if (it[0] === 'Inicio…') out.push(['Mis proyectos…', () => Home.show(), 'Ctrl+O']);
+      else if (it[0] === 'Abrir…') out.push(['Importar respaldo…', () => IO.importDialog()]);
+      else if (it[0] === 'Guardar') out.push(['Guardar en la app', () => IO.save(), 'Ctrl+S', S.closed], ['Guardar una copia en la app…', () => IO.saveCopy(), 'Ctrl+Mayús+S', S.closed]);
+      else if (it[0] === 'Guardar como…') out.push(['Descargar respaldo…', () => IO.backupCurrent(), '', S.closed]);
+      else out.push(it);
+    }
+    return out;
+  };
+  // pedir al navegador que no borre los datos de la app
+  try { navigator.storage?.persist?.(); } catch { }
+})();
+
 (async function main() {
   try { applyTheme(localStorage.getItem('el-theme') || 'auto'); } catch { }
   Pix.init(); R.init(); I.init(); UI.init(); Home.init(); Present.init();
@@ -5934,6 +6407,7 @@ async function buildPptx(items, o, prog) {
       S.fileName = saved.rec.fileName || null; S.dirty = !!saved.rec.dirty; S.fileHandle = saved.rec.handle || null;
       Store.lastAt = new Date(saved.rec.savedAt);
       histReset('Recuperar sesión');
+      if (Store._legacy) setTimeout(() => Store.save(true), 400);
       restored = true;
       const when = new Date(saved.rec.savedAt).toLocaleString('es-MX', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' });
       if (getPref('el-startup', 'home') === 'continue') setTimeout(() => toast(`Se recuperó tu último trabajo (${when})${S.dirty ? ' · tiene cambios sin guardar' : ''}`, '', 4200), 300);
@@ -5957,12 +6431,12 @@ async function buildPptx(items, o, prog) {
   const hm = $('#home');
   hm.addEventListener('dragover', e => { if (hasFiles(e)) e.preventDefault(); });
   hm.addEventListener('drop', e => { e.preventDefault(); const hp = [...(e.dataTransfer.items || [])].map(it => it.kind === 'file' && it.getAsFileSystemHandle ? it.getAsFileSystemHandle().catch(() => null) : Promise.resolve(null)); I.dropFiles([...e.dataTransfer.files], null, hp); });
-  if (!Store.db) toast('Este navegador no permite el respaldo automático. Guarda tu proyecto en un archivo con Ctrl+S.', 'warn', 6000);
+  if (!Store.db) toast('Este navegador no permite guardar dentro de la app (¿ventana privada?). Usa Respaldo → Descargar respaldo para no perder tu trabajo.', 'warn', 8000);
   window.addEventListener('beforeunload', e => {
-    if (Store.timer && S.dirty) { Store.save(); }
-    if (!Store.db && S.dirty) { e.preventDefault(); e.returnValue = ''; }
+    if (S.dirty && !S.closed) { Store.save(true); }
+    if ((!Store.db || Store.busy || Store.timer) && S.dirty && !S.closed) { e.preventDefault(); e.returnValue = ''; }
   });
-  window.__EL = { S, A, UI, IO, R, Pix, Colors, Versions, Notes, Favs, Cfg, Home, Present, Recents, Profiles }; // acceso para pruebas y depuración
+  window.__EL = { S, A, UI, IO, R, Pix, Colors, Versions, Notes, Favs, Cfg, Home, Present, Recents, Profiles, Store, Library }; // acceso para pruebas y depuración
 })();
 
 </script>
