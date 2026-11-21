@@ -1,0 +1,1043 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Organizador de Secciones</title>
+<style>
+:root{--ac:#4f8cff;--ac2:#22c3a6;--ac3:#f5a524;--dn:#ef5b5b;--ok:#2fbf71;--r:10px;font-family:"Segoe UI",system-ui,-apple-system,Roboto,sans-serif}
+[data-tema=oscuro]{--bg:#0e1117;--pn:#151a23;--pn2:#1c2330;--bd:#283141;--tx:#e7eaf0;--mt:#8f9bb0;--mut:#3a4558;--mut2:#2a3342;color-scheme:dark}
+[data-tema=claro]{--bg:#f3f5f9;--pn:#ffffff;--pn2:#f0f3f8;--bd:#dde3ec;--tx:#1b2230;--mt:#647086;--mut:#c4ccd8;--mut2:#e3e8f0;color-scheme:light}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--tx);font-size:14px;height:100vh;display:grid;grid-template-rows:56px 1fr;overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:var(--pn2);border:1px solid var(--bd);border-radius:8px;padding:6px 11px}
+button:hover{border-color:var(--ac)}
+button.pri{background:var(--ac);border-color:var(--ac);color:#fff}
+button.dn{color:var(--dn)}
+button.sm{padding:3px 8px;font-size:12px}
+input[type=text],input[type=search],select,textarea{background:var(--pn2);border:1px solid var(--bd);border-radius:8px;padding:7px 9px;width:100%}
+textarea{resize:vertical;min-height:70px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--ac);outline-offset:-1px}
+small,.mt{color:var(--mt)}
+/* Encabezado */
+header{display:flex;align-items:center;gap:10px;padding:0 14px;background:var(--pn);border-bottom:1px solid var(--bd)}
+.logo{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--ac),var(--ac2));display:grid;place-items:center;color:#fff;font-weight:800;font-size:13px}
+.ttl b{display:block;font-size:15px}.ttl small{font-size:11px}
+header .sp{flex:1}
+header select{width:auto;padding:5px 8px}
+.saved{font-size:12px;color:var(--ok)}
+.dd{position:relative}
+.dd .menu{position:absolute;right:0;top:110%;background:var(--pn);border:1px solid var(--bd);border-radius:10px;min-width:250px;padding:6px;display:none;z-index:50;box-shadow:0 10px 30px #0006}
+.dd.open .menu{display:block}
+.menu button{display:block;width:100%;text-align:left;border:0;background:none;padding:7px 9px}
+.menu button:hover{background:var(--pn2)}
+.menu hr{border:0;border-top:1px solid var(--bd);margin:5px 0}
+.menu .lb{font-size:11px;color:var(--mt);padding:4px 9px;text-transform:uppercase;letter-spacing:.05em}
+/* Layout */
+.wrap{display:grid;grid-template-columns:250px 1fr;overflow:hidden}
+nav{background:var(--pn);border-right:1px solid var(--bd);overflow:auto;padding:10px}
+nav .g{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--mt);margin:14px 8px 4px}
+nav a{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:8px;cursor:pointer;color:var(--tx);text-decoration:none}
+nav a:hover{background:var(--pn2)}
+nav a.on{background:color-mix(in srgb,var(--ac) 18%,transparent);color:var(--ac);font-weight:600}
+nav a .c{margin-left:auto;font-size:11px;background:var(--pn2);border-radius:20px;padding:1px 7px;color:var(--mt)}
+nav a.on .c{background:var(--ac);color:#fff}
+main{overflow:auto;padding:22px 26px 80px}
+h1{font-size:22px;margin:0 0 4px}
+h2{font-size:16px;margin:22px 0 8px}
+.info{background:var(--pn);border:1px solid var(--bd);border-left:3px solid var(--ac);border-radius:var(--r);padding:12px 14px;margin:12px 0;line-height:1.5}
+.info ul{margin:6px 0 0 0;padding-left:18px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+.card{background:var(--pn);border:1px solid var(--bd);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;transition:border-color .15s}
+.card.on{border-color:var(--ac);box-shadow:0 0 0 1px var(--ac)}
+.demo{height:130px;background:var(--pn2);border-bottom:1px solid var(--bd);padding:10px;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.demo.tall{height:auto;min-height:130px}
+.cb{padding:10px 12px;display:flex;flex-direction:column;gap:6px;flex:1}
+.cb p{margin:0;color:var(--mt);font-size:13px;line-height:1.4;flex:1}
+.chk{display:flex;gap:8px;align-items:center;cursor:pointer;font-weight:600}
+.chk input{width:17px;height:17px;accent-color:var(--ac)}
+.row{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.ptx textarea{min-height:90px;font-size:12.5px;font-family:Consolas,monospace}
+.ref{max-width:100%;max-height:120px;border-radius:6px;border:1px solid var(--bd);display:block}
+.tag{font-size:10px;padding:1px 6px;border-radius:20px;background:var(--ac3);color:#000;font-weight:700}
+.fld{display:grid;gap:4px;margin-bottom:12px}.fld label{font-size:12px;color:var(--mt);font-weight:600}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.panel{background:var(--pn);border:1px solid var(--bd);border-radius:var(--r);padding:16px}
+pre.rep{background:var(--pn);border:1px solid var(--bd);border-radius:var(--r);padding:16px;white-space:pre-wrap;font-family:Consolas,monospace;font-size:12.5px;line-height:1.5;max-height:65vh;overflow:auto}
+.plist{display:grid;gap:6px}
+.pit{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1px solid var(--bd);border-radius:8px;background:var(--pn2);cursor:pointer}
+.pit.on{border-color:var(--ac)}
+.pit span{flex:1}
+/* Demos SVG */
+.sv{width:100%;height:100%}
+.f1{fill:var(--ac)}.f2{fill:var(--ac2)}.f3{fill:var(--ac3)}.fm{fill:var(--mut)}.fd{fill:var(--dn)}.fp{fill:var(--pn)}
+.s1{stroke:var(--ac);fill:none;stroke-width:2}.s2{stroke:var(--ac2);fill:none;stroke-width:2}.sm{stroke:var(--mut);fill:none;stroke-width:1.2}.sd{stroke:var(--dn);fill:none;stroke-width:2}
+.sk{stroke:var(--mt);fill:none;stroke-width:1}
+.tx{font-size:6.5px;fill:var(--tx);font-family:system-ui}.txw{font-size:6px;fill:#fff;font-family:system-ui}
+/* Wireframes */
+.wf{display:grid;gap:3px;width:100%;height:100%}
+.wf i{background:var(--mut2);border-radius:3px;border:1px solid var(--mut)}
+.wf i.a{background:var(--ac);border-color:var(--ac)}
+.wf i.b{background:color-mix(in srgb,var(--ac) 35%,var(--mut2))}
+/* Mini UI */
+.mh{display:flex;align-items:center;gap:6px;background:var(--pn);border:1px solid var(--bd);border-radius:8px;padding:6px 8px;width:100%;font-size:11px;flex-wrap:wrap}
+.mh .sp{flex:1}
+.pill{font-size:10px;padding:2px 7px;border-radius:20px;background:var(--pn);border:1px solid var(--bd)}
+.pill.a{background:var(--ac);color:#fff;border-color:var(--ac)}
+.pill.ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.pill.w{background:var(--ac3);color:#000;border-color:var(--ac3)}
+.pill.d{background:var(--dn);color:#fff;border-color:var(--dn)}
+.kpi{background:var(--pn);border:1px solid var(--bd);border-radius:8px;padding:8px 10px;min-width:80px}
+.kpi small{display:block;font-size:10px}.kpi b{font-size:17px}.kpi em{font-style:normal;font-size:10px;color:var(--ok);display:block}
+.mini{display:flex;flex-direction:column;gap:6px;width:100%;font-size:11px}
+.mini input,.mini select{padding:4px 6px;font-size:11px}
+.tgl{appearance:none;width:34px;height:19px;border-radius:20px;background:var(--mut);position:relative;cursor:pointer;vertical-align:middle;transition:.2s}
+.tgl::after{content:"";position:absolute;top:2px;left:2px;width:15px;height:15px;border-radius:50%;background:#fff;transition:.2s}
+.tgl:checked{background:var(--ac)}.tgl:checked::after{left:17px}
+.seg{display:inline-flex;border:1px solid var(--bd);border-radius:8px;overflow:hidden}
+.seg button{border:0;border-radius:0;padding:4px 9px;font-size:11px;background:var(--pn)}
+.seg button.on{background:var(--ac);color:#fff}
+.chips{display:flex;gap:4px;flex-wrap:wrap}
+.chips span{font-size:11px;padding:3px 8px;border-radius:20px;border:1px solid var(--bd);cursor:pointer;background:var(--pn)}
+.chips span.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.stars span{font-size:20px;cursor:pointer;color:var(--mut)}.stars span.on{color:var(--ac3)}
+.swt{display:flex;gap:5px;flex-wrap:wrap}
+.swt i{width:22px;height:22px;border-radius:6px;cursor:pointer;border:2px solid transparent}
+.swt i.on{border-color:var(--tx)}
+/* Drawer notas */
+#notas{position:fixed;top:56px;right:0;bottom:0;width:380px;background:var(--pn);border-left:1px solid var(--bd);transform:translateX(105%);transition:.25s;z-index:40;display:flex;flex-direction:column;box-shadow:-10px 0 30px #0005}
+#notas.open{transform:none}
+#notas .hd{padding:12px 14px;border-bottom:1px solid var(--bd);display:flex;align-items:center;gap:8px}
+#notas .bd{padding:12px 14px;overflow:auto;flex:1;display:flex;flex-direction:column;gap:10px}
+.nota{border:1px solid var(--bd);border-radius:9px;padding:9px 10px;background:var(--pn2)}
+.nota.hecha{opacity:.55}.nota.hecha .t{text-decoration:line-through}
+.nota .t{white-space:pre-wrap;margin:4px 0 6px}
+.fab{position:fixed;right:20px;bottom:20px;width:52px;height:52px;border-radius:50%;background:var(--ac);color:#fff;border:0;font-size:22px;box-shadow:0 6px 20px #0006;z-index:30}
+.fab b{position:absolute;top:-4px;right:-4px;background:var(--dn);font-size:11px;border-radius:20px;padding:1px 6px}
+/* Modal y toast */
+.ov{position:fixed;inset:0;background:#0008;display:grid;place-items:center;z-index:100}
+.mo{background:var(--pn);border:1px solid var(--bd);border-radius:14px;padding:18px;width:min(560px,92vw);max-height:88vh;overflow:auto}
+.mo h3{margin:0 0 12px}
+.mo .act{display:flex;gap:8px;justify-content:flex-end;margin-top:14px}
+#toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);display:flex;flex-direction:column;gap:6px;z-index:200}
+#toast div{background:var(--tx);color:var(--bg);padding:9px 16px;border-radius:9px;font-size:13px;box-shadow:0 6px 20px #0005}
+.drop{position:fixed;inset:0;background:color-mix(in srgb,var(--ac) 25%,transparent);border:3px dashed var(--ac);display:none;place-items:center;font-size:22px;font-weight:700;z-index:150}
+.sug{display:flex;gap:10px;padding:10px 12px;border:1px solid var(--bd);border-radius:9px;background:var(--pn);margin-bottom:8px}
+.sug input{width:17px;height:17px;accent-color:var(--ac);margin-top:2px}
+.sug b{display:block}
+kbd{background:var(--pn2);border:1px solid var(--bd);border-bottom-width:2px;border-radius:4px;padding:0 5px;font-size:11px}
+@media(max-width:820px){.wrap{grid-template-columns:1fr}nav{display:none}.two{grid-template-columns:1fr}#notas{width:100%}}
+@media print{header,nav,.fab,#notas,.noprint{display:none!important}body{display:block;overflow:visible;background:#fff;color:#000}.wrap{display:block}main{overflow:visible;padding:0}pre.rep{max-height:none;border:0;color:#000;background:#fff}}
+</style>
+</head>
+<body data-tema="oscuro">
+<svg width="0" height="0" style="position:absolute"><defs>
+<marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="var(--mt)"/></marker>
+<marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0,0L10,5L0,10z" fill="var(--dn)"/></marker>
+</defs></svg>
+
+<header>
+  <div class="logo">OS</div>
+  <div class="ttl"><b>Organizador de Secciones</b><small>v1.1 · Estándar de apps</small></div>
+  <select id="selPerfil" title="Proyecto (app) activo"></select>
+  <select id="selTipo" title="Tipo de aplicación"></select>
+  <span class="sp"></span>
+  <span class="saved" id="saved">● Guardado</span>
+  <button id="btnRep" class="pri" title="Ver reporte (Ctrl+R)">📄 Reporte</button>
+  <div class="dd" id="ddExp"><button>⬇ Exportar ▾</button>
+    <div class="menu">
+      <div class="lb">Reporte para la IA</div>
+      <button data-x="repmd">Reporte (.md)</button>
+      <button data-x="rephtml">Reporte (.html, con tus imágenes subidas)</button>
+      <button data-x="repcopy">Copiar reporte</button>
+      <button data-x="print">Imprimir / PDF</button>
+      <hr><div class="lb">Referencias visuales (imágenes)</div>
+      <button data-x="vispack">Reporte + imágenes de referencia (.zip)</button>
+      <button data-x="vishtml">Reporte visual (.html con imágenes)</button>
+      <button data-x="laminas">Solo láminas de lo elegido (.zip)</button>
+      <hr><div class="lb">Datos del organizador</div>
+      <button data-x="full">Respaldo completo (.json) <kbd>Ctrl+S</kbd></button>
+      <button data-x="perfil">Solo este proyecto (.json)</button>
+      <button data-x="dicc">Solo diccionario: entradas, prompts, imágenes (.json)</button>
+      <hr><div class="lb">Otros</div>
+      <button data-x="manual">Manual completo del diccionario (.md)</button>
+      <button data-x="notas">Notas como prompt de corrección (.md)</button>
+    </div></div>
+  <div class="dd" id="ddImp"><button>⬆ Importar ▾</button>
+    <div class="menu">
+      <button data-i="json">Importar .json (respaldo, proyecto o diccionario)</button>
+      <button data-i="paste">Pegar JSON desde portapapeles</button>
+      <hr><div class="lb">También puedes arrastrar un .json a la ventana</div>
+    </div></div>
+  <button id="btnTema" title="Cambiar tema">🌓</button>
+</header>
+
+<div class="wrap">
+  <nav id="nav"></nav>
+  <main id="main"></main>
+</div>
+
+<button class="fab" id="fab" title="Notas (Alt+N)">📝<b id="fabN">0</b></button>
+<aside id="notas">
+  <div class="hd"><b style="flex:1">📝 Notas de corrección</b><button class="sm" id="nExp">Exportar</button><button class="sm" id="nClose">✕</button></div>
+  <div class="bd">
+    <div class="panel" style="padding:10px">
+      <textarea id="nTxt" placeholder="Escribe qué hay que corregir o agregar…"></textarea>
+      <div class="row" style="margin-top:6px">
+        <select id="nSec" style="flex:1"></select>
+        <select id="nPrio" style="width:100px"><option value="alta">Alta</option><option value="media" selected>Media</option><option value="baja">Baja</option></select>
+        <button class="pri" id="nAdd">Agregar</button>
+      </div>
+    </div>
+    <div class="seg" id="nFil"><button data-f="pend" class="on">Pendientes</button><button data-f="hecha">Corregidas</button><button data-f="todas">Todas</button></div>
+    <div id="nList"></div>
+  </div>
+</aside>
+<div id="toast"></div>
+<div class="drop" id="drop">Suelta el .json para importarlo</div>
+<input type="file" id="fileImg" accept="image/*" hidden>
+<input type="file" id="fileJson" accept=".json,application/json" hidden>
+
+<script>
+'use strict';
+/* =========================================================
+   Utilidades
+   ========================================================= */
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9);
+const hoy=()=>new Date().toLocaleString('es-MX',{dateStyle:'medium',timeStyle:'short'});
+const fstamp=()=>{const d=new Date(),p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}_${p(d.getHours())}${p(d.getMinutes())}`};
+const slug=s=>String(s||'app').normalize('NFD').replace(/[̀-ͯ]/g,'').replace(/[^\w]+/g,'_').replace(/^_|_$/g,'')||'app';
+function toast(m){const d=document.createElement('div');d.textContent=m;$('#toast').append(d);setTimeout(()=>d.remove(),2600)}
+function descargar(nombre,contenido,tipo='text/plain'){const b=new Blob([contenido],{type:tipo+';charset=utf-8'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=nombre;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500)}
+function modal(titulo,html,botones){
+  const ov=document.createElement('div');ov.className='ov';
+  ov.innerHTML=`<div class="mo"><h3>${titulo}</h3><div class="mb">${html}</div><div class="act"></div></div>`;
+  const act=ov.querySelector('.act');
+  botones.forEach(b=>{const x=document.createElement('button');x.textContent=b.t;if(b.c)x.className=b.c;x.onclick=()=>{if(b.fn&&b.fn(ov)===false)return;ov.remove()};act.append(x)});
+  ov.addEventListener('mousedown',e=>{if(e.target===ov)ov.remove()});
+  document.body.append(ov);const f=ov.querySelector('input,textarea');if(f)f.focus();return ov;
+}
+
+/* =========================================================
+   Helpers de demos (SVG / wireframes)
+   ========================================================= */
+const V=(inner,vb='0 0 120 70')=>`<svg viewBox="${vb}" class="sv" preserveAspectRatio="xMidYMid meet">${inner}</svg>`;
+const WF=(tpl,cells)=>`<div class="wf" style="grid-template:${tpl}">${cells.map(c=>`<i ${c[1]?`class="${c[1]}"`:''} style="grid-area:${c[0]}"></i>`).join('')}</div>`;
+const pr=(i)=>{let x=Math.sin(i*99.13)*10000;return x-Math.floor(x)}; // pseudoaleatorio fijo
+const axis='<path class="sk" d="M6 62H116M6 62V6"/>';
+const line=(x1,y1,x2,y2,c='sk',m=true)=>`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" class="${c}" ${m?'marker-end="url(#ar)"':''}/>`;
+const box=(x,y,w,h,t,c='f1',tc='txw')=>`<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="3" class="${c}"/><text x="${x+w/2}" y="${y+h/2+2}" text-anchor="middle" class="${tc}">${t}</text>`;
+
+/* =========================================================
+   DICCIONARIO DE SECCIONES
+   Cada sección: id, grupo, icono, titulo, desc, info (investigación / buenas prácticas),
+   single (elección única), opts [{id,n,d,p (prompt para la IA),demo,def (preseleccionado)}]
+   ========================================================= */
+const SEC=[
+/* ---------------- ESTRUCTURA ---------------- */
+{id:'tipo',grupo:'Estructura',icono:'🧩',titulo:'Tipo de aplicación',single:true,
+ desc:'Define la plataforma. Cambia las reglas técnicas que se le piden a la IA.',
+ info:`<b>Cómo decidir:</b><ul><li><b>HTML local</b>: un solo archivo, abre con doble clic, cero servidor; el dato vive en el navegador y se respalda con exportar JSON.</li><li><b>Extensión</b> (Chrome/Edge, Manifest V3): cuando necesitas actuar sobre otras páginas, alarmas en segundo plano o un botón en la barra.</li><li><b>PWA</b>: el mismo HTML pero instalable y offline; requiere servirse por https (GitHub Pages).</li><li><b>HTML + Supabase</b>: cuando el dato debe sincronizarse entre equipos o personas.</li></ul>`,
+ opts:[
+  {id:'html',n:'HTML local (un archivo)',def:true,d:'Todo en un .html: estructura, estilos y script. Funciona sin internet.',
+   p:'Entrega UNA sola aplicación en un único archivo .html autocontenido (HTML+CSS+JS en el mismo archivo), que funcione abriéndolo con doble clic, sin servidor ni instalación. Si usas librerías, que sean por CDN con alternativa de funcionamiento básico sin internet. Persistencia en el navegador y respaldo por exportar/importar JSON.',
+   demo:V(`<rect x="38" y="6" width="44" height="58" rx="4" class="fm"/><path d="M70 6v12h12" class="sk"/><text x="60" y="40" text-anchor="middle" class="tx" style="font-size:10px;font-weight:700">.html</text><text x="60" y="52" text-anchor="middle" class="tx">1 archivo</text>`)},
+  {id:'ext',n:'Extensión Chrome / Edge',d:'Manifest V3: popup, página de opciones, service worker, chrome.storage.',
+   p:'Es una extensión de navegador para Chrome y Edge con Manifest V3. Entrega la carpeta completa: manifest.json, popup.html/js, options.html/js, background service worker e íconos (16/32/48/128). Pide los permisos mínimos y explica cada uno. Guarda datos en chrome.storage.local, incluye exportar/importar JSON en la página de opciones e instrucciones para cargarla "sin empaquetar".',
+   demo:V(`<rect x="10" y="10" width="100" height="14" rx="3" class="fm"/><circle cx="98" cy="17" r="5" class="f1"/><rect x="62" y="27" width="46" height="36" rx="3" class="fp" stroke="var(--ac)"/><rect x="66" y="32" width="38" height="5" rx="2" class="f1"/><rect x="66" y="41" width="30" height="4" rx="2" class="fm"/><rect x="66" y="49" width="34" height="4" rx="2" class="fm"/><path d="M98 22v5" class="s1"/>`)},
+  {id:'pwa',n:'PWA instalable',d:'HTML con manifest y service worker: se instala como app y trabaja offline.',
+   p:'Hazla PWA: index.html + manifest.webmanifest + service-worker.js con caché offline, íconos y botón "Instalar". Debe funcionar sin conexión después de la primera carga y poder publicarse en GitHub Pages.',
+   demo:V(`<rect x="44" y="6" width="32" height="58" rx="5" class="fm"/><rect x="48" y="12" width="24" height="40" rx="2" class="fp"/><rect x="52" y="17" width="7" height="7" rx="2" class="f1"/><rect x="61" y="17" width="7" height="7" rx="2" class="f2"/><rect x="52" y="26" width="7" height="7" rx="2" class="f3"/><circle cx="60" cy="58" r="2.5" class="fp"/>`)},
+  {id:'supa',n:'HTML + Supabase',d:'Igual que HTML local pero sincroniza datos en la nube (auth + tablas).',
+   p:'HTML que sincroniza con Supabase: inicio de sesión, tablas con Row Level Security, modo offline con cola de cambios y sincronización al reconectar. Las llaves van en Configuración (nunca escritas en el código). Incluye el SQL para crear las tablas y políticas.',
+   demo:V(`<rect x="12" y="22" width="34" height="26" rx="4" class="fm"/><text x="29" y="37" text-anchor="middle" class="tx">HTML</text>${line(48,30,72,30,'s1')}${line(72,42,48,42,'s2')}<ellipse cx="92" cy="22" rx="16" ry="5" class="f2"/><path d="M76 22v26c0 3 7 5 16 5s16-2 16-5V22" class="f2" opacity=".8"/>`)}
+ ]},
+{id:'interfaz',grupo:'Estructura',icono:'🗂',titulo:'Interfaz / menú estándar',single:true,
+ desc:'La distribución general de la pantalla. Para apps de diseño, el lienzo central con paneles es el estándar.',
+ info:`<b>Patrones probados:</b><ul><li>Barra lateral: muchas secciones (5+), navegación siempre visible.</li><li>Pestañas: 2–6 vistas del mismo dato.</li><li>Lienzo + paneles (tipo AutoCAD/Figma/Photoshop): herramientas a la izquierda, propiedades y capas a la derecha, barra de estado abajo.</li><li>Cinta tipo Office: muchas herramientas agrupadas.</li><li>Asistente: procesos lineales (cotizar, declarar).</li></ul>`,
+ opts:[
+  {id:'sidebar',n:'Barra lateral + contenido',def:true,d:'Menú vertical a la izquierda agrupado por categorías y área principal.',
+   p:'Distribución: encabezado fijo arriba, barra lateral izquierda (colapsable, agrupada por categorías con contador) y área de contenido con scroll propio. En móvil la barra lateral se vuelve menú hamburguesa.',
+   demo:WF("'h h' 12px 's m' 1fr / 30px 1fr",[['h','a'],['s','b'],['m']])},
+  {id:'tabs',n:'Pestañas superiores',d:'Vistas principales como pestañas bajo el encabezado.',
+   p:'Distribución: encabezado + fila de pestañas (vistas principales) + contenido. La pestaña activa se recuerda al recargar.',
+   demo:WF("'h h h h' 12px 't1 t2 t3 .' 8px 'm m m m' 1fr / 1fr 1fr 1fr 2fr",[['h','a'],['t1','a'],['t2','b'],['t3','b'],['m']])},
+  {id:'canvas',n:'Diseño: lienzo + herramientas + propiedades',d:'Para apps de diseño: barra de herramientas, lienzo, propiedades/capas y barra de estado.',
+   p:'Interfaz de app de diseño: barra de menús arriba (Archivo, Editar, Ver, Insertar, Ayuda), barra de herramientas vertical a la izquierda, lienzo central con zoom/paneo (rueda y barra espaciadora), panel derecho con Propiedades y Capas en pestañas, y barra de estado abajo (coordenadas, zoom, unidades). Atajos de teclado tipo AutoCAD/Photoshop.',
+   demo:WF("'h h h' 9px 'tb c p' 1fr 'st st st' 7px / 12px 1fr 34px",[['h','a'],['tb','b'],['c'],['p','b'],['st','b']])},
+  {id:'ribbon',n:'Cinta tipo Office',d:'Pestañas con grupos de botones grandes (Inicio, Insertar, Vista…).',
+   p:'Interfaz con cinta tipo Office: pestañas (Inicio, Insertar, Datos, Vista) y bajo cada una grupos de botones con ícono y texto. La cinta puede minimizarse.',
+   demo:WF("'h h h h' 8px 'r1 r2 r3 r4' 18px 'm m m m' 1fr / 1fr 1fr 1fr 1fr",[['h','a'],['r1','b'],['r2','b'],['r3','b'],['r4','b'],['m']])},
+  {id:'grid',n:'Dashboard en cuadrícula',d:'La pantalla principal es un tablero de tarjetas/widgets.',
+   p:'La vista principal es un tablero en cuadrícula de tarjetas (KPIs arriba, gráficos y tablas abajo) que se reacomoda según el ancho de la pantalla.',
+   demo:WF("'h h h' 9px 'a b c' 16px 'd d e' 1fr / 1fr 1fr 1fr",[['h','a'],['a','b'],['b','b'],['c','b'],['d'],['e']])},
+  {id:'wizard',n:'Asistente por pasos',d:'Flujo guiado paso 1 → 2 → 3 con barra de progreso.',
+   p:'Interfaz de asistente: indicador de pasos arriba, un paso por pantalla, botones Anterior/Siguiente, validación por paso y resumen final antes de confirmar. Se puede volver a cualquier paso ya completado.',
+   demo:V(`${[0,1,2,3].map(i=>`<circle cx="${20+i*27}" cy="14" r="6" class="${i<2?'f1':'fm'}"/><text x="${20+i*27}" y="16.5" text-anchor="middle" class="txw">${i+1}</text>`).join('')}<path d="M26 14h15M53 14h15M80 14h15" class="sm"/><rect x="14" y="26" width="92" height="28" rx="3" class="fm" opacity=".5"/><rect x="62" y="58" width="22" height="8" rx="2" class="fm"/><rect x="86" y="58" width="22" height="8" rx="2" class="f1"/>`)}
+ ]},
+{id:'encabezado',grupo:'Estructura',icono:'🔝',titulo:'Encabezado general',
+ desc:'Lo que va en la barra superior de casi todas tus apps. Arriba ves la vista previa combinada.',
+ info:`<b>Orden recomendado (izquierda → derecha):</b> identidad (logo, nombre, versión) · contexto (proyecto/archivo activo) · espacio · acciones de estado (guardado) · acciones globales (exportar, importar) · utilidades (tema, notas, ayuda). Altura 48–56 px, fijo arriba.`,
+ preview:true,
+ opts:[
+  {id:'logo',n:'Logo + nombre + versión',def:true,d:'Identidad de la app a la izquierda.',p:'A la izquierda: logo (cuadro con iniciales y degradado del color de acento), nombre de la app y versión pequeña debajo.',hd:'<b>◆ MiApp</b><small>v1.0</small>',demo:'<div class="mh"><b>◆ MiApp</b><small>v1.0</small></div>'},
+  {id:'proyecto',n:'Selector de proyecto/archivo',def:true,d:'Cambiar entre varios proyectos dentro de la app.',p:'Selector del proyecto/archivo activo junto al nombre; permite crear, renombrar, duplicar y borrar proyectos.',hd:'<select style="width:auto;padding:2px"><option>Proyecto A</option></select>',demo:'<div class="mh"><select style="width:auto;padding:2px;font-size:11px"><option>Proyecto A</option><option>Proyecto B</option></select></div>'},
+  {id:'buscar',n:'Búsqueda global',d:'Buscar en todo (Ctrl+K).',p:'Cuadro de búsqueda global en el encabezado que busca en todas las secciones; atajo Ctrl+K.',hd:'<input type="search" placeholder="Buscar… Ctrl+K" style="width:110px;padding:2px 5px;font-size:10px">',demo:'<div class="mh"><input type="search" placeholder="Buscar… Ctrl+K" style="padding:3px 6px;font-size:11px"></div>'},
+  {id:'guardado',n:'Indicador de guardado',def:true,d:'"● Guardado" / "Guardando…" para confianza.',p:'Indicador de estado de guardado ("● Guardado", "Guardando…", "Error al guardar") con la hora del último guardado al pasar el ratón.',hd:'<span class="pill ok">● Guardado</span>',demo:'<div class="mh"><span class="pill ok">● Guardado</span><span class="pill w">Guardando…</span></div>'},
+  {id:'expimp',n:'Menús Exportar / Importar',def:true,d:'Dos menús desplegables siempre visibles.',p:'Botones desplegables "Exportar" e "Importar" en el encabezado con todas las opciones definidas en las secciones de exportación e importación.',hd:'<span class="pill">⬇ Exportar ▾</span><span class="pill">⬆ Importar ▾</span>',demo:'<div class="mh"><span class="pill">⬇ Exportar ▾</span><span class="pill">⬆ Importar ▾</span></div>'},
+  {id:'tema',n:'Botón de tema claro/oscuro',def:true,d:'Alterna tema y lo recuerda.',p:'Botón 🌓 para alternar tema claro/oscuro; se recuerda la elección.',hd:'<span class="pill">🌓</span>',demo:'<div class="mh"><span class="pill">🌓</span> <small>alterna tema</small></div>'},
+  {id:'notas',n:'Botón de notas con contador',def:true,d:'Acceso a las notas de corrección con número de pendientes.',p:'Botón 📝 con contador de notas pendientes que abre el panel de notas.',hd:'<span class="pill">📝 3</span>',demo:'<div class="mh"><span class="pill">📝 3</span></div>'},
+  {id:'ayuda',n:'Ayuda y atajos',d:'Botón "?" que muestra atajos y guía rápida.',p:'Botón "?" que abre una ventana con atajos de teclado y una guía rápida de uso.',hd:'<span class="pill">?</span>',demo:'<div class="mh"><span class="pill">?</span> <kbd>Ctrl</kbd>+<kbd>K</kbd></div>'},
+  {id:'migas',n:'Ruta (breadcrumb)',d:'Muestra dónde estás: Inicio › Proyecto › Sección.',p:'Ruta de navegación (Inicio › Proyecto › Sección) bajo el encabezado, cada parte clicable.',hd:'<small>Inicio › Proy › Sec</small>',demo:'<div class="mh"><small>Inicio › Proyecto A › Gastos</small></div>'}
+ ]},
+{id:'inicio',grupo:'Estructura',icono:'🚀',titulo:'Prompts de interfaz inicial',
+ desc:'Prompts genéricos que explican qué ve el usuario al abrir la app por primera vez y cada vez.',
+ info:`La primera pantalla decide si la app se entiende sola. Buenas prácticas: nunca dejar una pantalla vacía sin explicación; ofrecer datos de ejemplo borrables; abrir donde te quedaste.`,
+ opts:[
+  {id:'resumen',n:'Inicio con resumen',def:true,d:'Al abrir, una vista general con lo más importante.',p:'Al abrir, la primera vista es un resumen: totales clave, últimos registros y accesos rápidos a las acciones más usadas.',demo:'<div class="mini"><div class="row"><div class="kpi"><small>Total</small><b>24</b></div><div class="kpi"><small>Pend.</small><b>5</b></div></div><small>Últimos: · Item 1 · Item 2</small></div>'},
+  {id:'vacio',n:'Estado vacío con guía',def:true,d:'Si no hay datos: mensaje y botón para empezar o importar.',p:'Cuando una sección no tiene datos, mostrar un estado vacío con ícono, explicación breve y botones "Crear el primero" e "Importar".',demo:'<div style="text-align:center;font-size:11px"><div style="font-size:24px">📭</div>Aún no hay registros<br><span class="pill a">+ Crear</span> <span class="pill">Importar</span></div>'},
+  {id:'ejemplo',n:'Datos de ejemplo',d:'Se cargan datos de muestra marcados, con botón para borrarlos.',p:'La primera vez carga datos de ejemplo marcados como "ejemplo", con un aviso y un botón "Borrar datos de ejemplo".',demo:'<div class="mini"><span class="pill w">Datos de ejemplo</span><small>Item demo · Item demo</small><span class="pill d">Borrar ejemplo</span></div>'},
+  {id:'onboard',n:'Recorrido de bienvenida',d:'3–4 globos explicando las zonas de la pantalla.',p:'La primera vez muestra un recorrido de bienvenida de 3–4 pasos señalando encabezado, menú, contenido y notas; se puede saltar y repetir desde Ayuda.',demo:V(`<rect x="6" y="6" width="108" height="58" rx="4" class="fm" opacity=".4"/><rect x="10" y="10" width="40" height="10" rx="3" class="f1"/><path d="M30 22l4 6h-8z" class="f3"/><rect x="16" y="28" width="60" height="18" rx="3" class="f3"/><text x="46" y="39" text-anchor="middle" class="tx" style="fill:#000">Paso 1 de 4</text>`)},
+  {id:'ultimo',n:'Abrir donde te quedaste',def:true,d:'Recuerda la última vista, proyecto y filtros.',p:'Recordar la última vista, proyecto y filtros usados, y abrir ahí al recargar.',demo:'<div class="mini"><small>↺ Reanudando…</small><div class="mh"><b>Proyecto B</b><span class="sp"></span><small>Gastos · Octubre</small></div></div>'}
+ ]},
+{id:'estilo',grupo:'Estructura',icono:'🎨',titulo:'Estilo visual base',single:true,
+ desc:'La base visual. El tema principal del proyecto puede ajustar colores, pero la estructura se mantiene.',
+ info:`Un sistema visual se define con: paleta (fondo, panel, borde, texto, texto secundario, acento, éxito, alerta, error), tipografía, radio de esquinas, espaciado y densidad. Todo en variables CSS para que el cambio de tema sea instantáneo.`,
+ opts:[
+  {id:'tecnico',n:'Oscuro técnico',def:true,d:'Fondo oscuro, acento azul, tipo panel de control.',p:'Estilo base oscuro técnico: fondo #0e1117, paneles #151a23, bordes sutiles, acento azul #4f8cff, verde para éxito, ámbar para avisos, rojo para errores. Esquinas 10px. Todo con variables CSS y versión clara equivalente.',demo:'<div class="swt">'+['#0e1117','#151a23','#283141','#4f8cff','#22c3a6','#f5a524'].map(c=>`<i style="background:${c}"></i>`).join('')+'</div>'},
+  {id:'claro',n:'Claro minimal',d:'Blanco, gris suave y un solo acento.',p:'Estilo base claro minimalista: fondo #f6f7f9, paneles blancos, bordes #e3e7ee, un solo color de acento, mucho espacio en blanco. Versión oscura equivalente con variables CSS.',demo:'<div class="swt">'+['#f6f7f9','#ffffff','#e3e7ee','#1b2230','#2563eb','#94a3b8'].map(c=>`<i style="background:${c};border-color:#ccc"></i>`).join('')+'</div>'},
+  {id:'arqui',n:'Arquitectónico',d:'Tonos neutros, grises cálidos, tipografía limpia, líneas finas.',p:'Estilo arquitectónico: neutros cálidos (blanco hueso, gris cemento, negro carbón), acento terracota, líneas finas de 1px, tipografía sin serifa limpia, aspecto de lámina técnica.',demo:'<div class="swt">'+['#f4f1ec','#d9d4cc','#8c8680','#2b2b2b','#c1663f','#5b7c6b'].map(c=>`<i style="background:${c}"></i>`).join('')+'</div>'},
+  {id:'corp',n:'Corporativo (Grupo / empresa)',d:'Colores de la marca de la empresa, sobrio.',p:'Estilo corporativo sobrio con los colores institucionales indicados en el tema principal; encabezado con color de marca, tablas limpias, apto para presentar a jefes.',demo:'<div class="swt">'+['#0b2545','#13315c','#8da9c4','#eef4ed','#e63946','#ffffff'].map(c=>`<i style="background:${c};border-color:#ccc"></i>`).join('')+'</div>'},
+  {id:'vivo',n:'Colorido / juego',d:'Colores saturados y esquinas muy redondeadas.',p:'Estilo colorido y amigable: colores saturados por categoría, esquinas de 16px, íconos grandes, microanimaciones suaves.',demo:'<div class="swt">'+['#ff595e','#ffca3a','#8ac926','#1982c4','#6a4c93','#ff924c'].map(c=>`<i style="background:${c}"></i>`).join('')+'</div>'}
+ ]},
+/* ---------------- CONTENIDO ---------------- */
+{id:'config',grupo:'Contenido',icono:'⚙️',titulo:'Configuraciones',
+ desc:'Qué lleva la pantalla de Configuración de la app (nombre, prompt, preferencias).',
+ info:`La configuración debe estar en un solo lugar (ícono ⚙), separada por grupos, guardarse sola y poder exportarse. Regla: todo lo que hoy está "fijo en el código" y podría cambiar (catálogos, categorías, moneda) va aquí.`,
+ opts:[
+  {id:'nombre',n:'Nombre de la app editable',def:true,d:'El usuario puede renombrar la app/proyecto.',p:'En Configuración: campo para cambiar el nombre visible de la app y del proyecto (se refleja en encabezado y nombres de archivos exportados).',demo:'<div class="mini"><small>Nombre de la app</small><input type="text" value="Mi App"></div>'},
+  {id:'prompt',n:'Prompt / descripción guardada',def:true,d:'Un campo con la descripción o prompt original de la app, para reutilizarlo.',p:'En Configuración: campo de texto largo "Descripción / prompt de la app" donde se guarda para qué sirve y cómo se pidió; se incluye en las exportaciones.',demo:'<div class="mini"><small>Prompt de la app</small><textarea style="min-height:50px;font-size:11px">App para registrar…</textarea></div>'},
+  {id:'apariencia',n:'Tema y color de acento',def:true,d:'Claro/oscuro/sistema + color de acento.',p:'En Configuración: tema (Claro / Oscuro / Sistema) y selector de color de acento con paleta sugerida.',demo:'<div class="mini"><div class="seg"><button>Claro</button><button class="on">Oscuro</button><button>Sistema</button></div><div class="swt"><i style="background:#4f8cff" class="on"></i><i style="background:#22c3a6"></i><i style="background:#f5a524"></i><i style="background:#ef5b5b"></i></div></div>'},
+  {id:'regional',n:'Formatos regionales',def:true,d:'Idioma, moneda MXN, fecha dd/mm/aaaa, separadores.',p:'Formatos regionales configurables con valores por defecto de México: idioma español, moneda MXN ($1,234.56), fecha dd/mm/aaaa, hora 24 h, semana inicia en lunes.',demo:'<div class="mini"><select><option>Español (México)</option></select><select><option>MXN $1,234.56</option></select><select><option>dd/mm/aaaa</option></select></div>'},
+  {id:'unidades',n:'Unidades',d:'Métrico/imperial, m², kg… (útil en arquitectura).',p:'Selector de unidades (metros, cm, mm, m², kg) con conversión automática en toda la app.',demo:'<div class="mini"><div class="seg"><button class="on">m</button><button>cm</button><button>mm</button><button>ft</button></div></div>'},
+  {id:'catalogos',n:'Catálogos editables',def:true,d:'Listas (categorías, estados, tipos) editables por el usuario.',p:'Catálogos editables en Configuración (categorías, estados, tipos, responsables): agregar, renombrar, reordenar, color por elemento; los desplegables de la app los usan.',demo:'<div class="chips"><span class="on">Material</span><span>Mano de obra</span><span>Equipo</span><span>+ Agregar</span></div>'},
+  {id:'autosave',n:'Autoguardado y respaldo',def:true,d:'Guarda solo y genera respaldos automáticos.',p:'Autoguardado en cada cambio y recordatorio de respaldo (exportar JSON) cada N días, configurable.',demo:'<div class="mini"><label><input type="checkbox" class="tgl" checked> Autoguardado</label><small>Recordar respaldo cada <b>7</b> días</small></div>'},
+  {id:'densidad',n:'Densidad y tamaño de letra',d:'Compacto / normal / amplio.',p:'Ajuste de densidad (Compacto / Normal / Amplio) y tamaño de letra.',demo:'<div class="seg"><button>Compacto</button><button class="on">Normal</button><button>Amplio</button></div>'},
+  {id:'reset',n:'Restablecer / borrar datos',def:true,d:'Zona de peligro con doble confirmación.',p:'"Zona de peligro" al final: Restablecer configuración y Borrar todos los datos, con confirmación escribiendo una palabra y respaldo automático previo.',demo:'<div class="mini" style="border:1px solid var(--dn);border-radius:8px;padding:6px"><small style="color:var(--dn)">Zona de peligro</small><span class="pill d">Borrar todos los datos</span></div>'}
+ ]},
+{id:'dashboard',grupo:'Contenido',icono:'📊',titulo:'Dashboards',
+ desc:'Bloques que componen un tablero.',
+ info:`Un buen dashboard responde una pregunta en 5 segundos. Orden: KPIs arriba (3–5 máximo), tendencia en medio, detalle (tabla) abajo. Los filtros globales afectan a todo el tablero y se muestran como chips.`,
+ opts:[
+  {id:'kpi',n:'Tarjetas KPI',def:true,d:'Número grande, etiqueta y variación vs periodo anterior.',p:'Fila de 3–5 tarjetas KPI con valor grande, etiqueta, y variación vs periodo anterior (▲ verde / ▼ rojo).',demo:'<div class="row"><div class="kpi"><small>Ventas</small><b>$128k</b><em>▲ 12%</em></div><div class="kpi"><small>Gastos</small><b>$84k</b><em style="color:var(--dn)">▼ 3%</em></div></div>'},
+  {id:'kpispark',n:'KPI con mini tendencia',d:'KPI con sparkline de los últimos periodos.',p:'Tarjetas KPI con sparkline de los últimos 12 periodos.',demo:`<div class="kpi" style="width:150px"><small>Saldo</small><b>$42,300</b>${V('<polyline class="s2" points="0,20 10,16 20,18 30,10 40,12 50,6 60,8 70,3"/>','0 0 70 24')}</div>`},
+  {id:'filtros',n:'Filtros globales',def:true,d:'Rango de fechas, categoría, búsqueda, como chips.',p:'Barra de filtros globales (rango de fechas con atajos Hoy/Mes/Año, categoría, búsqueda) que afecta todo el tablero; los filtros activos se ven como chips con ✕.',demo:'<div class="mini"><div class="row"><span class="pill a">Este mes ✕</span><span class="pill">Categoría ▾</span></div><input type="search" placeholder="Buscar…"></div>'},
+  {id:'tabla',n:'Tabla resumen',def:true,d:'Ordenable, con totales y búsqueda.',p:'Tabla resumen con encabezados ordenables, fila de totales, paginación o scroll virtual y exportación de lo filtrado.',demo:'<table style="font-size:10px;width:100%;border-collapse:collapse">'+'<tr style="color:var(--mt)"><td>Concepto ▾</td><td align=right>Monto</td></tr><tr><td>Renta</td><td align=right>$8,000</td></tr><tr><td>Luz</td><td align=right>$640</td></tr><tr style="font-weight:700;border-top:1px solid var(--bd)"><td>Total</td><td align=right>$8,640</td></tr></table>'},
+  {id:'widgets',n:'Widgets reacomodables',d:'El usuario elige y ordena las tarjetas.',p:'Tablero de widgets que el usuario puede mostrar/ocultar y reordenar arrastrando; la disposición se guarda.',demo:WF("'a b' 1fr 'c c' 1fr / 1fr 1fr",[['a','b'],['b','a'],['c']])},
+  {id:'semaforo',n:'Alertas / semáforos',d:'Indicadores verde-ámbar-rojo según umbrales.',p:'Semáforos verde/ámbar/rojo según umbrales configurables y lista de alertas (vencidos, sobre presupuesto).',demo:'<div class="mini"><span class="pill ok">● En tiempo 12</span><span class="pill w">● Por vencer 3</span><span class="pill d">● Vencidos 1</span></div>'},
+  {id:'comparativo',n:'Comparativo de periodos',d:'Este mes vs anterior, año vs año.',p:'Comparativo de periodos (mes actual vs anterior, año vs año) con diferencia absoluta y porcentaje.',demo:V(`${[0,1,2,3].map(i=>`<rect class="fm" x="${14+i*26}" y="${62-[30,40,25,35][i]}" width="9" height="${[30,40,25,35][i]}"/><rect class="f1" x="${24+i*26}" y="${62-[38,36,32,48][i]}" width="9" height="${[38,36,32,48][i]}"/>`).join('')}${axis}`)}
+ ]},
+{id:'graficos',grupo:'Contenido',icono:'📈',titulo:'Gráficos',
+ desc:'Tipos de gráfica permitidos. Elige solo los que la app de verdad necesita.',
+ info:`<b>Guía rápida de elección:</b><ul><li>Comparar categorías → barras.</li><li>Tendencia en el tiempo → líneas / área.</li><li>Partes de un total (≤5 partes) → dona; si son más, barras.</li><li>Relación entre dos variables → dispersión.</li><li>Distribución → histograma.</li><li>Precio (cripto) → velas.</li><li>Actividad diaria → mapa de calor tipo calendario.</li></ul>Reglas: ejes que empiecen en cero en barras, tooltip al pasar el ratón, leyenda solo si hay más de una serie, mismos colores por categoría en toda la app.`,
+ opts:[
+  {id:'barras',n:'Barras',def:true,d:'Comparar categorías.',p:'Gráfica de barras para comparar categorías, con tooltip y valores.',demo:V(axis+[20,45,30,55,38].map((h,i)=>`<rect class="f1" x="${12+i*21}" y="${62-h}" width="14" height="${h}" rx="2"/>`).join(''))},
+  {id:'apiladas',n:'Barras apiladas',d:'Composición por categoría.',p:'Barras apiladas para ver composición por categoría.',demo:V(axis+[[20,15],[25,20],[15,22],[30,18],[22,25]].map((h,i)=>`<rect class="f1" x="${12+i*21}" y="${62-h[0]}" width="14" height="${h[0]}"/><rect class="f2" x="${12+i*21}" y="${62-h[0]-h[1]}" width="14" height="${h[1]}"/>`).join(''))},
+  {id:'lineas',n:'Líneas',def:true,d:'Tendencia en el tiempo.',p:'Gráfica de líneas para tendencias en el tiempo, varias series, zoom por rango.',demo:V(axis+'<polyline class="s1" points="8,55 28,40 48,46 68,25 88,30 112,12"/><polyline class="s2" points="8,58 28,50 48,52 68,42 88,45 112,35"/>')},
+  {id:'area',n:'Área',d:'Tendencia + volumen acumulado.',p:'Gráfica de área para tendencia con volumen.',demo:V(axis+'<polygon class="f1" opacity=".35" points="8,62 8,50 28,38 48,44 68,22 88,28 112,10 112,62"/><polyline class="s1" points="8,50 28,38 48,44 68,22 88,28 112,10"/>')},
+  {id:'dona',n:'Dona / pastel',def:true,d:'Partes de un total (máx. 5).',p:'Gráfica de dona para proporciones (máximo 5 partes; el resto agrupado en "Otros"), con total al centro.',demo:V('<circle cx="60" cy="35" r="24" fill="none" stroke="var(--ac)" stroke-width="10" stroke-dasharray="60 151" transform="rotate(-90 60 35)"/><circle cx="60" cy="35" r="24" fill="none" stroke="var(--ac2)" stroke-width="10" stroke-dasharray="45 151" stroke-dashoffset="-60" transform="rotate(-90 60 35)"/><circle cx="60" cy="35" r="24" fill="none" stroke="var(--ac3)" stroke-width="10" stroke-dasharray="46 151" stroke-dashoffset="-105" transform="rotate(-90 60 35)"/><text x="60" y="38" text-anchor="middle" class="tx" style="font-weight:700">100%</text>')},
+  {id:'dispersion',n:'Dispersión',d:'Relación entre dos variables.',p:'Gráfica de dispersión para relacionar dos variables, con línea de tendencia opcional.',demo:V(axis+Array.from({length:22},(_,i)=>`<circle class="${i%3?'f1':'f2'}" cx="${10+pr(i)*100}" cy="${58-(pr(i)*40+pr(i+50)*14)}" r="2.3"/>`).join('')+'<line x1="10" y1="56" x2="112" y2="14" class="sm" stroke-dasharray="3 2"/>')},
+  {id:'histograma',n:'Histograma',d:'Distribución de valores.',p:'Histograma para ver la distribución de valores por rangos.',demo:V(axis+[8,18,32,46,40,26,14,6].map((h,i)=>`<rect class="f2" x="${9+i*13}" y="${62-h}" width="13" height="${h}" stroke="var(--pn2)"/>`).join(''))},
+  {id:'radar',n:'Radar',d:'Comparar perfiles en varios ejes.',p:'Gráfica de radar para comparar perfiles en varios atributos.',demo:V((()=>{const c=[60,35],R=28,pt=(k,r)=>{const a=-Math.PI/2+k*Math.PI/3;return[c[0]+r*Math.cos(a),c[1]+r*Math.sin(a)]};const ring=r=>Array.from({length:6},(_,k)=>pt(k,r).join(',')).join(' ');const v=[.9,.6,.8,.5,.7,.4];return`<polygon class="sm" points="${ring(R)}"/><polygon class="sm" points="${ring(R*.5)}"/><polygon class="f1" opacity=".45" stroke="var(--ac)" points="${v.map((x,k)=>pt(k,R*x).join(',')).join(' ')}"/>`})())},
+  {id:'gauge',n:'Medidor (gauge)',d:'Avance contra una meta.',p:'Medidor tipo velocímetro para avance contra meta (con zonas de color).',demo:V('<path d="M20 58A40 40 0 0 1 100 58" stroke="var(--mut)" stroke-width="10" fill="none"/><path d="M20 58A40 40 0 0 1 82 24" stroke="var(--ac)" stroke-width="10" fill="none"/><text x="60" y="56" text-anchor="middle" class="tx" style="font-size:11px;font-weight:700">72%</text>')},
+  {id:'calor',n:'Mapa de calor calendario',d:'Actividad por día (tipo GitHub).',p:'Mapa de calor tipo calendario (días × semanas) para ver actividad o gasto por día.',demo:V(Array.from({length:7*12},(_,i)=>`<rect x="${6+Math.floor(i/7)*9.2}" y="${6+(i%7)*8.4}" width="7.5" height="7" rx="1.5" class="f2" opacity="${(.12+pr(i)*.88).toFixed(2)}"/>`).join(''))},
+  {id:'cascada',n:'Cascada',d:'Cómo se llega de un valor inicial a uno final.',p:'Gráfica de cascada (waterfall) para explicar cómo se pasa de un saldo inicial a uno final por aumentos y disminuciones.',demo:V(axis+'<rect class="f1" x="10" y="22" width="14" height="40"/><rect class="f2" x="30" y="12" width="14" height="10"/><rect class="fd" x="50" y="12" width="14" height="18"/><rect class="fd" x="70" y="30" width="14" height="8"/><rect class="f1" x="90" y="38" width="14" height="24"/>')},
+  {id:'velas',n:'Velas (OHLC)',d:'Precio de activos / cripto.',p:'Gráfica de velas japonesas (OHLC) con volumen abajo, zoom y cruz de precio; colores verde/rojo.',demo:V(axis+Array.from({length:10},(_,i)=>{const up=pr(i)>.45,y=18+pr(i+7)*26,h=6+pr(i+3)*12,x=12+i*10;return`<line x1="${x+3}" y1="${y-5}" x2="${x+3}" y2="${y+h+5}" stroke="${up?'var(--ok)':'var(--dn)'}"/><rect x="${x}" y="${y}" width="6" height="${h}" fill="${up?'var(--ok)':'var(--dn)'}"/>`}).join(''))},
+  {id:'treemap',n:'Treemap',d:'Jerarquía y tamaño relativo.',p:'Treemap para mostrar categorías jerárquicas por tamaño relativo.',demo:V(box(6,6,60,40,'Casa')+box(68,6,46,24,'Auto','f2')+box(68,32,46,14,'Ocio','f3','tx')+box(6,48,40,16,'Comida','f2')+box(48,48,66,16,'Otros','fm','tx'))},
+  {id:'embudo',n:'Embudo',d:'Etapas de conversión (ventas).',p:'Gráfica de embudo para etapas de conversión con porcentaje entre etapas.',demo:V('<polygon class="f1" points="10,8 110,8 100,22 20,22"/><polygon class="f2" points="22,24 98,24 88,38 32,38"/><polygon class="f3" points="34,40 86,40 76,54 44,54"/><polygon class="fd" points="46,56 74,56 70,64 50,64"/>')}
+ ]},
+{id:'diagramas',grupo:'Contenido',icono:'🔀',titulo:'Diagramas',
+ desc:'Tipos de diagramas que la app puede dibujar o editar.',
+ info:`<b>Cuándo usar cada uno:</b><ul><li>Flujo: procesos con decisiones.</li><li>Organigrama / árbol: jerarquías.</li><li>Mapa mental: ideas alrededor de un tema.</li><li>PERT/CPM y Gantt: tiempos y ruta crítica de obra.</li><li>Secuencia: quién le pasa qué a quién (sistemas).</li><li>Entidad-relación: estructura de datos de la app.</li><li>Kanban: estado de tareas.</li><li>Sankey: de dónde viene y a dónde va el dinero.</li><li>Unifilar: instalaciones eléctricas.</li></ul>Para editarlos: arrastrar nodos, conectar con flechas, zoom/paneo, exportar SVG/PNG y guardar como JSON.`,
+ opts:[
+  {id:'flujo',n:'Diagrama de flujo',def:true,d:'Proceso con decisiones.',p:'Diagrama de flujo con inicio/fin (óvalo), procesos (rectángulo), decisiones (rombo) y flechas con etiqueta.',demo:V(`<rect x="8" y="27" width="22" height="14" rx="7" class="f2"/>${line(30,34,40,34)}<polygon points="52,22 64,34 52,46 40,34" class="f3"/>${line(64,34,76,34)}<rect x="76" y="27" width="26" height="14" rx="2" class="f1"/>${line(52,46,52,58)}<rect x="40" y="58" width="24" height="9" rx="2" class="fm"/><text x="69" y="31" class="tx">sí</text><text x="54" y="54" class="tx">no</text>`)},
+  {id:'organigrama',n:'Organigrama / árbol',def:true,d:'Jerarquías.',p:'Organigrama/árbol jerárquico con nodos colapsables, foto o ícono, nombre y puesto.',demo:V(box(45,6,30,12,'Dir.')+'<path d="M60 18v8M24 26h72M24 26v6M60 26v6M96 26v6" class="sm"/>'+box(10,32,28,12,'A','f2')+box(46,32,28,12,'B','f2')+box(82,32,28,12,'C','f2')+'<path d="M24 44v6M14 50h20M14 50v4M34 50v4" class="sm"/>'+box(6,54,16,10,'a1','fm','tx')+box(26,54,16,10,'a2','fm','tx'))},
+  {id:'mental',n:'Mapa mental',d:'Ideas alrededor de un centro.',p:'Mapa mental con nodo central y ramas de colores, nodos que se agregan con Tab/Enter y se arrastran.',demo:V('<path d="M60 35C40 35 35 15 18 14M60 35C40 35 35 55 18 56M60 35C80 35 85 15 102 14M60 35C80 35 85 55 102 56" class="s1"/>'+box(44,28,32,14,'Tema')+'<circle cx="16" cy="14" r="6" class="f2"/><circle cx="16" cy="56" r="6" class="f3"/><circle cx="104" cy="14" r="6" class="f2"/><circle cx="104" cy="56" r="6" class="f3"/>')},
+  {id:'pert',n:'Red PERT / CPM',d:'Actividades, dependencias y ruta crítica.',p:'Red PERT/CPM: nodos de actividades con duración, ES/EF/LS/LF y holgura; la ruta crítica resaltada en rojo.',demo:V('<circle cx="12" cy="35" r="7" class="f1"/><circle cx="46" cy="16" r="7" class="f1"/><circle cx="46" cy="54" r="7" class="f1"/><circle cx="80" cy="35" r="7" class="f1"/><circle cx="110" cy="35" r="7" class="f1"/><line x1="18" y1="31" x2="39" y2="19" class="sd" marker-end="url(#arr)"/><line x1="18" y1="39" x2="39" y2="51" class="sk" marker-end="url(#ar)"/><line x1="53" y1="19" x2="73" y2="31" class="sd" marker-end="url(#arr)"/><line x1="53" y1="51" x2="73" y2="39" class="sk" marker-end="url(#ar)"/><line x1="87" y1="35" x2="102" y2="35" class="sd" marker-end="url(#arr)"/>')},
+  {id:'gantt',n:'Gantt',def:true,d:'Cronograma de tareas.',p:'Diagrama de Gantt con tareas, duración, dependencias, avance %, línea de "hoy" y escala día/semana/mes.',demo:V('<path class="sk" d="M30 4V66"/>'+[['Diseño',30,30,'f1'],['Trámite',50,28,'f2'],['Obra',66,40,'f3'],['Entrega',100,12,'fd']].map((t,i)=>`<text x="2" y="${14+i*14}" class="tx">${t[0]}</text><rect x="${t[1]}" y="${8+i*14}" width="${t[2]}" height="8" rx="2" class="${t[3]}"/>`).join('')+'<line x1="72" y1="4" x2="72" y2="66" stroke="var(--dn)" stroke-dasharray="2 2"/>')},
+  {id:'secuencia',n:'Secuencia',d:'Mensajes entre actores en el tiempo.',p:'Diagrama de secuencia con actores, líneas de vida y mensajes numerados.',demo:V(box(8,4,26,10,'App')+box(47,4,26,10,'Usuario','f2')+box(86,4,26,10,'API','f3','tx')+'<path d="M21 14V66M60 14V66M99 14V66" class="sm" stroke-dasharray="2 2"/>'+line(60,24,22,24)+line(22,36,98,36)+line(98,48,22,48)+line(22,60,59,60))},
+  {id:'er',n:'Entidad-relación',d:'Estructura de datos.',p:'Diagrama entidad-relación de los datos de la app: tablas, campos, llaves y cardinalidad.',demo:V('<rect x="6" y="10" width="40" height="48" rx="3" class="fp" stroke="var(--ac)"/><rect x="6" y="10" width="40" height="10" rx="3" class="f1"/><text x="26" y="17" text-anchor="middle" class="txw">Cliente</text><text x="10" y="30" class="tx">🔑 id</text><text x="10" y="40" class="tx">nombre</text><text x="10" y="50" class="tx">tel</text><rect x="74" y="10" width="40" height="48" rx="3" class="fp" stroke="var(--ac2)"/><rect x="74" y="10" width="40" height="10" rx="3" class="f2"/><text x="94" y="17" text-anchor="middle" class="txw">Pedido</text><text x="78" y="30" class="tx">🔑 id</text><text x="78" y="40" class="tx">cliente_id</text><text x="78" y="50" class="tx">total</text><path d="M46 28H74" class="sm"/><text x="50" y="25" class="tx">1</text><text x="66" y="25" class="tx">N</text>')},
+  {id:'kanban',n:'Kanban',d:'Tareas por estado, arrastrables.',p:'Tablero Kanban con columnas configurables (Por hacer, En proceso, Hecho), tarjetas arrastrables con etiqueta y fecha.',demo:V(['Por hacer','Proceso','Hecho'].map((t,i)=>`<rect x="${4+i*39}" y="4" width="35" height="62" rx="3" class="fm" opacity=".35"/><text x="${8+i*39}" y="12" class="tx">${t}</text>`+[0,1,2].slice(0,3-i).map(j=>`<rect x="${7+i*39}" y="${16+j*15}" width="29" height="12" rx="2" class="${['f1','f3','f2'][i]}"/>`).join('')).join(''))},
+  {id:'timeline',n:'Línea de tiempo',d:'Eventos en orden.',p:'Línea de tiempo horizontal/vertical con eventos, fecha, ícono y descripción.',demo:V('<path d="M6 35H114" class="s1"/>'+[14,40,68,100].map((x,i)=>`<circle cx="${x}" cy="35" r="4" class="${i%2?'f2':'f1'}"/><text x="${x}" y="${i%2?52:24}" text-anchor="middle" class="tx">${['2019','2021','2024','2026'][i]}</text>`).join(''))},
+  {id:'sankey',n:'Sankey (flujos)',d:'De dónde viene y a dónde va.',p:'Diagrama Sankey para flujos de dinero o recursos (ingresos → cuentas → gastos), grosor proporcional al monto.',demo:V('<rect x="6" y="8" width="8" height="54" class="f1"/><rect x="106" y="6" width="8" height="18" class="f2"/><rect x="106" y="28" width="8" height="14" class="f3"/><rect x="106" y="46" width="8" height="18" class="fd"/><path d="M14 8C60 8 60 6 106 6V24C60 24 60 26 14 26z" class="f2" opacity=".45"/><path d="M14 26C60 26 60 28 106 28V42C60 42 60 40 14 40z" class="f3" opacity=".45"/><path d="M14 40C60 40 60 46 106 46V64C60 64 60 62 14 62z" class="fd" opacity=".45"/>')},
+  {id:'venn',n:'Venn',d:'Conjuntos y traslapes.',p:'Diagrama de Venn de 2–3 conjuntos con conteo en cada zona.',demo:V('<circle cx="46" cy="32" r="22" class="f1" opacity=".5"/><circle cx="74" cy="32" r="22" class="f2" opacity=".5"/><circle cx="60" cy="50" r="18" class="f3" opacity=".5"/>')},
+  {id:'unifilar',n:'Unifilar / esquemático',d:'Instalaciones eléctricas y similares.',p:'Diagrama unifilar/esquemático con símbolos normalizados (acometida, medidor, interruptor, tablero, circuitos), editable y con cuadro de cargas.',demo:V('<path d="M10 35H40M52 35H70M80 35H100M100 15V55M100 15H112M100 35H112M100 55H112" class="s1"/><circle cx="46" cy="35" r="6" class="sm" stroke="var(--ac)"/><text x="46" y="37" text-anchor="middle" class="tx">M</text><path d="M70 35l8-6" class="s1"/><text x="6" y="30" class="tx">CFE</text>')},
+  {id:'carriles',n:'Flujo por carriles (swimlane)',d:'Proceso dividido por responsable.',p:'Diagrama de flujo por carriles (swimlane), un carril por área o responsable.',demo:V('<path d="M4 4H116V66H4zM4 25H116M4 46H116M22 4V66" class="sm"/><text x="6" y="16" class="tx">Yo</text><text x="6" y="37" class="tx">Jefe</text><text x="6" y="58" class="tx">Prov</text>'+box(28,8,22,12,'Pide')+line(39,20,52,30)+box(52,29,24,12,'Aprueba','f2')+line(76,40,84,50)+box(84,50,26,12,'Entrega','f3','tx'))}
+ ]},
+{id:'selectores',grupo:'Contenido',icono:'🎛',titulo:'Selectores',
+ desc:'Controles de fecha, hora, color, tema… Prueba cada uno (son reales).',
+ info:`Usa primero los controles nativos del navegador (input date/time/color): son accesibles, funcionan con teclado y en móvil. Personaliza solo cuando el nativo no alcanza (rangos de fechas, paletas). Prueba: el selector de tema y el de acento cambian <b>esta</b> app.`,
+ opts:[
+  {id:'fecha',n:'Fecha',def:true,d:'Calendario nativo.',p:'Selector de fecha (input type=date) con formato dd/mm/aaaa y atajo "Hoy".',demo:'<div class="mini"><input type="date"><span class="pill">Hoy</span></div>'},
+  {id:'hora',n:'Hora',def:true,d:'Hora nativa 24 h.',p:'Selector de hora (input type=time) en formato 24 h, con botón "Ahora".',demo:'<div class="mini"><input type="time" value="09:30"></div>'},
+  {id:'fechahora',n:'Fecha y hora',d:'Momento exacto (registro de eventos).',p:'Selector de fecha y hora (datetime-local) que se llena automáticamente con el momento actual.',demo:'<div class="mini"><input type="datetime-local"></div>'},
+  {id:'rango',n:'Rango de fechas',def:true,d:'Desde–hasta + atajos.',p:'Selector de rango de fechas (desde/hasta) con atajos: Hoy, Esta semana, Este mes, Mes pasado, Este año, Personalizado.',demo:'<div class="mini"><div class="row"><input type="date" style="flex:1"><input type="date" style="flex:1"></div><div class="chips"><span>Hoy</span><span class="on">Mes</span><span>Año</span></div></div>'},
+  {id:'mes',n:'Mes / semana',d:'Para periodos.',p:'Selector de mes (input type=month) y de semana para reportes por periodo.',demo:'<div class="mini"><input type="month"><input type="week"></div>'},
+  {id:'color',n:'Color',def:true,d:'Selector + HEX + paleta guardada.',p:'Selector de color con input nativo, campo HEX editable y paleta de colores recientes/guardados.',demo:'<div class="mini"><div class="row"><input type="color" value="#4f8cff" style="width:40px;height:30px;border:0;background:none"><input type="text" value="#4f8cff" style="flex:1"></div><div class="swt"><i style="background:#ef5b5b"></i><i style="background:#22c3a6"></i><i style="background:#f5a524"></i></div></div>'},
+  {id:'tema',n:'Tema (claro/oscuro/sistema)',def:true,d:'Prueba: cambia esta app.',p:'Selector de tema Claro / Oscuro / Sistema (respeta prefers-color-scheme) que se guarda.',demo:'<div class="seg" data-demo="tema"><button data-v="claro">☀ Claro</button><button data-v="oscuro">🌙 Oscuro</button><button data-v="sistema">💻 Sistema</button></div>'},
+  {id:'acento',n:'Color de acento',def:true,d:'Prueba: cambia el acento de esta app.',p:'Selector de color de acento con 8 opciones predefinidas más personalizado; recolorea toda la app.',demo:'<div class="swt" data-demo="acento">'+['#4f8cff','#22c3a6','#8b5cf6','#f5a524','#ef5b5b','#ec4899','#14b8a6','#64748b'].map(c=>`<i data-v="${c}" style="background:${c}"></i>`).join('')+'</div>'},
+  {id:'slider',n:'Deslizador numérico',d:'Rango con valor visible.',p:'Deslizador (range) con valor visible y campo numérico sincronizado.',demo:'<div class="mini"><input type="range" value="60" oninput="this.nextElementSibling.textContent=this.value+\'%\'" style="accent-color:var(--ac)"><b>60%</b></div>'},
+  {id:'toggle',n:'Interruptor',def:true,d:'Sí/no.',p:'Interruptores tipo toggle para opciones sí/no.',demo:'<label class="mini" style="flex-direction:row;align-items:center"><input type="checkbox" class="tgl" checked> Activado</label>'},
+  {id:'segmentado',n:'Control segmentado',d:'2–4 opciones excluyentes.',p:'Control segmentado para 2–4 opciones excluyentes (en lugar de un desplegable).',demo:'<div class="seg" data-demo="seg"><button class="on">Día</button><button>Semana</button><button>Mes</button></div>'},
+  {id:'chips',n:'Multiselección con chips',d:'Etiquetas múltiples.',p:'Multiselección con chips/etiquetas, con buscador y opción de crear nueva etiqueta.',demo:'<div class="chips" data-demo="chips"><span class="on">Casa</span><span>Trabajo</span><span class="on">Urgente</span><span>Compras</span></div>'},
+  {id:'autocompletar',n:'Autocompletar',d:'Sugerencias mientras escribes.',p:'Campos con autocompletar basado en valores ya capturados (datalist) para estandarizar la captura.',demo:'<div class="mini"><input list="dl1" placeholder="Escribe un proveedor…"><datalist id="dl1"><option>Home Depot</option><option>Comex</option><option>Sodimac</option></datalist></div>'},
+  {id:'estrellas',n:'Calificación',d:'Estrellas 1–5.',p:'Calificación con estrellas de 1 a 5.',demo:'<div class="stars" data-demo="stars">'+[1,2,3,4,5].map(i=>`<span class="${i<=3?'on':''}">★</span>`).join('')+'</div>'}
+ ]},
+/* ---------------- DATOS ---------------- */
+{id:'exportar',grupo:'Datos',icono:'⬇',titulo:'Menú de exportación',
+ desc:'Opciones del menú "Exportar". Así funciona el de esta misma app (arriba).',
+ info:`<b>Reglas:</b> nombre de archivo con app + fecha (<code>MiApp_2026-11-03_2310.json</code>); el JSON de respaldo incluye <code>app</code>, <code>version</code> y fecha para poder validarlo al importar; CSV en UTF-8 con BOM para que Excel respete acentos.`,
+ opts:[
+  {id:'json',n:'Respaldo completo .json',def:true,d:'Todo: datos + configuración.',p:'Exportar respaldo completo en JSON (datos + configuración) con campos app, version y fecha; nombre de archivo App_AAAA-MM-DD_HHMM.json.',demo:'<div class="mh" style="flex-direction:column;align-items:stretch"><span>📦 Respaldo completo (.json)</span><span class="mt">📄 CSV</span><span class="mt">📊 Excel</span></div>'},
+  {id:'csv',n:'CSV por tabla',def:true,d:'Para Excel, con acentos correctos.',p:'Exportar cada tabla a CSV (UTF-8 con BOM, separador coma) respetando los filtros activos.',demo:'<code style="font-size:10px">fecha,concepto,monto<br>03/11/2026,Luz,640</code>'},
+  {id:'xlsx',n:'Excel .xlsx',d:'Libro con una hoja por tabla (SheetJS).',p:'Exportar a Excel .xlsx con una hoja por tabla, encabezados en negritas y anchos de columna ajustados (librería SheetJS por CDN).',demo:'<div style="font-size:30px">📊</div>'},
+  {id:'pdf',n:'Imprimir / PDF',def:true,d:'Vista de impresión limpia.',p:'Opción Imprimir/PDF con hoja de estilos de impresión (sin menús ni botones, con encabezado de app y fecha).',demo:'<div style="font-size:30px">🖨</div>'},
+  {id:'png',n:'Imagen PNG / SVG',d:'Gráficos y diagramas como imagen.',p:'Exportar gráficos y diagramas como PNG (alta resolución) y SVG.',demo:'<div style="font-size:30px">🖼</div>'},
+  {id:'md',n:'Markdown / texto',d:'Para pegar en otro lado o en Claude.',p:'Exportar resumen o reporte en Markdown y copiar al portapapeles.',demo:'<code style="font-size:10px"># Reporte<br>- Punto 1</code>'},
+  {id:'config',n:'Exportar solo configuración',def:true,d:'Menús, catálogos y ajustes sin datos.',p:'Exportar solo la configuración (catálogos, menús, ajustes, tema) sin datos, para reutilizarla como plantilla en otra app o equipo.',demo:'<div class="mini"><span class="pill a">⚙ configuracion.json</span><small>sin datos personales</small></div>'},
+  {id:'auto',n:'Respaldo automático',d:'Copia periódica y recordatorio.',p:'Respaldo automático: guardar las últimas 5 copias internas y recordar exportar a archivo cada 7 días.',demo:'<div class="mini"><small>Último respaldo: hace 2 días</small><span class="pill w">Respaldar ahora</span></div>'}
+ ]},
+{id:'importar',grupo:'Datos',icono:'⬆',titulo:'Menú de importación',
+ desc:'Opciones del menú "Importar", incluyendo importar los menús/configuración de la propia app.',
+ info:`Importar nunca debe destruir datos sin aviso. Patrón: leer archivo → validar (app, versión) → vista previa con conteos → elegir <b>Combinar</b> o <b>Reemplazar</b> → respaldo automático antes → aplicar → resumen.`,
+ opts:[
+  {id:'json',n:'Importar .json',def:true,d:'Respaldo propio, con combinar o reemplazar.',p:'Importar JSON propio validando app y versión; preguntar Combinar (sin duplicar por id) o Reemplazar; respaldo automático previo.',demo:'<div class="mini"><span class="pill a">Combinar</span><span class="pill d">Reemplazar</span><span class="pill">Cancelar</span></div>'},
+  {id:'csv',n:'CSV con mapeo de columnas',def:true,d:'Relacionar columnas del archivo con campos.',p:'Importar CSV/Excel con paso de mapeo de columnas (columna del archivo → campo de la app), detección de fechas y montos, y vista previa de las primeras filas.',demo:'<div class="mini"><div class="row"><small style="flex:1">"Fecha op." →</small><select style="flex:1"><option>fecha</option></select></div><div class="row"><small style="flex:1">"Importe" →</small><select style="flex:1"><option>monto</option></select></div></div>'},
+  {id:'drag',n:'Arrastrar y soltar',def:true,d:'Soltar el archivo en la ventana.',p:'Permitir arrastrar y soltar archivos en la ventana para importarlos.',demo:'<div style="border:2px dashed var(--ac);border-radius:8px;padding:14px;font-size:11px;text-align:center">Suelta tu archivo aquí</div>'},
+  {id:'pegar',n:'Pegar desde portapapeles',d:'Pegar tabla de Excel o JSON.',p:'Importar pegando desde el portapapeles (tabla copiada de Excel o texto JSON).',demo:'<div class="mini"><kbd>Ctrl</kbd>+<kbd>V</kbd><small>tabla de Excel detectada: 12 filas</small></div>'},
+  {id:'preview',n:'Validación y vista previa',def:true,d:'Ver qué entra antes de aplicar.',p:'Antes de importar mostrar vista previa: registros nuevos, duplicados, con error; permitir excluir filas.',demo:'<div class="mini"><span class="pill ok">Nuevos 40</span><span class="pill w">Duplicados 3</span><span class="pill d">Errores 1</span></div>'},
+  {id:'menus',n:'Importar menús / configuración',def:true,d:'Traer catálogos y menús de otra app o plantilla.',p:'Importar solo la configuración (menús, catálogos, ajustes) desde un archivo de configuración de otra app o plantilla, sin tocar los datos.',demo:'<div class="mini"><span class="pill a">⚙ Importar configuración</span><small>Catálogos: 4 · Ajustes: 12</small></div>'}
+ ]},
+{id:'almacen',grupo:'Datos',icono:'💾',titulo:'Almacenamiento',
+ desc:'Dónde viven los datos.',
+ info:`<b>localStorage</b>: simple, ~5 MB, ideal para configuraciones y datos pequeños. <b>IndexedDB</b>: cientos de MB, para imágenes y muchos registros. <b>Archivo</b> (File System Access, Edge/Chrome): guardar directamente en un .json de tu disco. <b>chrome.storage</b>: obligatorio en extensiones. <b>Supabase</b>: nube. Importante: el dato del navegador se borra si limpias datos del sitio, por eso siempre hay respaldo a archivo.`,
+ opts:[
+  {id:'local',n:'localStorage',def:true,d:'Simple, para datos pequeños.',p:'Guardar en localStorage con una sola llave versionada (app.v1) y migración si cambia la versión.',demo:'<code style="font-size:11px">localStorage["miapp.v1"]</code>'},
+  {id:'idb',n:'IndexedDB',d:'Muchos registros e imágenes.',p:'Guardar en IndexedDB (para muchos registros e imágenes), con un pequeño envoltorio de funciones get/set.',demo:'<div style="font-size:28px">🗄</div>'},
+  {id:'archivo',n:'Archivo en disco',d:'Abrir/guardar un .json directamente.',p:'Opción de trabajar sobre un archivo .json en disco (File System Access API): Abrir, Guardar, Guardar como; con alternativa de descarga si el navegador no lo soporta.',demo:'<div class="mini"><span class="pill">📂 Abrir</span><span class="pill a">💾 Guardar</span></div>'},
+  {id:'chrome',n:'chrome.storage',d:'Para extensiones.',p:'En extensión: chrome.storage.local para datos y chrome.storage.sync para preferencias ligeras.',demo:'<code style="font-size:11px">chrome.storage.local</code>'},
+  {id:'supa',n:'Supabase',d:'Nube con sesión.',p:'Sincronizar con Supabase (proyecto personal), con caché local y resolución de conflictos por fecha de actualización.',demo:'<div style="font-size:28px">☁</div>'}
+ ]},
+/* ---------------- CALIDAD ---------------- */
+{id:'notas',grupo:'Calidad',icono:'📝',titulo:'Notas dentro de la app',
+ desc:'Sistema de notas que va SIEMPRE en tus apps, para apuntar correcciones y luego pedirlas. Esta app lo tiene: botón 📝 abajo a la derecha.',
+ info:`<b>Para qué:</b> mientras usas la app apuntas lo que hay que corregir en el momento, ligado a la sección donde estás. Después exportas las pendientes como un "prompt de corrección" y se lo pasas a la IA junto con el archivo. Al aplicar la versión nueva, marcas como corregidas.`,
+ opts:[
+  {id:'fab',n:'Botón flotante 📝',def:true,d:'Siempre visible, abajo a la derecha, con contador.',p:'Botón flotante 📝 abajo a la derecha con contador de pendientes; abre un panel lateral de notas (atajo Alt+N).',demo:'<div style="position:relative;width:100%;height:100%"><span style="position:absolute;right:6px;bottom:6px;width:36px;height:36px;border-radius:50%;background:var(--ac);display:grid;place-items:center;color:#fff">📝</span><span class="pill d" style="position:absolute;right:2px;bottom:36px">3</span></div>'},
+  {id:'contexto',n:'Ligada a la sección',def:true,d:'La nota guarda en qué pantalla estabas.',p:'Cada nota guarda automáticamente la sección/vista donde se creó (editable) y la fecha y hora.',demo:'<div class="nota" style="width:100%;font-size:11px"><small>📍 Gastos · 03/11 23:10</small><div>El total no suma IVA</div></div>'},
+  {id:'estado',n:'Estados y prioridad',def:true,d:'Pendiente / corregida, prioridad alta-media-baja.',p:'Cada nota tiene estado (Pendiente, Corregida) y prioridad (Alta, Media, Baja); filtros por estado.',demo:'<div class="mini"><div class="row"><span class="pill d">Alta</span><span class="pill">Pendiente</span></div><div class="row"><span class="pill">Baja</span><span class="pill ok">Corregida ✔</span></div></div>'},
+  {id:'prompt',n:'Exportar como prompt de corrección',def:true,d:'Lista de pendientes lista para pegar a la IA.',p:'Exportar notas pendientes como "prompt de corrección" en Markdown, agrupadas por sección y prioridad, con nombre y versión de la app.',demo:'<code style="font-size:10px">## Correcciones v1.2<br>### Gastos<br>- [Alta] El total no suma IVA</code>'},
+  {id:'imagen',n:'Captura/imagen adjunta',d:'Pegar una imagen en la nota.',p:'Permitir adjuntar o pegar (Ctrl+V) una imagen en la nota como referencia visual.',demo:'<div class="mini"><small>📎 captura.png</small><div style="height:40px;background:var(--mut2);border-radius:6px"></div></div>'},
+  {id:'version',n:'Versión y bitácora de cambios',def:true,d:'La app muestra su versión y qué cambió.',p:'Mostrar versión de la app y una bitácora de cambios (changelog) en Ayuda; al corregir notas se anotan en la versión.',demo:'<div class="mini"><b>v1.2</b><small>· Corregido total con IVA<br>· Nuevo filtro por mes</small></div>'}
+ ]},
+{id:'extras',grupo:'Calidad',icono:'✨',titulo:'Extras de calidad',
+ desc:'Detalles que hacen que todas tus apps se sientan del mismo "paquete".',
+ info:`Consistencia = mismos atajos, mismas confirmaciones, mismos mensajes en todas las apps. Esto es lo que convierte apps sueltas en una suite de herramientas.`,
+ opts:[
+  {id:'atajos',n:'Atajos de teclado estándar',def:true,d:'Mismos atajos en todas tus apps.',p:'Atajos estándar: Ctrl+S exportar respaldo, Ctrl+K buscar, Ctrl+Z/Ctrl+Y deshacer/rehacer, Alt+N nueva nota, Esc cerrar ventanas, ? ver atajos.',demo:'<div class="mini"><span><kbd>Ctrl</kbd>+<kbd>S</kbd> respaldo</span><span><kbd>Ctrl</kbd>+<kbd>K</kbd> buscar</span><span><kbd>Alt</kbd>+<kbd>N</kbd> nota</span></div>'},
+  {id:'deshacer',n:'Deshacer / rehacer',d:'Historial de cambios.',p:'Deshacer/rehacer con historial de al menos 50 pasos.',demo:'<div class="mini"><div class="row"><span class="pill">↶ Deshacer</span><span class="pill">↷ Rehacer</span></div></div>'},
+  {id:'toast',n:'Avisos tipo toast',def:true,d:'Mensajes breves de confirmación.',p:'Mensajes breves (toast) abajo al centro para confirmar acciones, con opción "Deshacer" cuando se borra algo.',demo:'<div style="background:var(--tx);color:var(--bg);padding:6px 10px;border-radius:7px;font-size:11px">Registro borrado · <u>Deshacer</u></div>'},
+  {id:'confirmar',n:'Confirmar antes de borrar',def:true,d:'Ventana de confirmación clara.',p:'Confirmación modal antes de cualquier borrado, indicando qué se va a borrar.',demo:'<div class="mini" style="border:1px solid var(--bd);border-radius:8px;padding:6px"><b>¿Borrar 3 registros?</b><div class="row"><span class="pill">Cancelar</span><span class="pill d">Borrar</span></div></div>'},
+  {id:'responsive',n:'Responsive (móvil)',def:true,d:'Usable en celular.',p:'Diseño responsive: usable en celular (menú hamburguesa, tablas con scroll horizontal, botones táctiles de 40px).',demo:V('<rect x="20" y="8" width="56" height="54" rx="3" class="fm" opacity=".5"/><rect x="84" y="14" width="22" height="42" rx="4" class="fm"/><rect x="87" y="19" width="16" height="4" class="f1"/>')},
+  {id:'a11y',n:'Accesibilidad',d:'Contraste, teclado, etiquetas.',p:'Accesibilidad básica: contraste suficiente, todo operable con teclado, foco visible, etiquetas en campos.',demo:'<div style="font-size:28px">♿</div>'},
+  {id:'ayuda',n:'Ayuda integrada',d:'Explicación por sección.',p:'Ayuda integrada: un ícono ⓘ por sección con explicación breve y una guía general.',demo:'<div class="mini"><span>Gastos <span class="pill">ⓘ</span></span><small>Aquí registras…</small></div>'},
+  {id:'busqueda',n:'Búsqueda y filtros en listas',def:true,d:'Toda lista se puede buscar y filtrar.',p:'Toda lista o tabla tiene búsqueda instantánea y filtros, y recuerda el orden elegido.',demo:'<div class="mini"><input type="search" placeholder="Filtrar…"></div>'}
+ ]}
+];
+
+/* Vistas especiales del menú lateral */
+const VISTAS=[
+ {id:'proyecto',grupo:'Proyecto',icono:'🏷',titulo:'Proyecto: nombre, tema y prompt'},
+ {id:'reporte',grupo:'Salida',icono:'📄',titulo:'Reporte para la IA'},
+ {id:'manual',grupo:'Salida',icono:'📘',titulo:'Manual / guía'},
+ {id:'sugerencias',grupo:'Salida',icono:'💡',titulo:'Sugerencias (próximas versiones)'}
+];
+
+const SUGERENCIAS=[
+ ['Plantillas por tipo de app','Perfiles predefinidos: "App de registro", "App de diseño", "Dashboard", "Extensión", que preseleccionan las secciones típicas.'],
+ ['Kit base de código','Además del reporte, exportar un archivo base .html con encabezado, notas, tema, exportar/importar ya hechos, para que la IA solo agregue la lógica del tema.'],
+ ['Puntaje de estandarización','Cargar una app existente (.html) y revisar qué partes del estándar tiene (encabezado, notas, exportar…) con un % de cumplimiento.'],
+ ['Imagen por proyecto además de global','Que cada proyecto pueda tener sus propias imágenes de referencia además de las del diccionario.'],
+ ['Pegar imagen con Ctrl+V','Pegar capturas directo en una tarjeta o en una nota.'],
+ ['Sección "Tablas y formularios"','Estándar de cómo capturar registros: formulario lateral vs modal, validaciones, campos obligatorios, edición en línea.'],
+ ['Sección "Navegación móvil"','Barra inferior, gestos, tamaño táctil.'],
+ ['Sección "Impresión y láminas"','Formatos carta/doble carta, cuadro de datos tipo plano para apps de arquitectura.'],
+ ['Biblioteca de íconos estándar','Mismo set de íconos en todas las apps (Lucide/emoji) definido aquí.'],
+ ['Historial de versiones del reporte','Guardar cada reporte generado con fecha para comparar qué se pidió en cada versión.'],
+ ['Catálogo de mis apps','Lista de todas tus apps con su tipo, versión, ruta/URL y grado de estandarización (enlaza con tu repo "Apps").'],
+ ['Guardar en IndexedDB','Pasar imágenes a IndexedDB para no llenar los ~5 MB de localStorage.']
+];
+
+/* =========================================================
+   Estado
+   ========================================================= */
+const KEY='organizadorSecciones.v1';
+function nuevoPerfil(nombre){
+  const sel={};SEC.forEach(s=>{sel[s.id]=s.opts.filter(o=>o.def).map(o=>o.id)});
+  return {id:uid(),nombre:nombre||'Nueva app',tema:'',descripcion:'',usuario:'',promptBase:'',version:'1.0',sel,notasSec:{},creado:new Date().toISOString()};
+}
+function estadoInicial(){
+  const p=nuevoPerfil('Organizador de Secciones');
+  p.tema='Organizador para estandarizar mis aplicaciones HTML';
+  p.descripcion='Diccionario de secciones (encabezado, menús, dashboards, gráficos, diagramas, selectores, notas, exportar/importar) con ejemplos visuales, para elegir características y generar un reporte/prompt para la IA.';
+  p.usuario='Uso personal (Victor), en PC con 3 pantallas, Edge/Chrome.';
+  return {app:'organizador-secciones',version:1,activo:p.id,perfiles:[p],custom:{},overrides:{},imgs:{},notas:[],ui:{tema:'oscuro',acento:'#4f8cff',vista:'proyecto',sug:{},filtroNotas:'pend'}};
+}
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){S=null}
+if(!S||S.app!=='organizador-secciones')S=estadoInicial();
+const P=()=>S.perfiles.find(p=>p.id===S.activo)||S.perfiles[0];
+let tGuard;
+function guardar(){
+  $('#saved').textContent='Guardando…';$('#saved').style.color='var(--ac3)';
+  clearTimeout(tGuard);tGuard=setTimeout(()=>{
+    try{localStorage.setItem(KEY,JSON.stringify(S));$('#saved').textContent='● Guardado';$('#saved').style.color='var(--ok)';$('#saved').title='Último guardado: '+hoy()}
+    catch(e){$('#saved').textContent='⚠ Sin espacio';$('#saved').style.color='var(--dn)';toast('No se pudo guardar: quizá hay demasiadas imágenes. Exporta un respaldo.')}
+  },250);
+}
+const secById=id=>SEC.find(s=>s.id===id);
+const optsDe=sec=>sec.opts.concat((S.custom[sec.id]||[]).map(o=>({...o,custom:true})));
+const kOf=(s,o)=>s+':'+o;
+const promptDe=(secId,o)=>S.overrides[kOf(secId,o.id)]??o.p;
+
+/* =========================================================
+   Render: encabezado, nav
+   ========================================================= */
+function aplicarTema(){
+  let t=S.ui.tema;if(t==='sistema')t=matchMedia('(prefers-color-scheme: light)').matches?'claro':'oscuro';
+  document.body.dataset.tema=t;document.documentElement.style.setProperty('--ac',S.ui.acento);
+}
+function renderHeader(){
+  $('#selPerfil').innerHTML=S.perfiles.map(p=>`<option value="${p.id}" ${p.id===S.activo?'selected':''}>${esc(p.nombre)}</option>`).join('');
+  const tipo=(P().sel.tipo||[])[0];
+  $('#selTipo').innerHTML=secById('tipo').opts.map(o=>`<option value="${o.id}" ${o.id===tipo?'selected':''}>${o.n}</option>`).join('');
+  const pend=S.notas.filter(n=>n.estado!=='hecha').length;$('#fabN').textContent=pend;$('#fabN').style.display=pend?'':'none';
+}
+function renderNav(filtro=''){
+  const p=P();let html=`<input type="search" id="buscar" placeholder="Buscar en el diccionario… Ctrl+K" value="${esc(filtro)}" style="margin-bottom:4px">`;
+  const items=[VISTAS[0],...SEC,...VISTAS.slice(1)];
+  let g='';const f=filtro.toLowerCase();
+  items.forEach(it=>{
+    let match=true,cnt='';
+    if(SEC.includes(it)){
+      const ops=optsDe(it);
+      if(f)match=(it.titulo+' '+it.desc+' '+ops.map(o=>o.n+' '+o.d).join(' ')).toLowerCase().includes(f);
+      cnt=`<span class="c">${(p.sel[it.id]||[]).length}/${ops.length}</span>`;
+    }else if(f)match=it.titulo.toLowerCase().includes(f);
+    if(!match)return;
+    if(it.grupo!==g){g=it.grupo;html+=`<div class="g">${g}</div>`}
+    html+=`<a data-v="${it.id}" class="${S.ui.vista===it.id?'on':''}"><span>${it.icono}</span>${it.titulo}${cnt}</a>`;
+  });
+  $('#nav').innerHTML=html;
+  const b=$('#buscar');b.oninput=()=>{const v=b.value,pos=b.selectionStart;renderNav(v);const nb=$('#buscar');nb.focus();nb.setSelectionRange(pos,pos)};
+}
+
+/* =========================================================
+   Render: vistas
+   ========================================================= */
+function render(){aplicarTema();renderHeader();renderNav($('#buscar')?.value||'');renderMain();renderNotas()}
+function renderMain(){
+  const v=S.ui.vista,m=$('#main');
+  if(v==='proyecto')m.innerHTML=vistaProyecto();
+  else if(v==='reporte')m.innerHTML=vistaReporte();
+  else if(v==='manual')m.innerHTML=vistaManual();
+  else if(v==='sugerencias')m.innerHTML=vistaSug();
+  else{const s=secById(v);m.innerHTML=s?vistaSec(s):vistaProyecto()}
+  m.scrollTop=0;marcarDemos();
+}
+function vistaProyecto(){
+  const p=P();
+  const tot=SEC.reduce((a,s)=>a+(p.sel[s.id]||[]).length,0);
+  return `<h1>🏷 Proyecto</h1><p class="mt">Cada proyecto es una app que quieres pedir. El <b>tema principal</b> manda: las secciones dan la estructura estándar y la IA adapta todo al tema.</p>
+  <div class="two">
+   <div class="panel">
+    <div class="fld"><label>Nombre de la app</label><input type="text" data-pf="nombre" value="${esc(p.nombre)}"></div>
+    <div class="fld"><label>Tema principal (de qué trata, estilo, colores o marca)</label><input type="text" data-pf="tema" value="${esc(p.tema)}" placeholder="Ej. Control de obra para Grupo CGE, colores institucionales"></div>
+    <div class="fld"><label>Qué hace / funciones principales</label><textarea data-pf="descripcion" placeholder="Describe las funciones…">${esc(p.descripcion)}</textarea></div>
+    <div class="fld"><label>Quién la usa y dónde</label><input type="text" data-pf="usuario" value="${esc(p.usuario)}"></div>
+    <div class="fld"><label>Prompt base / instrucción principal (opcional)</label><textarea data-pf="promptBase" placeholder="Instrucción libre que irá al inicio del reporte…">${esc(p.promptBase)}</textarea></div>
+    <div class="fld" style="max-width:160px"><label>Versión</label><input type="text" data-pf="version" value="${esc(p.version||'1.0')}"></div>
+   </div>
+   <div>
+    <div class="panel"><b>Proyectos</b><p class="mt" style="margin:4px 0 10px">Clic para activar.</p>
+     <div class="plist">${S.perfiles.map(x=>`<div class="pit ${x.id===S.activo?'on':''}" data-pid="${x.id}"><span>${esc(x.nombre)}</span><small>${new Date(x.creado).toLocaleDateString('es-MX')}</small></div>`).join('')}</div>
+     <div class="row" style="margin-top:10px"><button data-pa="nuevo">+ Nuevo</button><button data-pa="dup">Duplicar</button><button data-pa="del" class="dn">Borrar</button></div>
+    </div>
+    <div class="panel" style="margin-top:14px"><b>Resumen</b>
+     <p class="mt" style="margin:6px 0">${tot} características elegidas en ${SEC.length} secciones.</p>
+     ${SEC.map(s=>`<div class="row" style="justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--bd)"><a style="cursor:pointer" data-go="${s.id}">${s.icono} ${s.titulo}</a><small>${(p.sel[s.id]||[]).length}</small></div>`).join('')}
+     <button class="pri" style="margin-top:12px;width:100%" data-go="reporte">📄 Generar reporte</button>
+    </div>
+   </div>
+  </div>`;
+}
+function vistaSec(s){
+  const p=P(),sel=p.sel[s.id]||[],ops=optsDe(s);
+  let prev='';
+  if(s.preview){const on=ops.filter(o=>sel.includes(o.id)&&o.hd);prev=`<h2>Vista previa combinada</h2><div class="mh" style="font-size:12px;padding:8px 10px">${on.map((o,i)=>(o.id==='guardado'?'<span class="sp"></span>':'')+o.hd).join(' ')||'<small>Elige elementos abajo</small>'}</div>`}
+  return `<h1>${s.icono} ${s.titulo}</h1><p class="mt">${s.desc} ${s.single?'<span class="tag">ELECCIÓN ÚNICA</span>':''}</p>
+  <div class="info">${s.info}</div>${prev}
+  <div class="row" style="margin:16px 0 10px"><b style="flex:1">${sel.length} de ${ops.length} elegidas</b>
+   ${s.single?'':`<button class="sm" data-sa="all">Todas</button><button class="sm" data-sa="none">Ninguna</button><button class="sm" data-sa="def">Predeterminadas</button>`}
+   <button class="sm" data-sa="lamina" title="Descarga una imagen con las referencias visuales de lo que elegiste en esta sección">⬇ Lámina de lo elegido (PNG)</button><button class="sm pri" data-sa="add">+ Entrada propia</button></div>
+  <div class="grid">${ops.map(o=>tarjeta(s,o,sel.includes(o.id))).join('')}</div>
+  <h2>Nota de esta sección para la IA (este proyecto)</h2>
+  <textarea data-ns="${s.id}" placeholder="Indicaciones extra de esta sección para este proyecto…">${esc(p.notasSec[s.id]||'')}</textarea>`;
+}
+function tarjeta(s,o,on){
+  const k=kOf(s.id,o.id),img=S.imgs[k],ov=S.overrides[k]!=null;
+  const demo=o.demo||(img?`<img src="${img}" style="max-width:100%;max-height:100%">`:`<div style="font-size:30px;opacity:.6">🧷</div>`);
+  return `<div class="card ${on?'on':''}" data-k="${k}">
+   <div class="demo">${demo}</div>
+   <div class="cb">
+    <label class="chk"><input type="${s.single?'radio':'checkbox'}" name="r_${s.id}" data-sel="${s.id}" value="${o.id}" ${on?'checked':''}> ${esc(o.n)} ${o.custom?'<span class="tag">PROPIA</span>':''}</label>
+    <p>${esc(o.d)}</p>
+    ${img&&o.demo?`<img class="ref" src="${img}" alt="Referencia">`:''}
+    <div class="row"><button class="sm" data-ca="prompt">✎ Prompt${ov?' *':''}</button><button class="sm" data-ca="img" title="Subir una imagen tuya como referencia">📎 ${img?'Cambiar imagen':'Subir imagen'}</button>${(o.demo||img)?'<button class="sm" data-ca="dl" title="Descargar esta referencia visual como imagen PNG">⬇ Referencia</button>':''}${img?'<button class="sm dn" data-ca="noimg">Quitar img</button>':''}${o.custom?'<button class="sm dn" data-ca="del">🗑</button>':''}</div>
+    <div class="ptx" hidden><textarea data-ov="${k}">${esc(promptDe(s.id,o))}</textarea><div class="row" style="margin-top:4px"><small style="flex:1">Se guarda solo. Texto que irá al reporte.</small>${ov?'<button class="sm" data-ca="reset">Restaurar</button>':''}</div></div>
+   </div></div>`;
+}
+/* ---------- Reporte ---------- */
+const REGLAS=[
+ 'El TEMA PRINCIPAL manda: las secciones son la estructura estándar; adapta contenido, textos, íconos y (si se indica) colores al tema.',
+ 'Interfaz y textos en español (México); formatos de fecha dd/mm/aaaa, moneda MXN, hora 24 h.',
+ 'No perder datos nunca: autoguardado, confirmación antes de borrar y respaldo por exportación JSON.',
+ 'Entrega el código completo y funcional (no fragmentos), comentado por secciones.',
+ 'Si una imagen de referencia acompaña una característica, úsala como guía visual de forma y distribución, no como copia exacta.',
+ 'Al final, lista qué se implementó, qué quedó pendiente y sugerencias.'
+];
+function construir(p,{todo=false}={}){
+  const bloques=[];
+  SEC.forEach(s=>{
+    const sel=p.sel[s.id]||[];
+    const items=optsDe(s).filter(o=>todo||sel.includes(o.id)).map(o=>({n:o.n,d:o.d,p:promptDe(s.id,o),img:S.imgs[kOf(s.id,o.id)],k:kOf(s.id,o.id)}));
+    const nota=todo?'':(p.notasSec[s.id]||'').trim();
+    if(items.length||nota)bloques.push({s,items,nota});
+  });
+  return bloques;
+}
+function reporteMD(p,opc={}){const vis=opc.vis;
+  const tipo=optsDe(secById('tipo')).find(o=>(p.sel.tipo||[])[0]===o.id);
+  const bl=construir(p);let n=0;const imgs=[];
+  let md=`# Especificación de aplicación: ${p.nombre}\n\n> Generado con Organizador de Secciones · ${hoy()} · versión solicitada ${p.version||'1.0'}\n\n`;
+  md+=`## 1. Proyecto\n- **Nombre:** ${p.nombre}\n- **Tema principal:** ${p.tema||'(sin definir)'}\n- **Tipo:** ${tipo?tipo.n:'—'}\n`;
+  if(p.descripcion)md+=`- **Qué hace:** ${p.descripcion}\n`;
+  if(p.usuario)md+=`- **Usuario / entorno:** ${p.usuario}\n`;
+  if(p.promptBase)md+=`\n## Instrucción principal\n${p.promptBase}\n`;
+  md+=`\n## 2. Reglas generales\n${REGLAS.map(r=>'- '+r).join('\n')}\n`;
+  n=2;
+  bl.forEach(b=>{n++;md+=`\n## ${n}. ${b.s.titulo}\n`;
+    b.items.forEach(it=>{md+=`- **${it.n}:** ${it.p}`;if(vis&&vis.has(it.k)){md+=` _(ver referencia visual ${vis.get(it.k).n})_`}else if(it.img){imgs.push(it);md+=` _(ver imagen de referencia ${imgs.length})_`}md+='\n'});
+    if(b.nota)md+=`\n> Nota: ${b.nota}\n`;
+  });
+  if(imgs.length)md+=`\n## Imágenes de referencia\n${imgs.map((it,i)=>`${i+1}. ${it.n} — adjunta como imagen (${slug(it.n)}.jpg)`).join('\n')}\n`;
+  if(vis&&vis.size)md+=`\n## Referencias visuales\nSe adjuntan láminas con imágenes numeradas. Úsalas como guía de forma, distribución y proporciones, no como copia exacta; si hay duda, manda el texto.\n`+[...vis.values()].map(v=>`${v.n}. ${v.sec} — ${v.nombre} → ${v.lam.split('/').pop()}`).join('\n')+'\n';
+  return md;
+}
+function vistaReporte(){
+  const p=P(),md=reporteMD(p);const ni=construir(p).reduce((a,b)=>a+b.items.filter(i=>i.img).length,0);
+  return `<h1>📄 Reporte para la IA</h1><p class="mt">Copia este texto y pégalo a Claude (u otra IA). ${ni?`Tiene ${ni} imagen(es) de referencia subidas por ti.`:''} Para dar <b>referencias visuales</b> en vez de solo texto, usa <b>Reporte + imágenes (.zip)</b>: trae el reporte y una lámina PNG por sección con lo que elegiste.</p>
+  <div class="row noprint" style="margin:12px 0"><button class="pri" data-x="repcopy">📋 Copiar</button><button data-x="repmd">⬇ .md</button><button class="pri" data-x="vispack">🖼 Reporte + imágenes (.zip)</button><button data-x="vishtml">⬇ .html visual</button><button data-x="rephtml">⬇ .html (solo tus imágenes subidas)</button><button data-x="print">🖨 Imprimir / PDF</button><button data-go="proyecto">✎ Editar proyecto</button></div>
+  <pre class="rep" id="repTxt">${esc(md)}</pre>`;
+}
+function reporteHTML(p,todo=false,vis=null){
+  const bl=construir(p,{todo});
+  const css='body{font-family:Segoe UI,system-ui,sans-serif;max-width:900px;margin:30px auto;padding:0 20px;color:#1b2230;line-height:1.5}h1{border-bottom:3px solid #4f8cff;padding-bottom:6px}h2{margin-top:28px;color:#2a4a8a}li{margin:6px 0}img{max-width:420px;max-height:300px;display:block;margin:6px 0;border:1px solid #ccd;border-radius:6px}.m{color:#667}.n{background:#fff8e1;border-left:3px solid #f5a524;padding:6px 10px}';
+  let h=`<!DOCTYPE html><html lang="es"><head><meta charset="utf-8"><title>${esc(todo?'Manual del diccionario':'Especificación: '+p.nombre)}</title><style>${css}</style></head><body>`;
+  if(todo){h+=`<h1>Manual del diccionario de secciones</h1><p class="m">Organizador de Secciones · ${hoy()}</p>`}
+  else{
+    h+=`<h1>Especificación de aplicación: ${esc(p.nombre)}</h1><p class="m">Generado ${hoy()} · versión ${esc(p.version||'1.0')}</p><h2>Proyecto</h2><ul><li><b>Tema principal:</b> ${esc(p.tema)}</li><li><b>Qué hace:</b> ${esc(p.descripcion)}</li><li><b>Usuario:</b> ${esc(p.usuario)}</li></ul>`;
+    if(p.promptBase)h+=`<h2>Instrucción principal</h2><p>${esc(p.promptBase)}</p>`;
+    h+=`<h2>Reglas generales</h2><ul>${REGLAS.map(r=>`<li>${esc(r)}</li>`).join('')}</ul>`;
+  }
+  bl.forEach(b=>{h+=`<h2>${b.s.icono} ${esc(b.s.titulo)}</h2>`;if(todo)h+=`<div class="m">${b.s.info}</div>`;
+    h+='<ul>'+b.items.map(it=>`<li><b>${esc(it.n)}</b>${todo?` — <span class="m">${esc(it.d)}</span><br>`:': '}${esc(it.p)}${vis&&vis.get(it.k)?`<img src="${vis.get(it.k).dataUrl}">`:it.img?`<img src="${it.img}">`:''}</li>`).join('')+'</ul>';
+    if(b.nota)h+=`<p class="n">${esc(b.nota)}</p>`;});
+  return (vis?h.replace('max-width:420px;max-height:300px','max-width:560px;max-height:460px'):h)+'</body></html>';
+}
+function manualMD(){
+  let md=`# Manual del diccionario de secciones\n\n> Organizador de Secciones · ${hoy()}\n`;
+  SEC.forEach(s=>{md+=`\n## ${s.icono} ${s.titulo}\n${s.desc}\n\n${s.info.replace(/<li>/g,'\n- ').replace(/<[^>]+>/g,'')}\n\n`;
+    optsDe(s).forEach(o=>{md+=`### ${o.n}\n${o.d}\n\n**Prompt:** ${promptDe(s.id,o)}\n\n`})});
+  return md;
+}
+function vistaManual(){
+  return `<h1>📘 Manual / guía</h1><p class="mt">Todo el diccionario con explicación, buenas prácticas y el prompt de cada característica. Sirve como tu "estándar" escrito.</p>
+  <div class="row noprint" style="margin:12px 0"><button class="pri" data-x="manual">⬇ Manual .md</button><button data-x="manualhtml">⬇ Manual .html con imágenes</button></div>
+  ${SEC.map(s=>`<div class="panel" style="margin-bottom:12px"><h2 style="margin-top:0">${s.icono} ${s.titulo}</h2><p class="mt">${s.desc}</p><div class="info" style="margin:8px 0">${s.info}</div>
+   <table style="width:100%;border-collapse:collapse;font-size:13px">${optsDe(s).map(o=>`<tr style="border-top:1px solid var(--bd)"><td style="padding:6px 8px;width:30%;vertical-align:top"><b>${esc(o.n)}</b><br><small>${esc(o.d)}</small></td><td style="padding:6px 8px" class="mt">${esc(promptDe(s.id,o))}</td></tr>`).join('')}</table></div>`).join('')}`;
+}
+function vistaSug(){
+  return `<h1>💡 Sugerencias para próximas versiones</h1><p class="mt">Marca las que te interesen; las vemos en la siguiente iteración.</p>
+  ${SUGERENCIAS.map((s,i)=>`<label class="sug"><input type="checkbox" data-sug="${i}" ${S.ui.sug[i]?'checked':''}><div><b>${s[0]}</b><small>${s[1]}</small></div></label>`).join('')}
+  <button class="pri" data-x="sugcopy">📋 Copiar las marcadas</button>`;
+}
+/* Demos interactivos: marcar estado actual */
+function marcarDemos(){
+  $$('[data-demo="tema"] button').forEach(b=>b.classList.toggle('on',b.dataset.v===S.ui.tema));
+  $$('[data-demo="acento"] i').forEach(i=>i.classList.toggle('on',i.dataset.v===S.ui.acento));
+}
+
+/* =========================================================
+   Eventos del contenido
+   ========================================================= */
+$('#nav').addEventListener('click',e=>{const a=e.target.closest('a[data-v]');if(a){S.ui.vista=a.dataset.v;guardar();renderNav($('#buscar').value);renderMain()}});
+$('#main').addEventListener('change',e=>{
+  const t=e.target,p=P();
+  if(t.dataset.sel){const s=secById(t.dataset.sel);
+    if(s.single)p.sel[s.id]=[t.value];
+    else{const a=new Set(p.sel[s.id]||[]);t.checked?a.add(t.value):a.delete(t.value);p.sel[s.id]=[...a]}
+    guardar();renderNav($('#buscar').value);
+    if(s.preview||s.single)renderMain();else t.closest('.card').classList.toggle('on',t.checked);
+    if(s.id==='tipo')renderHeader();
+  }
+  if(t.dataset.sug!=null){S.ui.sug[t.dataset.sug]=t.checked;guardar()}
+});
+$('#main').addEventListener('input',e=>{
+  const t=e.target,p=P();
+  if(t.dataset.pf){p[t.dataset.pf]=t.value;guardar();if(t.dataset.pf==='nombre')renderHeader()}
+  if(t.dataset.ns){p.notasSec[t.dataset.ns]=t.value;guardar()}
+  if(t.dataset.ov){S.overrides[t.dataset.ov]=t.value;guardar()}
+});
+let imgTarget=null;
+$('#main').addEventListener('click',e=>{
+  const t=e.target,p=P();
+  const go=t.closest('[data-go]');if(go){S.ui.vista=go.dataset.go;guardar();renderNav();renderMain();return}
+  const pit=t.closest('[data-pid]');if(pit){S.activo=pit.dataset.pid;guardar();render();return}
+  const pa=t.dataset.pa;
+  if(pa==='nuevo'){const np=nuevoPerfil('Nueva app');S.perfiles.push(np);S.activo=np.id;guardar();render();toast('Proyecto creado');return}
+  if(pa==='dup'){const np=JSON.parse(JSON.stringify(p));np.id=uid();np.nombre+=' (copia)';np.creado=new Date().toISOString();S.perfiles.push(np);S.activo=np.id;guardar();render();toast('Proyecto duplicado');return}
+  if(pa==='del'){if(S.perfiles.length<2)return toast('Debe quedar al menos un proyecto');
+    modal('¿Borrar proyecto?',`<p>Se borrará <b>${esc(p.nombre)}</b>. El diccionario y las notas no se tocan.</p>`,[{t:'Cancelar'},{t:'Borrar',c:'pri',fn:()=>{S.perfiles=S.perfiles.filter(x=>x.id!==p.id);S.activo=S.perfiles[0].id;guardar();render();toast('Proyecto borrado')}}]);return}
+  const sa=t.dataset.sa;
+  if(sa){const s=secById(S.ui.vista);
+    if(sa==='all')p.sel[s.id]=optsDe(s).map(o=>o.id);
+    if(sa==='none')p.sel[s.id]=[];
+    if(sa==='def')p.sel[s.id]=s.opts.filter(o=>o.def).map(o=>o.id);
+    if(sa==='add')return nuevaEntrada(s);
+    if(sa==='lamina'){descargarLamina(s);return}
+    guardar();renderNav();renderMain();return}
+  const ca=t.dataset.ca;
+  if(ca){const card=t.closest('.card'),k=card.dataset.k,[sid,oid]=k.split(':');
+    if(ca==='prompt'){const x=card.querySelector('.ptx');x.hidden=!x.hidden;if(!x.hidden)x.querySelector('textarea').focus()}
+    if(ca==='reset'){delete S.overrides[k];guardar();renderMain()}
+    if(ca==='img'){imgTarget=k;$('#fileImg').click()}
+    if(ca==='dl')descargarReferencia(k);
+    if(ca==='noimg'){delete S.imgs[k];guardar();renderMain()}
+    if(ca==='del')modal('¿Borrar entrada propia?','<p>Se quitará del diccionario y de todos los proyectos.</p>',[{t:'Cancelar'},{t:'Borrar',c:'pri',fn:()=>{S.custom[sid]=(S.custom[sid]||[]).filter(o=>o.id!==oid);S.perfiles.forEach(x=>x.sel[sid]=(x.sel[sid]||[]).filter(i=>i!==oid));delete S.imgs[k];delete S.overrides[k];guardar();renderNav();renderMain()}}]);
+    return}
+  // Demos interactivos
+  const dt=t.closest('[data-demo="tema"] button');if(dt){S.ui.tema=dt.dataset.v;guardar();aplicarTema();marcarDemos();return}
+  const da=t.closest('[data-demo="acento"] i');if(da){S.ui.acento=da.dataset.v;guardar();aplicarTema();marcarDemos();return}
+  const ds=t.closest('[data-demo="seg"] button');if(ds){[...ds.parentNode.children].forEach(b=>b.classList.toggle('on',b===ds));return}
+  const dc=t.closest('[data-demo="chips"] span');if(dc){dc.classList.toggle('on');return}
+  const st=t.closest('[data-demo="stars"] span');if(st){const all=[...st.parentNode.children],i=all.indexOf(st);all.forEach((x,j)=>x.classList.toggle('on',j<=i));return}
+  const sw=t.closest('.swt i');if(sw&&!sw.closest('[data-demo]')){[...sw.parentNode.children].forEach(x=>x.classList.toggle('on',x===sw))}
+});
+function nuevaEntrada(s){
+  modal(`Nueva entrada en "${s.titulo}"`,`<div class="fld"><label>Nombre</label><input type="text" id="ceN"></div><div class="fld"><label>Descripción corta</label><input type="text" id="ceD"></div><div class="fld"><label>Prompt para la IA</label><textarea id="ceP" placeholder="Cómo debe ser esta parte…"></textarea></div><small>La imagen de referencia se agrega después con 📎 en la tarjeta.</small>`,
+  [{t:'Cancelar'},{t:'Agregar',c:'pri',fn:ov=>{const n=ov.querySelector('#ceN').value.trim();if(!n){toast('Pon un nombre');return false}
+    const o={id:'c'+uid(),n,d:ov.querySelector('#ceD').value.trim(),p:ov.querySelector('#ceP').value.trim()||n};
+    (S.custom[s.id]=S.custom[s.id]||[]).push(o);const p=P();p.sel[s.id]=s.single?[o.id]:[...(p.sel[s.id]||[]),o.id];guardar();renderNav();renderMain();toast('Entrada agregada')}}]);
+}
+/* Imagen de referencia: se reduce a 1000px JPG para ahorrar espacio */
+$('#fileImg').addEventListener('change',e=>{
+  const f=e.target.files[0];e.target.value='';if(!f||!imgTarget)return;
+  const rd=new FileReader();rd.onload=()=>{const im=new Image();im.onload=()=>{
+    const mx=1000,sc=Math.min(1,mx/Math.max(im.width,im.height)),c=document.createElement('canvas');
+    c.width=Math.round(im.width*sc);c.height=Math.round(im.height*sc);const x=c.getContext('2d');x.fillStyle='#fff';x.fillRect(0,0,c.width,c.height);x.drawImage(im,0,0,c.width,c.height);
+    S.imgs[imgTarget]=c.toDataURL('image/jpeg',.8);guardar();renderMain();toast('Imagen de referencia agregada')};im.src=rd.result};rd.readAsDataURL(f);
+});
+
+/* =========================================================
+   Encabezado: perfil, tipo, tema, menús
+   ========================================================= */
+$('#selPerfil').onchange=e=>{S.activo=e.target.value;guardar();render()};
+$('#selTipo').onchange=e=>{P().sel.tipo=[e.target.value];guardar();renderNav();if(S.ui.vista==='tipo'||S.ui.vista==='reporte')renderMain();toast('Tipo: '+e.target.selectedOptions[0].text)};
+$('#btnTema').onclick=()=>{S.ui.tema=document.body.dataset.tema==='oscuro'?'claro':'oscuro';guardar();aplicarTema();marcarDemos()};
+$('#btnRep').onclick=()=>{S.ui.vista='reporte';guardar();renderNav();renderMain()};
+$$('.dd>button').forEach(b=>b.onclick=e=>{e.stopPropagation();const d=b.parentNode,o=d.classList.contains('open');$$('.dd').forEach(x=>x.classList.remove('open'));if(!o)d.classList.add('open')});
+document.addEventListener('click',()=>$$('.dd').forEach(x=>x.classList.remove('open')));
+
+function paquete(tipo){
+  const base={app:'organizador-secciones',version:S.version,tipo,exportado:new Date().toISOString()};
+  if(tipo==='completo')return {...base,datos:S};
+  if(tipo==='perfil')return {...base,perfil:P()};
+  return {...base,diccionario:{custom:S.custom,overrides:S.overrides,imgs:S.imgs}};
+}
+function exportar(x){
+  const p=P(),nom=slug(p.nombre);
+  if(x==='repmd')descargar(`Reporte_${nom}_${fstamp()}.md`,reporteMD(p),'text/markdown');
+  if(x==='rephtml')descargar(`Reporte_${nom}_${fstamp()}.html`,reporteHTML(p),'text/html');
+  if(x==='repcopy')navigator.clipboard.writeText(reporteMD(p)).then(()=>toast('Reporte copiado'),()=>toast('No se pudo copiar'));
+  if(x==='print'){S.ui.vista='reporte';renderNav();renderMain();setTimeout(()=>print(),150)}
+  if(x==='full')descargar(`OrganizadorSecciones_respaldo_${fstamp()}.json`,JSON.stringify(paquete('completo'),null,1),'application/json');
+  if(x==='perfil')descargar(`Proyecto_${nom}_${fstamp()}.json`,JSON.stringify(paquete('perfil'),null,1),'application/json');
+  if(x==='dicc')descargar(`Diccionario_${fstamp()}.json`,JSON.stringify(paquete('diccionario'),null,1),'application/json');
+  if(x==='vispack')paqueteVisual(p,'todo');
+  if(x==='laminas')paqueteVisual(p,'laminas');
+  if(x==='vishtml')reporteVisual(p);
+  if(x==='manual')descargar(`Manual_Secciones_${fstamp()}.md`,manualMD(),'text/markdown');
+  if(x==='manualhtml')descargar(`Manual_Secciones_${fstamp()}.html`,reporteHTML(p,true),'text/html');
+  if(x==='notas')descargar(`Correcciones_${nom}_${fstamp()}.md`,notasMD(),'text/markdown');
+  if(x==='sugcopy'){const t=SUGERENCIAS.filter((_,i)=>S.ui.sug[i]).map(s=>`- ${s[0]}: ${s[1]}`).join('\n');if(!t)return toast('No has marcado ninguna');navigator.clipboard.writeText(t).then(()=>toast('Copiadas'))}
+  if(['full','perfil','dicc'].includes(x))toast('Exportado');
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-x]');if(b)exportar(b.dataset.x)});
+document.addEventListener('click',e=>{const b=e.target.closest('[data-i]');if(!b)return;
+  if(b.dataset.i==='json')$('#fileJson').click();
+  if(b.dataset.i==='paste')navigator.clipboard.readText().then(importarTexto,()=>toast('No se pudo leer el portapapeles'));
+});
+$('#fileJson').addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';if(f)f.text().then(importarTexto)});
+function importarTexto(txt){
+  let d;try{d=JSON.parse(txt)}catch(e){return toast('El archivo no es JSON válido')}
+  if(d.app!=='organizador-secciones')return toast('Este JSON no es del Organizador de Secciones');
+  if(d.tipo==='perfil'){
+    modal('Importar proyecto',`<p>Proyecto: <b>${esc(d.perfil.nombre)}</b></p>`,[{t:'Cancelar'},{t:'Agregar como nuevo',c:'pri',fn:()=>{const np={...d.perfil,id:uid()};S.perfiles.push(np);S.activo=np.id;guardar();render();toast('Proyecto importado')}}]);
+  }else if(d.tipo==='diccionario'){
+    const n=Object.values(d.diccionario.custom||{}).flat().length;
+    modal('Importar diccionario',`<p>${n} entradas propias, ${Object.keys(d.diccionario.overrides||{}).length} prompts editados, ${Object.keys(d.diccionario.imgs||{}).length} imágenes.</p><p class="mt">Combinar agrega/actualiza sin borrar lo tuyo. Reemplazar deja solo lo del archivo.</p>`,
+     [{t:'Cancelar'},{t:'Reemplazar',fn:()=>{Object.assign(S,{custom:d.diccionario.custom||{},overrides:d.diccionario.overrides||{},imgs:d.diccionario.imgs||{}});guardar();render();toast('Diccionario reemplazado')}},
+      {t:'Combinar',c:'pri',fn:()=>{const c=d.diccionario.custom||{};Object.keys(c).forEach(s=>{const a=S.custom[s]=S.custom[s]||[];c[s].forEach(o=>{const i=a.findIndex(x=>x.id===o.id);i>=0?a[i]=o:a.push(o)})});Object.assign(S.overrides,d.diccionario.overrides||{});Object.assign(S.imgs,d.diccionario.imgs||{});guardar();render();toast('Diccionario combinado')}}]);
+  }else if(d.tipo==='completo'){
+    const x=d.datos;
+    modal('Importar respaldo completo',`<p>${x.perfiles.length} proyectos · ${x.notas.length} notas · exportado ${new Date(d.exportado).toLocaleString('es-MX')}</p><p class="mt">Antes de aplicar se descarga un respaldo de lo actual.</p>`,
+     [{t:'Cancelar'},{t:'Reemplazar todo',fn:()=>{exportar('full');S=x;guardar();render();toast('Respaldo restaurado')}},
+      {t:'Combinar',c:'pri',fn:()=>{exportar('full');x.perfiles.forEach(p=>{if(!S.perfiles.some(q=>q.id===p.id))S.perfiles.push(p)});x.notas.forEach(n=>{if(!S.notas.some(q=>q.id===n.id))S.notas.push(n)});
+        Object.keys(x.custom||{}).forEach(s=>{const a=S.custom[s]=S.custom[s]||[];x.custom[s].forEach(o=>{if(!a.some(q=>q.id===o.id))a.push(o)})});S.overrides={...x.overrides,...S.overrides};S.imgs={...x.imgs,...S.imgs};guardar();render();toast('Respaldo combinado')}}]);
+  }else toast('Tipo de archivo desconocido');
+}
+/* Arrastrar y soltar */
+let dragN=0;
+addEventListener('dragenter',e=>{if(e.dataTransfer.types.includes('Files')){dragN++;$('#drop').style.display='grid'}});
+addEventListener('dragleave',()=>{if(--dragN<=0){dragN=0;$('#drop').style.display='none'}});
+addEventListener('dragover',e=>e.preventDefault());
+addEventListener('drop',e=>{e.preventDefault();dragN=0;$('#drop').style.display='none';const f=e.dataTransfer.files[0];if(f&&/json/i.test(f.type+f.name))f.text().then(importarTexto);else if(f)toast('Solo se importan archivos .json')});
+
+/* =========================================================
+   Notas
+   ========================================================= */
+const secNombre=id=>id==='general'?'General':(secById(id)||VISTAS.find(v=>v.id===id)||{titulo:id}).titulo;
+function renderNotas(){
+  $('#nSec').innerHTML=`<option value="general">General</option>`+[...VISTAS.slice(0,1),...SEC,...VISTAS.slice(1)].map(s=>`<option value="${s.id}" ${s.id===S.ui.vista?'selected':''}>${s.titulo}</option>`).join('');
+  const f=S.ui.filtroNotas||'pend';$$('#nFil button').forEach(b=>b.classList.toggle('on',b.dataset.f===f));
+  const ord={alta:0,media:1,baja:2};
+  const L=S.notas.filter(n=>f==='todas'||(f==='pend'?n.estado!=='hecha':n.estado==='hecha')).sort((a,b)=>ord[a.prio]-ord[b.prio]||b.fecha.localeCompare(a.fecha));
+  $('#nList').innerHTML=L.length?L.map(n=>`<div class="nota ${n.estado==='hecha'?'hecha':''}" data-nid="${n.id}">
+   <div class="row"><span class="pill ${n.prio==='alta'?'d':n.prio==='media'?'w':''}">${n.prio}</span><small style="flex:1">📍 ${esc(secNombre(n.sec))} · ${new Date(n.fecha).toLocaleString('es-MX',{dateStyle:'short',timeStyle:'short'})}</small></div>
+   <div class="t">${esc(n.txt)}</div>
+   <div class="row"><button class="sm" data-na="ok">${n.estado==='hecha'?'↺ Reabrir':'✔ Corregida'}</button><button class="sm" data-na="edit">✎</button><button class="sm dn" data-na="del">🗑</button></div></div>`).join(''):'<p class="mt" style="text-align:center">Sin notas aquí.</p>';
+  renderHeader();
+}
+function notasMD(){
+  const p=P(),pend=S.notas.filter(n=>n.estado!=='hecha');
+  let md=`# Correcciones solicitadas — ${p.nombre} (v${p.version||'1.0'})\n\n> ${hoy()} · ${pend.length} pendientes. Aplica estas correcciones sobre el archivo adjunto, sin romper lo que ya funciona, y devuelve el archivo completo con la versión incrementada.\n`;
+  const g={};pend.forEach(n=>(g[n.sec]=g[n.sec]||[]).push(n));
+  Object.keys(g).forEach(s=>{md+=`\n## ${secNombre(s)}\n`+g[s].map(n=>`- [${n.prio}] ${n.txt}`).join('\n')+'\n'});
+  return md;
+}
+function abrirNotas(v){$('#notas').classList.toggle('open',v??!$('#notas').classList.contains('open'));if($('#notas').classList.contains('open')){renderNotas();$('#nTxt').focus()}}
+$('#fab').onclick=()=>abrirNotas();$('#nClose').onclick=()=>abrirNotas(false);
+$('#nExp').onclick=()=>modal('Exportar notas','<p>Las notas pendientes se exportan como "prompt de corrección" para pegarlo a la IA junto con el archivo de la app.</p>',[{t:'Cerrar'},{t:'Copiar',fn:()=>{navigator.clipboard.writeText(notasMD()).then(()=>toast('Copiado'))}},{t:'Descargar .md',c:'pri',fn:()=>exportar('notas')}]);
+$('#nAdd').onclick=()=>{const t=$('#nTxt').value.trim();if(!t)return;S.notas.push({id:uid(),txt:t,sec:$('#nSec').value,prio:$('#nPrio').value,estado:'pend',fecha:new Date().toISOString()});$('#nTxt').value='';guardar();renderNotas();toast('Nota agregada')};
+$('#nTxt').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey))$('#nAdd').click()});
+$('#nFil').onclick=e=>{const b=e.target.closest('button');if(b){S.ui.filtroNotas=b.dataset.f;guardar();renderNotas()}};
+$('#nList').onclick=e=>{const b=e.target.closest('[data-na]');if(!b)return;const n=S.notas.find(x=>x.id===b.closest('[data-nid]').dataset.nid);
+  if(b.dataset.na==='ok'){n.estado=n.estado==='hecha'?'pend':'hecha';guardar();renderNotas()}
+  if(b.dataset.na==='edit')modal('Editar nota',`<textarea id="enT">${esc(n.txt)}</textarea>`,[{t:'Cancelar'},{t:'Guardar',c:'pri',fn:ov=>{n.txt=ov.querySelector('#enT').value;guardar();renderNotas()}}]);
+  if(b.dataset.na==='del'){const i=S.notas.indexOf(n);S.notas.splice(i,1);guardar();renderNotas();toast('Nota borrada')}
+};
+
+/* =========================================================
+   Atajos de teclado
+   ========================================================= */
+addEventListener('keydown',e=>{
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='s'){e.preventDefault();exportar('full')}
+  if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){e.preventDefault();$('#buscar')?.focus()}
+  if(e.altKey&&e.key.toLowerCase()==='n'){e.preventDefault();abrirNotas(true)}
+  if(e.key==='Escape'){const ov=$('.ov');if(ov)ov.remove();else abrirNotas(false)}
+});
+matchMedia('(prefers-color-scheme: light)').addEventListener('change',()=>{if(S.ui.tema==='sistema')aplicarTema()});
+
+/* =========================================================
+   Referencias visuales: descargar las demos como imagen PNG
+   (para dárselas a la IA como guía visual, sin depender del prompt)
+   ========================================================= */
+const REFW=360,REFH=170,REFSC=2,REFPAD=14,REFHEAD=40;
+const REFVARS=['--bg','--pn','--pn2','--bd','--tx','--mt','--mut','--mut2','--ac','--ac2','--ac3','--dn','--ok','--r'];
+const refVars=()=>{const cs=getComputedStyle(document.body),o={};REFVARS.forEach(v=>o[v]=cs.getPropertyValue(v).trim());return o};
+const cargarImg=src=>new Promise((ok,ko)=>{const im=new Image();im.onload=()=>ok(im);im.onerror=()=>ko(new Error('No cargó la imagen'));im.src=src});
+const canvasBlob=c=>new Promise((ok,ko)=>c.toBlob(b=>b?ok(b):ko(new Error('canvas')),'image/png'));
+const blobBytes=async b=>new Uint8Array(await b.arrayBuffer());
+const txtBytes=t=>new TextEncoder().encode(t);
+const pad2=n=>String(n).padStart(2,'0');
+const corto=s=>slug(s).slice(0,40);
+function descargarBlob(nombre,blob){const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=nombre;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),2500)}
+function opcPorK(k){const [sid,oid]=k.split(':'),s=secById(sid);return {s,o:s?optsDe(s).find(x=>x.id===oid):null}}
+
+/* ZIP mínimo (sin compresión) para empaquetar varios archivos sin librerías */
+function crc32(u8){if(!crc32.t){crc32.t=[];for(let n=0,c;n<256;n++){c=n;for(let k=0;k<8;k++)c=c&1?0xEDB88320^(c>>>1):c>>>1;crc32.t[n]=c>>>0}}
+  let crc=-1;for(let i=0;i<u8.length;i++)crc=crc32.t[(crc^u8[i])&255]^(crc>>>8);return(crc^-1)>>>0}
+function zip(files){
+  const parts=[],cd=[];let off=0;
+  const d=new Date(),dt=(d.getHours()<<11)|(d.getMinutes()<<5)|(d.getSeconds()>>1),dd=((d.getFullYear()-1980)<<9)|((d.getMonth()+1)<<5)|d.getDate();
+  files.forEach(f=>{
+    const nm=txtBytes(f.name),crc=crc32(f.data),sz=f.data.length;
+    const lh=new DataView(new ArrayBuffer(30));
+    lh.setUint32(0,0x04034b50,true);lh.setUint16(4,20,true);lh.setUint16(6,0x0800,true);lh.setUint16(8,0,true);lh.setUint16(10,dt,true);lh.setUint16(12,dd,true);
+    lh.setUint32(14,crc,true);lh.setUint32(18,sz,true);lh.setUint32(22,sz,true);lh.setUint16(26,nm.length,true);lh.setUint16(28,0,true);
+    parts.push(new Uint8Array(lh.buffer),nm,f.data);
+    const ch=new DataView(new ArrayBuffer(46));
+    ch.setUint32(0,0x02014b50,true);ch.setUint16(4,20,true);ch.setUint16(6,20,true);ch.setUint16(8,0x0800,true);ch.setUint16(10,0,true);ch.setUint16(12,dt,true);ch.setUint16(14,dd,true);
+    ch.setUint32(16,crc,true);ch.setUint32(20,sz,true);ch.setUint32(24,sz,true);ch.setUint16(28,nm.length,true);ch.setUint32(42,off,true);
+    cd.push(new Uint8Array(ch.buffer),nm);
+    off+=30+nm.length+sz;
+  });
+  const cds=cd.reduce((a,b)=>a+b.length,0),end=new DataView(new ArrayBuffer(22));
+  end.setUint32(0,0x06054b50,true);end.setUint16(8,files.length,true);end.setUint16(10,files.length,true);end.setUint32(12,cds,true);end.setUint32(16,off,true);
+  return new Blob([...parts,...cd,new Uint8Array(end.buffer)],{type:'application/zip'});
+}
+
+/* Dibuja el HTML/SVG de una demo con los mismos estilos de la app y lo devuelve como imagen */
+async function demoAImagen(html){
+  const vars=refVars();
+  const host=document.createElement('div');
+  host.style.cssText=`position:fixed;left:-9999px;top:0;width:${REFW}px;pointer-events:none`;
+  host.innerHTML=`<div class="demo" style="width:${REFW}px;height:auto;min-height:${REFH}px;border:0">${html}</div>`;
+  document.body.append(host);
+  const d=host.firstElementChild,h=Math.max(REFH,Math.ceil(d.offsetHeight));
+  d.style.minHeight='';d.style.height=h+'px';d.style.overflow='hidden';
+  const xhtml=new XMLSerializer().serializeToString(d);
+  host.remove();
+  const css=document.querySelector('style').textContent;
+  const defs=document.querySelector('svg defs')?.innerHTML||'';
+  const st=Object.entries(vars).filter(([,v])=>v).map(([k,v])=>`${k}:${v}`).join(';');
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="${REFW}" height="${h}" viewBox="0 0 ${REFW} ${h}" style="${st};font-family:'Segoe UI',system-ui,sans-serif;font-size:14px;color:${vars['--tx']}"><defs>${defs}</defs><style><![CDATA[${css}]]></style><foreignObject x="0" y="0" width="${REFW}" height="${h}">${xhtml}</foreignObject></svg>`;
+  const img=await cargarImg('data:image/svg+xml;charset=utf-8,'+encodeURIComponent(svg));
+  return {img,h};
+}
+
+/* Imagen final de UNA referencia: nombre de la sección + de la opción arriba, la vista abajo */
+async function renderReferencia(s,o,{num=0,preferUp=false}={}){
+  const k=kOf(s.id,o.id),up=S.imgs[k];
+  let src,h,dw=0,dh=0,esDemo=false;
+  if(o.demo&&!(preferUp&&up)){const r=await demoAImagen(o.demo);src=r.img;h=r.h;esDemo=true}
+  else if(up){src=await cargarImg(up);const sc=Math.min(REFW/src.width,280/src.height,1);dw=src.width*sc;dh=src.height*sc;h=Math.max(REFH,Math.round(dh))}
+  else throw new Error('Sin referencia visual');
+  const v=refVars(),W=REFW+REFPAD*2,H=REFHEAD+h+REFPAD*2,c=document.createElement('canvas');
+  c.width=W*REFSC;c.height=H*REFSC;
+  const x=c.getContext('2d');x.scale(REFSC,REFSC);
+  const fuente='"Segoe UI",system-ui,sans-serif',fit=(t,mx)=>{while(t.length>3&&x.measureText(t).width>mx)t=t.slice(0,-2).trimEnd()+'…';return t};
+  x.fillStyle=v['--pn']||'#151a23';x.fillRect(0,0,W,H);
+  x.textBaseline='alphabetic';
+  x.fillStyle=v['--mt']||'#8f9bb0';x.font='600 11px '+fuente;x.fillText(fit((num?num+' · ':'')+s.titulo,REFW),REFPAD,REFPAD+12);
+  x.fillStyle=v['--tx']||'#e7eaf0';x.font='700 15px '+fuente;x.fillText(fit(o.n,REFW),REFPAD,REFPAD+32);
+  const py=REFPAD+REFHEAD,rr=(a,b,w,hh,r)=>{x.beginPath();x.moveTo(a+r,b);x.arcTo(a+w,b,a+w,b+hh,r);x.arcTo(a+w,b+hh,a,b+hh,r);x.arcTo(a,b+hh,a,b,r);x.arcTo(a,b,a+w,b,r);x.closePath()};
+  x.save();rr(REFPAD,py,REFW,h,10);x.clip();
+  if(esDemo)x.drawImage(src,REFPAD,py,REFW,h);
+  else{x.fillStyle=v['--pn2']||'#1c2330';x.fillRect(REFPAD,py,REFW,h);x.drawImage(src,REFPAD+(REFW-dw)/2,py+(h-dh)/2,dw,dh)}
+  x.restore();
+  rr(REFPAD+.5,py+.5,REFW-1,h-1,10);x.strokeStyle=v['--bd']||'#283141';x.lineWidth=1;x.stroke();
+  return c;
+}
+
+/* Junta varias referencias en una sola lámina (2 columnas) */
+function componerLamina(cs,titulo){
+  const cols=cs.length>1?2:1,gap=12*REFSC,top=44*REFSC,cw=cs[0].width;
+  const filas=[];for(let i=0;i<cs.length;i+=cols)filas.push(cs.slice(i,i+cols));
+  const hs=filas.map(f=>Math.max(...f.map(c=>c.height)));
+  const W=cols*cw+(cols+1)*gap,H=top+hs.reduce((a,b)=>a+b+gap,0);
+  const c=document.createElement('canvas');c.width=W;c.height=H;
+  const x=c.getContext('2d'),v=refVars();
+  x.fillStyle=v['--bg']||'#0e1117';x.fillRect(0,0,W,H);
+  x.fillStyle=v['--tx']||'#e7eaf0';x.font=`700 ${16*REFSC}px "Segoe UI",system-ui,sans-serif`;x.textBaseline='middle';x.fillText(titulo,gap,top/2);
+  let y=top;filas.forEach((f,i)=>{f.forEach((cc,j)=>x.drawImage(cc,gap+j*(cw+gap),y));y+=hs[i]+gap});
+  return c;
+}
+
+/* --- Botón "⬇ Referencia" de cada tarjeta --- */
+async function descargarReferencia(k){
+  const {s,o}=opcPorK(k);if(!o)return;
+  try{const c=await renderReferencia(s,o);descargarBlob(`Ref_${corto(s.titulo)}_${corto(o.n)}.png`,await canvasBlob(c));toast('Referencia descargada (PNG)')}
+  catch(e){console.error(e);toast('No se pudo generar la imagen en este navegador')}
+}
+/* --- Botón "Lámina de lo elegido" de cada sección --- */
+async function descargarLamina(s){
+  const sel=P().sel[s.id]||[],ops=optsDe(s).filter(o=>sel.includes(o.id)&&(o.demo||S.imgs[kOf(s.id,o.id)]));
+  if(!ops.length)return toast('Lo elegido en esta sección no tiene imagen de referencia');
+  toast('Generando lámina…');
+  try{
+    const cs=[];for(let i=0;i<ops.length;i++)cs.push(await renderReferencia(s,ops[i],{num:i+1,preferUp:true}));
+    const hojas=[];for(let i=0;i<cs.length;i+=6)hojas.push(componerLamina(cs.slice(i,i+6),`${s.titulo} — ${P().nombre}`));
+    if(hojas.length===1)descargarBlob(`Lamina_${corto(s.titulo)}_${fstamp()}.png`,await canvasBlob(hojas[0]));
+    else{const fl=[];for(let i=0;i<hojas.length;i++)fl.push({name:`Lamina_${corto(s.titulo)}_${i+1}.png`,data:await blobBytes(await canvasBlob(hojas[i]))});descargarBlob(`Laminas_${corto(s.titulo)}_${fstamp()}.zip`,zip(fl))}
+    toast('Lámina descargada')
+  }catch(e){console.error(e);toast('No se pudo generar la lámina')}
+}
+/* --- Exportaciones del reporte con imágenes --- */
+function visualesDelReporte(p){
+  const its=[];let n=0;
+  construir(p).forEach(b=>b.items.forEach(it=>{
+    const {s,o}=opcPorK(it.k);if(!o||(!o.demo&&!it.img))return;
+    n++;its.push({n,k:it.k,s,o,sec:s.titulo,nombre:it.n});
+  }));
+  return its;
+}
+async function paqueteVisual(p,modo='todo'){
+  toast('Generando imágenes…');
+  try{
+    const its=visualesDelReporte(p);
+    if(!its.length)return toast('Lo elegido no tiene imágenes de referencia');
+    const files=[],porSec=new Map(),nom=slug(p.nombre);
+    for(const it of its){
+      it.c=await renderReferencia(it.s,it.o,{num:it.n,preferUp:true});
+      it.file=`Individuales/${pad2(it.n)}_${corto(it.s.titulo)}_${corto(it.o.n)}.png`;
+      if(modo==='todo')files.push({name:it.file,data:await blobBytes(await canvasBlob(it.c))});
+      if(!porSec.has(it.s.id))porSec.set(it.s.id,[]);porSec.get(it.s.id).push(it);
+    }
+    let ls=0;
+    for(const arr of porSec.values()){ls++;
+      const hojas=[];for(let i=0;i<arr.length;i+=6)hojas.push(arr.slice(i,i+6));
+      for(let i=0;i<hojas.length;i++){
+        const nm=`Laminas/Lamina_${pad2(ls)}_${corto(arr[0].s.titulo)}${hojas.length>1?'_'+(i+1):''}.png`;
+        hojas[i].forEach(a=>a.lam=nm);
+        files.push({name:nm,data:await blobBytes(await canvasBlob(componerLamina(hojas[i].map(a=>a.c),`${arr[0].s.titulo} — ${p.nombre}`)))});
+      }
+    }
+    if(modo==='todo'){
+      const vis=new Map();its.forEach(a=>vis.set(a.k,{n:a.n,file:a.file,lam:a.lam,sec:a.sec,nombre:a.nombre}));
+      files.unshift({name:`Reporte_${nom}.md`,data:txtBytes(reporteMD(p,{vis}))});
+      files.push({name:'LEEME.txt',data:txtBytes('Cómo usarlo con Claude\r\n\r\n1) Adjunta Reporte_'+nom+'.md (o pega su contenido).\r\n2) Adjunta las imágenes de la carpeta Laminas (una por sección, numeradas).\r\n3) Pide los cambios citando el número de referencia, por ejemplo: "usa la distribución de la referencia 3".\r\n\r\nLa carpeta Individuales trae cada referencia por separado por si solo quieres adjuntar una.\r\n')});
+    }
+    descargarBlob(`${modo==='todo'?'Reporte_visual':'Laminas'}_${nom}_${fstamp()}.zip`,zip(files));
+    toast(`Listo: ${its.length} referencias`);
+  }catch(e){console.error(e);toast('No se pudo generar el paquete de imágenes')}
+}
+async function reporteVisual(p){
+  toast('Generando imágenes…');
+  try{
+    const its=visualesDelReporte(p),vis=new Map();
+    if(!its.length)return toast('Lo elegido no tiene imágenes de referencia');
+    for(const it of its){const c=await renderReferencia(it.s,it.o,{num:it.n,preferUp:true});vis.set(it.k,{dataUrl:c.toDataURL('image/png')})}
+    descargar(`Reporte_visual_${slug(p.nombre)}_${fstamp()}.html`,reporteHTML(p,false,vis),'text/html');
+    toast('Reporte visual descargado');
+  }catch(e){console.error(e);toast('No se pudo generar el reporte visual')}
+}
+
+render();
+</script>
+</body>
+</html>
