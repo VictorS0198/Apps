@@ -59,7 +59,9 @@ var APPS=[
  {dir:'horarios',name:'Mis Horarios',desc:'Tus horarios de prepa, idiomas y Arquitectura: semana, calendario, gráficas y reporte en PDF',color:'#3A7D5C',
   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18"/><path d="M8 2v4"/><path d="M16 2v4"/><path d="M8 13h3v3H8z"/></svg>'},
  {dir:'organizador-secciones',name:'Organizador de Secciones',desc:'Estandariza tus apps: elige secciones y referencias visuales, y genera el reporte con imágenes para la IA',color:'#4F8CFF',
-  icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7"/><path d="M17.5 14v7"/></svg>'}
+  icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7"/><path d="M17.5 14v7"/></svg>'},
+ {dir:'optica',name:'Banco Óptico',desc:'Laboratorio de óptica: Snell y Fresnel, lentes, espejos, prisma, interferencia y polarización, con fórmulas y gráficas',color:'#2746C2',
+  icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c2.5 3 2.5 15 0 18c-2.5-3-2.5-15 0-18z"/><path d="M2 8h8"/><path d="M2 16h8"/><path d="M14 9l8 3"/><path d="M14 15l8-3"/></svg>'}
 ];
 document.getElementById('apps').innerHTML=APPS.map(function(a){
  return '<a class="app" href="./'+a.dir+'/"><span class="ic" style="background:'+a.color+'">'+a.icon+'</span><span class="tx"><b>'+a.name+'</b><span>'+a.desc+'</span></span><span class="go" aria-hidden="true">›</span></a>';
