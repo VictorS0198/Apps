@@ -27,6 +27,36 @@ a.app:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
 .tx b{display:block;font-size:17px}
 .tx span{display:block;color:var(--mu);font-size:14px;margin-top:2px}
 .go{margin-left:auto;color:var(--acc);font-size:22px;font-weight:700}
+.bk{margin-top:28px}
+.bk details{border:1px solid var(--ln);border-radius:16px;background:var(--sf);box-shadow:var(--shadow)}
+.bk summary{display:flex;gap:14px;align-items:center;padding:16px 18px;cursor:pointer;list-style:none}
+.bk summary::-webkit-details-marker{display:none}
+.bk summary b{display:block;font-size:17px}.bk summary small{display:block;color:var(--mu);font-size:14px}
+.bk-ic{flex:none;width:44px;height:44px;border-radius:12px;display:grid;place-items:center;background:var(--acc);color:#fff}
+.bk-ic svg{width:24px;height:24px}
+.bk-body{padding:0 18px 18px;border-top:1px solid var(--ln)}
+.bk-note{color:var(--mu);font-size:14px;margin:14px 0}
+.bk-note code{font-size:13px}
+.bk-list{display:grid;gap:2px;margin:6px 0 14px}
+.bk-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:10px}
+.bk-item:hover{background:var(--bg)}
+.bk-item input{width:18px;height:18px;accent-color:var(--acc);flex:none}
+.bk-item .dot{width:10px;height:10px;border-radius:50%;flex:none}
+.bk-item .nm{flex:1;min-width:0}
+.bk-item .sz{color:var(--mu);font-size:13px;text-align:right;white-space:nowrap}
+.bk-item.empty{opacity:.55}
+.bk-row{display:flex;flex-wrap:wrap;gap:8px}
+.btn{font:inherit;font-size:15px;padding:9px 14px;border-radius:10px;border:1px solid var(--ln);background:var(--sf);color:var(--ink);cursor:pointer}
+.btn:hover{border-color:var(--acc)}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff;font-weight:600}
+.btn.ghost{background:transparent}
+.btn:disabled{opacity:.5;cursor:default}
+.btn:focus-visible{outline:3px solid var(--acc);outline-offset:2px}
+#bkImport{margin-top:16px;padding-top:14px;border-top:1px dashed var(--ln)}
+#bkImport h3{font-size:16px;margin:0 0 4px}
+.bk-chk{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--mu);margin:8px 0 12px}
+.bk-msg{min-height:1.2em;font-size:14px;margin:12px 0 0}
+.bk-msg.err{color:#D6402F}
 footer{margin-top:28px;color:var(--mu);font-size:13px}
 </style>
 </head>
@@ -37,45 +67,266 @@ footer{margin-top:28px;color:var(--mu);font-size:13px}
 <p>Toca una para abrirla. Guarda esta página en favoritos o en la pantalla de inicio.</p>
 </header>
 <div class="grid" id="apps"></div>
-<footer>Cada app guarda tus datos en tu cuenta; esta página solo tiene los accesos.</footer>
+<section class="bk" id="bk">
+<details id="bkd">
+<summary><span class="bk-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M4 17v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2"/></svg></span><span><b>Respaldo de datos</b><small>Exporta o restaura los datos de todas las apps en un solo archivo</small></span></summary>
+<div class="bk-body">
+<p class="bk-note">Lee lo que cada app guardó <b>en este navegador</b> (localStorage e IndexedDB, incluidas imágenes y PDF) y lo junta en un archivo <code>.json</code>. Las sesiones de Supabase no se incluyen.</p>
+<div class="bk-list" id="bkList"><p class="bk-note">Revisando…</p></div>
+<div class="bk-row">
+<button type="button" class="btn pri" id="bkExport">Descargar respaldo</button>
+<button type="button" class="btn" id="bkPick">Restaurar desde archivo…</button>
+<input type="file" id="bkFile" accept=".json,application/json" hidden>
+<button type="button" class="btn ghost" id="bkAll">Marcar / desmarcar todo</button>
+</div>
+<div id="bkImport" hidden></div>
+<p class="bk-msg" id="bkMsg" role="status"></p>
+</div>
+</details>
+</section>
+<footer>Cada app guarda sus datos en este navegador (y algunas en tu Supabase); esta página tiene los accesos y el respaldo.</footer>
 </main>
 <script>
-/* Para agregar una app nueva: súmala a esta lista con el nombre de su carpeta. */
+/* Para agregar una app nueva: súmala a esta lista con el nombre de su carpeta.
+   data = dónde guarda sus datos en el navegador (para el respaldo):
+   ls = prefijos de claves de localStorage, lsExact = claves exactas, idb = bases de IndexedDB. */
 var APPS=[
- {dir:'registro-cripto',name:'Registro de actividad',desc:'Ciclos de compra y venta de cripto, posiciones y brokers',color:'#1F8A7E',
+ {dir:'registro-cripto',data:{ls:['registro-cripto.']},name:'Registro de actividad',desc:'Ciclos de compra y venta de cripto, posiciones y brokers',color:'#1F8A7E',
   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 17l5-5 4 4 8-8"/><path d="M14 8h6v6"/></svg>'},
- {dir:'mapa-flujos',name:'Mapa de flujos cripto',desc:'Cómo entra, se mueve y sale tu dinero: cuentas, exchanges, grupos de monedas y tiendas',color:'#C9962B',
+ {dir:'mapa-flujos',data:{ls:['mapaFlujosCripto.']},name:'Mapa de flujos cripto',desc:'Cómo entra, se mueve y sale tu dinero: cuentas, exchanges, grupos de monedas y tiendas',color:'#C9962B',
   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="5" cy="6" r="2.5"/><circle cx="19" cy="6" r="2.5"/><circle cx="12" cy="18" r="2.5"/><path d="M7.5 6h9"/><path d="M6.5 8.2l4 7.5"/><path d="M17.5 8.2l-4 7.5"/></svg>'},
- {dir:'llavero',name:'Llavero',desc:'Control y auditoría de tus cuentas. Se abre vacío; tus datos quedan en tu navegador y, si quieres, en Supabase cifrados',color:'#7A5AC8',
+ {dir:'llavero',data:{ls:['llavero_','credenciales_']},name:'Llavero',desc:'Control y auditoría de tus cuentas. Se abre vacío; tus datos quedan en tu navegador y, si quieres, en Supabase cifrados',color:'#7A5AC8',
   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="8" cy="15" r="4"/><path d="M10.8 12.2L20 3"/><path d="M16 7l3 3"/><path d="M14 9l2 2"/></svg>'},
- {dir:'cotizador',name:'Cotizador de arquitectura',desc:'Honorarios de proyectos: alcance, catálogo de precios, documento e historial',color:'#2D5C88',
+ {dir:'cotizador',data:{ls:['cotarq_']},name:'Cotizador de arquitectura',desc:'Honorarios de proyectos: alcance, catálogo de precios, documento e historial',color:'#2D5C88',
   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 21V9l8-5 8 5v12"/><path d="M9 21v-6h6v6"/><path d="M2 21h20"/></svg>'},
- {dir:'inventario',name:'Mi cuarto · Inventario',desc:'Lo que tengo, cuándo lo compré y cuánto costó',color:'#4472D8',
+ {dir:'inventario',data:{ls:['inventario-'],idb:['inventario-cuarto']},name:'Mi cuarto · Inventario',desc:'Lo que tengo, cuándo lo compré y cuánto costó',color:'#4472D8',
   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 8l-9-5-9 5 9 5 9-5z"/><path d="M3 8v8l9 5 9-5V8"/><path d="M12 13v8"/></svg>'},
- {dir:'laminas',name:'Editor de Láminas',desc:'Compón láminas con imágenes, texto y cajetín; recorta, quita fondos y exporta a PDF, PowerPoint, PNG, TIFF o SVG',color:'#E07A1F',
+ {dir:'laminas',data:{ls:['el-'],idb:['editor-laminas']},name:'Editor de Láminas',desc:'Compón láminas con imágenes, texto y cajetín; recorta, quita fondos y exporta a PDF, PowerPoint, PNG, TIFF o SVG',color:'#E07A1F',
   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="14" height="16" rx="1.5"/><path d="M7 3h12a2 2 0 0 1 2 2v12"/><path d="M11 15h4"/></svg>'},
- {dir:'estados-de-cuenta',name:'Estados de cuenta',desc:'Unifica, cuadra y grafica tus estados de cuenta. Se abre vacío; tus datos los importas tú o viven en tu Supabase',color:'#B8742A',
+ {dir:'estados-de-cuenta',data:{ls:['edoctas_'],idb:['edoctas_pdf']},name:'Estados de cuenta',desc:'Unifica, cuadra y grafica tus estados de cuenta. Se abre vacío; tus datos los importas tú o viven en tu Supabase',color:'#B8742A',
   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18"/><path d="M7 15h4"/></svg>'},
- {dir:'horarios',name:'Mis Horarios',desc:'Tus horarios de prepa, idiomas y Arquitectura: semana, calendario, gráficas y reporte en PDF',color:'#3A7D5C',
+ {dir:'horarios',data:{ls:['mis_horarios_']},name:'Mis Horarios',desc:'Tus horarios de prepa, idiomas y Arquitectura: semana, calendario, gráficas y reporte en PDF',color:'#3A7D5C',
   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="17" rx="2"/><path d="M3 9h18"/><path d="M8 2v4"/><path d="M16 2v4"/><path d="M8 13h3v3H8z"/></svg>'},
- {dir:'organizador-secciones',name:'Organizador de Secciones',desc:'Estandariza tus apps: elige secciones y referencias visuales, y genera el reporte con imágenes para la IA',color:'#4F8CFF',
+ {dir:'organizador-secciones',data:{ls:['organizadorSecciones.']},name:'Organizador de Secciones',desc:'Estandariza tus apps: elige secciones y referencias visuales, y genera el reporte con imágenes para la IA',color:'#4F8CFF',
   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><path d="M14 17.5h7"/><path d="M17.5 14v7"/></svg>'},
- {dir:'optica',name:'Banco Óptico',desc:'Laboratorio de óptica: Snell y Fresnel, lentes, espejos, prisma, interferencia y polarización, con fórmulas y gráficas',color:'#2746C2',
+ {dir:'optica',data:{ls:['bancoOptico.']},name:'Banco Óptico',desc:'Laboratorio de óptica: Snell y Fresnel, lentes, espejos, prisma, interferencia y polarización, con fórmulas y gráficas',color:'#2746C2',
   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3c2.5 3 2.5 15 0 18c-2.5-3-2.5-15 0-18z"/><path d="M2 8h8"/><path d="M2 16h8"/><path d="M14 9l8 3"/><path d="M14 15l8-3"/></svg>'},
- {dir:'predios',name:'Comparador de Predios',desc:'Superpón terrenos en otro lugar del mapa a escala real; terreno, pendientes, viento, sol y clima de cada sitio',color:'#2C55C4',
+ {dir:'predios',data:{ls:['comparadorPredios.']},name:'Comparador de Predios',desc:'Superpón terrenos en otro lugar del mapa a escala real; terreno, pendientes, viento, sol y clima de cada sitio',color:'#2C55C4',
   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6l6-3 6 3 6-3v15l-6 3-6-3-6 3z"/><path d="M9 3v15"/><path d="M15 6v15"/></svg>'},
- {dir:'aula-apps',name:'Aula de Apps',desc:'Aprende cómo funcionan las apps de Android y Windows: proyectos, ciclo de vida, comparador de frameworks, lenguajes y portabilidad',color:'#0F7A4D',
+ {dir:'aula-apps',data:{ls:['aulaApps.'],lsExact:['items']},name:'Aula de Apps',desc:'Aprende cómo funcionan las apps de Android y Windows: proyectos, ciclo de vida, comparador de frameworks, lenguajes y portabilidad',color:'#0F7A4D',
   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="13" height="10" rx="1.5"/><path d="M6 18h5"/><path d="M8.5 14v4"/><rect x="16" y="8" width="6" height="12" rx="1.5"/><path d="M18.5 17h1"/></svg>'},
- {dir:'gimnasio',name:'Gimnasio · Bitácora',desc:'Entrenamientos, asistencia con calendario, cronómetros y descansos, y notas de cambios. Se abre vacío; tus datos quedan en tu navegador',color:'#D6402F',
+ {dir:'gimnasio',data:{idb:['fitness_tracker']},name:'Gimnasio · Bitácora',desc:'Entrenamientos, asistencia con calendario, cronómetros y descansos, y notas de cambios. Se abre vacío; tus datos quedan en tu navegador',color:'#D6402F',
   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 6.5v11"/><path d="M17.5 6.5v11"/><path d="M3.5 9v6"/><path d="M20.5 9v6"/><path d="M6.5 12h11"/></svg>'},
- {dir:'gta-online',name:'Registro Los Santos',desc:'Lo que tienes en GTA Online: vehículos, propiedades, negocios y mejoras, con avance, ahorro y lista de deseos',color:'#B83280',
+ {dir:'gta-online',data:{ls:['registro-los-santos-']},name:'Registro Los Santos',desc:'Lo que tienes en GTA Online: vehículos, propiedades, negocios y mejoras, con avance, ahorro y lista de deseos',color:'#B83280',
   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13l2.5-5h10l4 5H21v4h-2"/><path d="M3 13v4h2"/><path d="M9 17h6"/><path d="M3 13h18"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>'},
- {dir:'materia',name:'Laboratorio de la Materia',desc:'Ondas en líquidos, tabla periódica con estados de la materia, reacciones, dinámica de fluidos y simulador de fuego',color:'#1D58C8',
+ {dir:'materia',data:{},name:'Laboratorio de la Materia',desc:'Ondas en líquidos, tabla periódica con estados de la materia, reacciones, dinámica de fluidos y simulador de fuego',color:'#1D58C8',
   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3"/><path d="M7.5 15h9"/></svg>'},
 ];
 document.getElementById('apps').innerHTML=APPS.map(function(a){
  return '<a class="app" href="./'+a.dir+'/"><span class="ic" style="background:'+a.color+'">'+a.icon+'</span><span class="tx"><b>'+a.name+'</b><span>'+a.desc+'</span></span><span class="go" aria-hidden="true">›</span></a>';
 }).join('');
+
+/* ===== Respaldo de datos de todas las apps =====
+   Todas las apps viven en el mismo sitio, así que comparten localStorage e IndexedDB.
+   Esta sección los lee, los agrupa por app y los guarda en un solo .json (y los restaura). */
+(function(){
+var FORMATO='mis-apps-respaldo',FVER=1;
+var OTROS={dir:'_otros',name:'Otros datos de este sitio',color:'#8792A2',data:{}};
+var $=function(id){return document.getElementById(id)};
+var esc=function(t){return String(t==null?'':t).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})};
+
+/* Claves de sesión de Supabase y similares: nunca se exportan ni se pisan. */
+function esSesion(k){return /-auth($|[-_.])/.test(k)||/^sb-.*-auth-token/.test(k)}
+function appDeClave(k){
+ for(var i=0;i<APPS.length;i++){var d=APPS[i].data||{};
+  if((d.lsExact||[]).indexOf(k)>-1)return APPS[i].dir;
+  for(var j=0;j<(d.ls||[]).length;j++)if(k.indexOf(d.ls[j])===0)return APPS[i].dir}
+ return OTROS.dir}
+function appDeBase(n){
+ for(var i=0;i<APPS.length;i++)if(((APPS[i].data||{}).idb||[]).indexOf(n)>-1)return APPS[i].dir;
+ return OTROS.dir}
+function todas(){return APPS.concat([OTROS])}
+function porDir(d){return todas().filter(function(a){return a.dir===d})[0]}
+function kb(n){return n<1024?n+' B':n<1048576?(n/1024).toFixed(n<10240?1:0)+' KB':(n/1048576).toFixed(1)+' MB'}
+function msg(t,err){var m=$('bkMsg');m.textContent=t||'';m.className='bk-msg'+(err?' err':'')}
+
+/* ---------- IndexedDB ---------- */
+function req2p(r){return new Promise(function(ok,ko){r.onsuccess=function(){ok(r.result)};r.onerror=function(){ko(r.error)}})}
+/* Abre una base SOLO si ya existe (si no existe, aborta la creación y devuelve null). */
+function abrirExistente(nombre){return new Promise(function(ok){
+ var nueva=false,r;
+ try{r=indexedDB.open(nombre)}catch(e){ok(null);return}
+ r.onupgradeneeded=function(e){nueva=true;try{e.target.transaction.abort()}catch(x){}};
+ r.onsuccess=function(){if(nueva){r.result.close();ok(null)}else ok(r.result)};
+ r.onerror=function(e){e.preventDefault&&e.preventDefault();ok(null)};
+ r.onblocked=function(){};
+})}
+function nombresDeBases(){
+ var conocidas=[];APPS.forEach(function(a){((a.data||{}).idb||[]).forEach(function(n){conocidas.push(n)})});
+ if(indexedDB.databases)return indexedDB.databases().then(function(l){
+  var s={};l.forEach(function(d){if(d.name)s[d.name]=1});conocidas.forEach(function(n){s[n]=1});return Object.keys(s)
+ }).catch(function(){return conocidas});
+ return Promise.resolve(conocidas)}
+
+/* Convierte cualquier valor de IndexedDB (Blob, File, fechas, binarios, Map, Set…) a JSON y de regreso. */
+function blobA64(b){return new Promise(function(ok,ko){var f=new FileReader();f.onload=function(){var s=f.result;ok(s.slice(s.indexOf(',')+1))};f.onerror=function(){ko(f.error)};f.readAsDataURL(b)})}
+function b64ABytes(s){var bin=atob(s),u=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return u}
+async function cod(v){
+ if(v===undefined)return{__t:'u'};
+ if(v===null||typeof v==='string'||typeof v==='boolean')return v;
+ if(typeof v==='number')return isFinite(v)?v:{__t:'n',v:String(v)};
+ if(typeof v==='bigint')return{__t:'big',v:String(v)};
+ if(typeof v!=='object')return null;
+ if(v instanceof Date)return{__t:'date',v:isNaN(v)?null:v.toISOString()};
+ if(typeof Blob!=='undefined'&&v instanceof Blob){var o={__t:'blob',type:v.type,b64:await blobA64(v)};if(typeof File!=='undefined'&&v instanceof File){o.name=v.name;o.lastModified=v.lastModified}return o}
+ if(v instanceof ArrayBuffer)return{__t:'ab',b64:await blobA64(new Blob([v]))};
+ if(ArrayBuffer.isView(v))return{__t:'ta',k:v.constructor.name,b64:await blobA64(new Blob([new Uint8Array(v.buffer,v.byteOffset,v.byteLength)]))};
+ if(v instanceof Map){var m=[];for(var e of v)m.push([await cod(e[0]),await cod(e[1])]);return{__t:'map',v:m}}
+ if(v instanceof Set){var st=[];for(var x of v)st.push(await cod(x));return{__t:'set',v:st}}
+ if(Array.isArray(v)){var a=new Array(v.length);for(var i=0;i<v.length;i++)a[i]=await cod(v[i]);return a}
+ var r={};for(var k in v)if(Object.prototype.hasOwnProperty.call(v,k))r[k]=await cod(v[k]);
+ return Object.prototype.hasOwnProperty.call(v,'__t')?{__t:'obj',v:r}:r}
+function dec(v){
+ if(v===null||typeof v!=='object')return v;
+ if(Array.isArray(v))return v.map(dec);
+ switch(v.__t){
+  case'u':return undefined;
+  case'n':return Number(v.v);
+  case'big':return typeof BigInt==='function'?BigInt(v.v):Number(v.v);
+  case'date':return new Date(v.v);
+  case'blob':var by=b64ABytes(v.b64);return v.name!=null&&typeof File!=='undefined'?new File([by],v.name,{type:v.type,lastModified:v.lastModified}):new Blob([by],{type:v.type});
+  case'ab':return b64ABytes(v.b64).buffer;
+  case'ta':var u=b64ABytes(v.b64),C=window[v.k];if(v.k==='DataView')return new DataView(u.buffer);return C&&C.BYTES_PER_ELEMENT?new C(u.buffer,0,u.byteLength/C.BYTES_PER_ELEMENT):u;
+  case'map':return new Map(v.v.map(function(e){return[dec(e[0]),dec(e[1])]}));
+  case'set':return new Set(v.v.map(dec));
+  case'obj':var o={};for(var k in v.v)o[k]=dec(v.v[k]);return o}
+ var r={};for(var k2 in v)r[k2]=dec(v[k2]);return r}
+
+async function leerBase(nombre,conDatos){
+ var db=await abrirExistente(nombre);if(!db)return null;
+ try{
+  var out={name:nombre,version:db.version,stores:[]},n=0,names=[].slice.call(db.objectStoreNames);
+  for(var i=0;i<names.length;i++){
+   var tx=db.transaction(names[i],'readonly'),os=tx.objectStore(names[i]);
+   var info={name:names[i],keyPath:os.keyPath,autoIncrement:os.autoIncrement,indexes:[].slice.call(os.indexNames).map(function(x){var ix=os.index(x);return{name:x,keyPath:ix.keyPath,unique:ix.unique,multiEntry:ix.multiEntry}}),records:[]};
+   if(conDatos){
+    var keys=await req2p(os.getAllKeys()),vals=await req2p(os.getAll());
+    for(var j=0;j<vals.length;j++)info.records.push([await cod(keys[j]),await cod(vals[j])]);
+    n+=vals.length;
+   }else{n+=await req2p(os.count())}
+   info.count=conDatos?info.records.length:undefined;
+   out.stores.push(info)}
+  out.total=n;return out
+ }finally{db.close()}}
+
+/* ---------- Revisión de lo que hay en este navegador ---------- */
+async function inventario(conDatos){
+ var res={};todas().forEach(function(a){res[a.dir]={ls:{},bytes:0,idb:[],regs:0}});
+ for(var i=0;i<localStorage.length;i++){var k=localStorage.key(i);if(k==null||esSesion(k))continue;
+  var v=localStorage.getItem(k),r=res[appDeClave(k)];r.ls[k]=v;r.bytes+=(k.length+v.length)*2}
+ var bases=await nombresDeBases();
+ for(var b=0;b<bases.length;b++){
+  var info=null;try{info=await leerBase(bases[b],conDatos)}catch(e){console.warn('No se pudo leer',bases[b],e)}
+  if(info){var rr=res[appDeBase(bases[b])];rr.idb.push(info);rr.regs+=info.total}}
+ return res}
+
+function pintarLista(res){
+ var html=todas().map(function(a){
+  var r=res[a.dir],nk=Object.keys(r.ls).length,vacia=!nk&&!r.idb.length;
+  if(a.dir===OTROS.dir&&vacia)return'';
+  var det=[];if(nk)det.push(nk+(nk===1?' clave':' claves')+' · '+kb(r.bytes));
+  if(r.idb.length)det.push(r.idb.length+(r.idb.length===1?' base':' bases')+' · '+r.regs+(r.regs===1?' registro':' registros'));
+  return'<label class="bk-item'+(vacia?' empty':'')+'"><input type="checkbox" name="bkapp" value="'+a.dir+'"'+(vacia?' disabled':' checked')+'><span class="dot" style="background:'+a.color+'"></span><span class="nm">'+esc(a.name)+'</span><span class="sz">'+(vacia?'sin datos':det.join(' · '))+'</span></label>'
+ }).join('');
+ $('bkList').innerHTML=html||'<p class="bk-note">No hay datos guardados en este navegador.</p>'}
+
+var revisado=false;
+async function revisar(){msg('');try{pintarLista(await inventario(false));revisado=true}catch(e){$('bkList').innerHTML='';msg('No pude revisar los datos: '+e.message,true)}}
+$('bkd').addEventListener('toggle',function(){if(this.open&&!revisado)revisar()});
+$('bkAll').onclick=function(){var cs=[].slice.call(document.querySelectorAll('#bk input[name=bkapp]:not(:disabled)')),on=cs.some(function(c){return!c.checked});cs.forEach(function(c){c.checked=on})};
+
+function hoy(){var d=new Date(),p=function(n){return(n<10?'0':'')+n};return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'_'+p(d.getHours())+p(d.getMinutes())}
+function descargar(obj,nombre){var b=new Blob([JSON.stringify(obj)],{type:'application/json'}),u=URL.createObjectURL(b),a=document.createElement('a');a.href=u;a.download=nombre;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},4000);return b.size}
+
+async function armarRespaldo(dirs){
+ var res=await inventario(true),out={formato:FORMATO,version:FVER,creado:new Date().toISOString(),origen:location.origin+location.pathname,apps:{}};
+ dirs.forEach(function(d){var r=res[d];if(!Object.keys(r.ls).length&&!r.idb.length)return;
+  out.apps[d]={nombre:porDir(d).name,localStorage:r.ls,indexedDB:r.idb.map(function(x){delete x.total;return x})}});
+ return out}
+
+$('bkExport').onclick=async function(){
+ var dirs=[].slice.call(document.querySelectorAll('#bk input[name=bkapp]:checked')).map(function(c){return c.value});
+ if(!revisado){await revisar();return}
+ if(!dirs.length){msg('Marca al menos una app.',true);return}
+ this.disabled=true;msg('Leyendo datos…');
+ try{var r=await armarRespaldo(dirs),n=Object.keys(r.apps).length;
+  var sz=descargar(r,'respaldo-mis-apps_'+hoy()+'.json');
+  msg('Listo: '+n+(n===1?' app':' apps')+' en un archivo de '+kb(sz)+'.')}
+ catch(e){msg('No se pudo exportar: '+e.message,true)}
+ finally{this.disabled=false}};
+
+/* ---------- Restaurar ---------- */
+var cargado=null;
+$('bkPick').onclick=function(){$('bkFile').value='';$('bkFile').click()};
+$('bkFile').onchange=async function(){
+ var f=this.files[0];if(!f)return;msg('');
+ try{var j=JSON.parse(await f.text());if(!j||j.formato!==FORMATO||!j.apps)throw new Error('no es un respaldo de “Mis apps”.');cargado=j}
+ catch(e){cargado=null;$('bkImport').hidden=true;msg('No pude leer el archivo: '+e.message,true);return}
+ var ds=Object.keys(cargado.apps);
+ $('bkImport').innerHTML='<h3>Restaurar respaldo del '+esc(new Date(cargado.creado).toLocaleString('es-MX',{dateStyle:'long',timeStyle:'short'}))+'</h3>'+
+  '<p class="bk-note">Las apps marcadas se <b>reemplazan</b> con lo del archivo. Cierra antes las pestañas donde las tengas abiertas.</p>'+
+  '<div class="bk-list">'+ds.map(function(d){var a=porDir(d)||{name:cargado.apps[d].nombre||d,color:'#8792A2'},x=cargado.apps[d],nk=Object.keys(x.localStorage||{}).length,nr=0;
+   (x.indexedDB||[]).forEach(function(b){b.stores.forEach(function(s){nr+=s.records.length})});
+   return'<label class="bk-item"><input type="checkbox" name="bkres" value="'+esc(d)+'" checked><span class="dot" style="background:'+a.color+'"></span><span class="nm">'+esc(a.name)+'</span><span class="sz">'+[nk?nk+' claves':'',(x.indexedDB||[]).length?nr+' registros':''].filter(Boolean).join(' · ')+'</span></label>'}).join('')+'</div>'+
+  '<label class="bk-chk"><input type="checkbox" id="bkSafe" checked> Descargar primero un respaldo de lo que hay ahora</label>'+
+  '<div class="bk-row"><button type="button" class="btn pri" id="bkDo">Restaurar las marcadas</button><button type="button" class="btn ghost" id="bkCancel">Cancelar</button></div>';
+ $('bkImport').hidden=false;
+ $('bkCancel').onclick=function(){cargado=null;$('bkImport').hidden=true;msg('')};
+ $('bkDo').onclick=restaurar};
+
+function abrirParaEscribir(b){return new Promise(function(ok,ko){
+ var r=indexedDB.open(b.name,b.version),creada=false;
+ r.onupgradeneeded=function(e){
+  /* Solo crea tiendas si la base no existía o venía en versión anterior; no toca las que ya están. */
+  creada=e.oldVersion===0;var db=r.result;
+  b.stores.forEach(function(s){if(db.objectStoreNames.contains(s.name))return;
+   var o={};if(s.keyPath!=null)o.keyPath=s.keyPath;if(s.autoIncrement)o.autoIncrement=true;
+   var os=db.createObjectStore(s.name,o);(s.indexes||[]).forEach(function(ix){os.createIndex(ix.name,ix.keyPath,{unique:!!ix.unique,multiEntry:!!ix.multiEntry})})})};
+ r.onsuccess=function(){ok(r.result)};
+ r.onblocked=function(){ko(new Error('“'+b.name+'” está abierta en otra pestaña; ciérrala e intenta de nuevo.'))};
+ r.onerror=function(e){e.preventDefault&&e.preventDefault();ko(r.error)}})}
+async function escribirBase(b){
+ var actual=await abrirExistente(b.name),v=actual?actual.version:0;if(actual)actual.close();
+ if(v>b.version){b=Object.assign({},b,{version:v})}           /* la app ya está en versión más nueva: escribe en esa */
+ var db=await abrirParaEscribir(b);
+ var faltan=[];
+ try{for(var i=0;i<b.stores.length;i++){var s=b.stores[i];
+  if(!db.objectStoreNames.contains(s.name)){faltan.push(s.name);continue}
+  await new Promise(function(ok,ko){var tx=db.transaction(s.name,'readwrite'),os=tx.objectStore(s.name);os.clear();
+   s.records.forEach(function(rec){var k=dec(rec[0]),val=dec(rec[1]);if(os.keyPath!=null)os.put(val);else os.put(val,k)});
+   tx.oncomplete=function(){ok()};tx.onerror=function(){ko(tx.error)};tx.onabort=function(){ko(tx.error||new Error('transacción cancelada'))}})}}
+ finally{db.close()}
+ return faltan}
+
+async function restaurar(){
+ var btn=$('bkDo'),dirs=[].slice.call(document.querySelectorAll('#bkImport input[name=bkres]:checked')).map(function(c){return c.value});
+ if(!dirs.length){msg('Marca al menos una app para restaurar.',true);return}
+ var nombres=dirs.map(function(d){return(porDir(d)||{}).name||cargado.apps[d].nombre||d});
+ if(!confirm('Se reemplazarán los datos de este navegador para:\n\n• '+nombres.join('\n• ')+'\n\n¿Continuar?'))return;
+ btn.disabled=true;var avisos=[];
+ try{
+  if($('bkSafe').checked){msg('Guardando respaldo de seguridad…');var seg=await armarRespaldo(todas().map(function(a){return a.dir}));descargar(seg,'antes-de-restaurar_'+hoy()+'.json')}
+  for(var i=0;i<dirs.length;i++){var d=dirs[i],x=cargado.apps[d];msg('Restaurando '+nombres[i]+'…');
+   /* localStorage: borra las claves actuales de esa app y pone las del archivo */
+   var borrar=[];for(var j=0;j<localStorage.length;j++){var k=localStorage.key(j);if(k!=null&&!esSesion(k)&&appDeClave(k)===d&&d!==OTROS.dir)borrar.push(k)}
+   borrar.forEach(function(k){localStorage.removeItem(k)});
+   Object.keys(x.localStorage||{}).forEach(function(k){if(!esSesion(k))localStorage.setItem(k,x.localStorage[k])});
+   for(var b=0;b<(x.indexedDB||[]).length;b++){var f=await escribirBase(x.indexedDB[b]);if(f.length)avisos.push(x.indexedDB[b].name+': no existe '+f.join(', '))}}
+  revisado=false;await revisar();$('bkImport').hidden=true;cargado=null;
+  msg('Restaurado: '+nombres.join(', ')+'.'+(avisos.length?' Aviso — '+avisos.join('; '):'')+' Abre cada app para ver sus datos.')}
+ catch(e){msg('Se detuvo la restauración: '+e.message,true)}
+ finally{btn.disabled=false}}
+})();
 </script>
 </body>
 </html>
