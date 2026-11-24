@@ -1,0 +1,1524 @@
+{
+  "config": {
+    "marca": "KREOKITMX",
+    "eslogan": "Diseña · Personaliza · Regala. Personalizados, corte láser y arquitectura.",
+    "ciudad": "Aguascalientes, Ags.",
+    "whatsapp": "524490000000",
+    "email": "contacto@kreokit.mx",
+    "horario": "Lun a Vie 10:00–19:00 · Sáb 10:00–14:00",
+    "instagram": "",
+    "facebook": "",
+    "envio": {
+      "costo": 160,
+      "gratisDesde": 1500
+    },
+    "servicioDiseno": 99,
+    "mayoreo": [
+      {
+        "min": 12,
+        "desc": 0.08
+      },
+      {
+        "min": 25,
+        "desc": 0.12
+      },
+      {
+        "min": 50,
+        "desc": 0.18
+      },
+      {
+        "min": 100,
+        "desc": 0.22
+      }
+    ],
+    "adminPin": "2026",
+    "hero": [
+      "taza-magica",
+      "playera-leon-color",
+      "vaso-negro-logo"
+    ],
+    "catalogos": [
+      {
+        "nombre": "Tazas",
+        "desc": "6 modelos · desde $139",
+        "archivo": "catalogos/kreokitmx-tazas.pdf",
+        "portadas": [
+          "taza-magica",
+          "taza-interior-color"
+        ]
+      },
+      {
+        "nombre": "Playeras",
+        "desc": "8 diseños · desde $249",
+        "archivo": "catalogos/kreokitmx-playeras.pdf",
+        "portadas": [
+          "playera-leon-color",
+          "playera-logo"
+        ]
+      },
+      {
+        "nombre": "Termos y botellas",
+        "desc": "12 modelos · desde $319",
+        "archivo": "catalogos/kreokitmx-termos.pdf",
+        "portadas": [
+          "vaso-negro-logo",
+          "botella-verde-brujula"
+        ]
+      },
+      {
+        "nombre": "Llaveros y USB",
+        "desc": "12 modelos · desde $69",
+        "archivo": "catalogos/kreokitmx-llaveros-usb.pdf",
+        "portadas": [
+          "llavero-madera-circular",
+          "usb-bambu"
+        ]
+      },
+      {
+        "nombre": "Corte láser",
+        "desc": "12 productos · desde $35",
+        "archivo": "catalogos/kreokitmx-corte-laser.pdf",
+        "portadas": [
+          "laser-lampara-acrilico",
+          "laser-maqueta"
+        ]
+      },
+      {
+        "nombre": "Arquitectura",
+        "desc": "Servicios y portafolio",
+        "archivo": "catalogos/kreokitmx-arquitectura.pdf",
+        "portadas": [
+          "img/portafolio/casa-contemporanea.jpg",
+          "img/portafolio/showroom.jpg"
+        ]
+      },
+      {
+        "nombre": "Catálogo completo",
+        "desc": "Todos los productos en un PDF",
+        "archivo": "catalogos/kreokitmx-catalogo-completo.pdf",
+        "portadas": [
+          "taza-termica",
+          "laser-panel-calado"
+        ],
+        "todo": true
+      }
+    ],
+    "pagos": {
+      "transferencia": {
+        "activo": true,
+        "banco": "(Banco)",
+        "titular": "(Nombre del titular)",
+        "clabe": "(CLABE 18 dígitos)"
+      },
+      "efectivo": {
+        "activo": true,
+        "nota": "Pago al recoger en el taller"
+      },
+      "stripe": {
+        "activo": false,
+        "link": ""
+      },
+      "paypal": {
+        "activo": false,
+        "usuario": ""
+      },
+      "mercadolibre": {
+        "activo": false,
+        "url": ""
+      },
+      "cripto": {
+        "activo": false,
+        "red": "TRC20",
+        "wallets": {
+          "USDT": "",
+          "BTC": ""
+        }
+      }
+    }
+  },
+  "categorias": [
+    {
+      "id": "tazas",
+      "nombre": "Tazas",
+      "desc": "Clásicas, mágicas, de color y térmicas"
+    },
+    {
+      "id": "playeras",
+      "nombre": "Playeras",
+      "desc": "Algodón con tu logo o nuestros diseños"
+    },
+    {
+      "id": "termos",
+      "nombre": "Termos",
+      "desc": "Vasos 20 oz y botellas 32 oz grabadas"
+    },
+    {
+      "id": "llaveros",
+      "nombre": "Llaveros",
+      "desc": "Madera, metal, acrílico y piel"
+    },
+    {
+      "id": "usb",
+      "nombre": "USB",
+      "desc": "Memorias con tu logo grabado"
+    },
+    {
+      "id": "laser",
+      "nombre": "Corte láser",
+      "desc": "Maquetas, lámparas, decoración y más"
+    }
+  ],
+  "productos": [
+    {
+      "id": "taza-clasica-blanca",
+      "cat": "tazas",
+      "nombre": "Taza clásica blanca",
+      "precio": 139,
+      "destacado": true,
+      "activo": true,
+      "img": "img/productos/taza-clasica-blanca.jpg",
+      "tecnica": "Sublimación",
+      "area": "11 oz (325 ml) · Ø 8.2 × 9.5 cm",
+      "desc": "La más versátil. Cerámica de alta calidad con impresión a todo color; apta para lavavajillas y microondas.",
+      "opciones": [
+        {
+          "nombre": "Acabado",
+          "valores": [
+            "Brillante",
+            "Mate (+$20)"
+          ]
+        }
+      ],
+      "tipo": "Tazas de cerámica 11 oz"
+    },
+    {
+      "id": "taza-interior-color",
+      "cat": "tazas",
+      "nombre": "Taza con interior y asa de color",
+      "precio": 169,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/taza-interior-color.jpg",
+      "tecnica": "Sublimación",
+      "area": "11 oz (325 ml) · Ø 8.2 × 9.5 cm",
+      "desc": "Toque de color único: exterior blanco para tu diseño, interior y asa de color.",
+      "opciones": [
+        {
+          "nombre": "Color",
+          "valores": [
+            "Azul marino",
+            "Rojo",
+            "Naranja",
+            "Amarillo",
+            "Verde",
+            "Negro"
+          ]
+        }
+      ],
+      "tipo": "Tazas de cerámica 11 oz"
+    },
+    {
+      "id": "taza-magica",
+      "cat": "tazas",
+      "nombre": "Taza mágica",
+      "precio": 209,
+      "destacado": true,
+      "activo": true,
+      "img": "img/productos/taza-magica.jpg",
+      "tecnica": "Sublimación",
+      "area": "11 oz (325 ml) · Ø 8.2 × 9.5 cm",
+      "desc": "Negra en frío; al servir una bebida caliente aparece tu diseño en alta definición. El regalo sorpresa.",
+      "opciones": [],
+      "tipo": "Tazas de cerámica 11 oz"
+    },
+    {
+      "id": "taza-bicolor",
+      "cat": "tazas",
+      "nombre": "Taza bicolor",
+      "precio": 179,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/taza-bicolor.jpg",
+      "tecnica": "Sublimación",
+      "area": "11 oz (325 ml) · Ø 8.2 × 9.5 cm",
+      "desc": "Estilo moderno: cerámica premium con base de color en diagonal y área blanca para tu diseño.",
+      "opciones": [
+        {
+          "nombre": "Color",
+          "valores": [
+            "Negro",
+            "Azul marino",
+            "Rojo",
+            "Gris",
+            "Verde"
+          ]
+        }
+      ],
+      "tipo": "Tazas de cerámica 11 oz"
+    },
+    {
+      "id": "taza-jumbo",
+      "cat": "tazas",
+      "nombre": "Taza jumbo 15 oz",
+      "precio": 199,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/taza-jumbo.jpg",
+      "tecnica": "Sublimación",
+      "area": "15 oz (445 ml) · Ø 10 × 11.5 cm",
+      "desc": "Más capacidad y mayor área de personalización. Ideal para café, té o infusiones.",
+      "opciones": [],
+      "tipo": "Taza jumbo 15 oz"
+    },
+    {
+      "id": "taza-termica",
+      "cat": "tazas",
+      "nombre": "Taza térmica de acero",
+      "precio": 319,
+      "destacado": true,
+      "activo": true,
+      "img": "img/productos/taza-termica.jpg",
+      "tecnica": "Sublimación",
+      "area": "14 oz (414 ml) · Ø 8.5 × 12.5 cm",
+      "desc": "Acero inoxidable de doble pared con tapa deslizable. Conserva la temperatura; ideal para auto y oficina.",
+      "opciones": [],
+      "tipo": "Taza térmica 14 oz"
+    },
+    {
+      "id": "playera-logo",
+      "cat": "playeras",
+      "nombre": "Playera blanca · Logo de tu marca",
+      "precio": 249,
+      "destacado": true,
+      "activo": true,
+      "img": "img/productos/playera-logo.jpg",
+      "tecnica": "DTF",
+      "area": "Hasta 30 × 40 cm (frente)",
+      "desc": "Uniformes y merch para tu negocio: tu logo a todo color al frente. Algodón 100 % peinado.",
+      "opciones": [
+        {
+          "nombre": "Talla",
+          "valores": [
+            "CH",
+            "M",
+            "G",
+            "XG",
+            "XXG (+$40)"
+          ]
+        },
+        {
+          "nombre": "Diseño",
+          "valores": [
+            "Este diseño",
+            "Mi propio diseño"
+          ]
+        },
+        {
+          "nombre": "Impresión",
+          "valores": [
+            "Frente",
+            "Frente y espalda (+$90)"
+          ]
+        }
+      ],
+      "tipo": "Playeras de algodón"
+    },
+    {
+      "id": "playera-arquitectura-negra",
+      "cat": "playeras",
+      "nombre": "Playera negra · Boceto arquitectónico",
+      "precio": 279,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/playera-arquitectura-negra.jpg",
+      "tecnica": "DTF",
+      "area": "Hasta 30 × 40 cm (frente)",
+      "desc": "Trazo de arquitectura en tinta blanca sobre algodón negro.",
+      "opciones": [
+        {
+          "nombre": "Talla",
+          "valores": [
+            "CH",
+            "M",
+            "G",
+            "XG",
+            "XXG (+$40)"
+          ]
+        },
+        {
+          "nombre": "Diseño",
+          "valores": [
+            "Este diseño",
+            "Mi propio diseño"
+          ]
+        },
+        {
+          "nombre": "Impresión",
+          "valores": [
+            "Frente",
+            "Frente y espalda (+$90)"
+          ]
+        }
+      ],
+      "tipo": "Playeras de algodón"
+    },
+    {
+      "id": "playera-montana-lago",
+      "cat": "playeras",
+      "nombre": "Playera blanca · Montaña y lago",
+      "precio": 249,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/playera-montana-lago.jpg",
+      "tecnica": "DTF",
+      "area": "Hasta 30 × 40 cm (frente)",
+      "desc": "Ilustración de paisaje en tinta negra, estilo grabado.",
+      "opciones": [
+        {
+          "nombre": "Talla",
+          "valores": [
+            "CH",
+            "M",
+            "G",
+            "XG",
+            "XXG (+$40)"
+          ]
+        },
+        {
+          "nombre": "Diseño",
+          "valores": [
+            "Este diseño",
+            "Mi propio diseño"
+          ]
+        },
+        {
+          "nombre": "Impresión",
+          "valores": [
+            "Frente",
+            "Frente y espalda (+$90)"
+          ]
+        }
+      ],
+      "tipo": "Playeras de algodón"
+    },
+    {
+      "id": "playera-leon-color",
+      "cat": "playeras",
+      "nombre": "Playera negra · León a color",
+      "precio": 299,
+      "destacado": true,
+      "activo": true,
+      "img": "img/productos/playera-leon-color.jpg",
+      "tecnica": "DTF",
+      "area": "Hasta 30 × 40 cm (frente)",
+      "desc": "Ilustración a todo color de gran formato con DTF de alta resistencia al lavado.",
+      "opciones": [
+        {
+          "nombre": "Talla",
+          "valores": [
+            "CH",
+            "M",
+            "G",
+            "XG",
+            "XXG (+$40)"
+          ]
+        },
+        {
+          "nombre": "Diseño",
+          "valores": [
+            "Este diseño",
+            "Mi propio diseño"
+          ]
+        },
+        {
+          "nombre": "Impresión",
+          "valores": [
+            "Frente",
+            "Frente y espalda (+$90)"
+          ]
+        }
+      ],
+      "tipo": "Playeras de algodón"
+    },
+    {
+      "id": "playera-plano",
+      "cat": "playeras",
+      "nombre": "Playera azul marino · Plano arquitectónico",
+      "precio": 279,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/playera-plano.jpg",
+      "tecnica": "DTF",
+      "area": "Hasta 30 × 40 cm (frente)",
+      "desc": "Planta arquitectónica en línea blanca. Para arquitectos, constructores y estudiantes.",
+      "opciones": [
+        {
+          "nombre": "Talla",
+          "valores": [
+            "CH",
+            "M",
+            "G",
+            "XG",
+            "XXG (+$40)"
+          ]
+        },
+        {
+          "nombre": "Diseño",
+          "valores": [
+            "Este diseño",
+            "Mi propio diseño"
+          ]
+        },
+        {
+          "nombre": "Impresión",
+          "valores": [
+            "Frente",
+            "Frente y espalda (+$90)"
+          ]
+        }
+      ],
+      "tipo": "Playeras de algodón"
+    },
+    {
+      "id": "playera-montana-gris",
+      "cat": "playeras",
+      "nombre": "Playera gris · Montaña emblema",
+      "precio": 259,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/playera-montana-gris.jpg",
+      "tecnica": "DTF",
+      "area": "Hasta 30 × 40 cm (frente)",
+      "desc": "Emblema circular de montaña y bosque en tinta negra.",
+      "opciones": [
+        {
+          "nombre": "Talla",
+          "valores": [
+            "CH",
+            "M",
+            "G",
+            "XG",
+            "XXG (+$40)"
+          ]
+        },
+        {
+          "nombre": "Diseño",
+          "valores": [
+            "Este diseño",
+            "Mi propio diseño"
+          ]
+        },
+        {
+          "nombre": "Impresión",
+          "valores": [
+            "Frente",
+            "Frente y espalda (+$90)"
+          ]
+        }
+      ],
+      "tipo": "Playeras de algodón"
+    },
+    {
+      "id": "playera-auto",
+      "cat": "playeras",
+      "nombre": "Playera negra · Auto deportivo",
+      "precio": 279,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/playera-auto.jpg",
+      "tecnica": "DTF",
+      "area": "Hasta 30 × 40 cm (frente)",
+      "desc": "Frente de auto en línea blanca con faros iluminados.",
+      "opciones": [
+        {
+          "nombre": "Talla",
+          "valores": [
+            "CH",
+            "M",
+            "G",
+            "XG",
+            "XXG (+$40)"
+          ]
+        },
+        {
+          "nombre": "Diseño",
+          "valores": [
+            "Este diseño",
+            "Mi propio diseño"
+          ]
+        },
+        {
+          "nombre": "Impresión",
+          "valores": [
+            "Frente",
+            "Frente y espalda (+$90)"
+          ]
+        }
+      ],
+      "tipo": "Playeras de algodón"
+    },
+    {
+      "id": "playera-ciervo",
+      "cat": "playeras",
+      "nombre": "Playera blanca · Ciervo geométrico",
+      "precio": 249,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/playera-ciervo.jpg",
+      "tecnica": "DTF",
+      "area": "Hasta 30 × 40 cm (frente)",
+      "desc": "Ciervo de trazo geométrico, minimalista y elegante.",
+      "opciones": [
+        {
+          "nombre": "Talla",
+          "valores": [
+            "CH",
+            "M",
+            "G",
+            "XG",
+            "XXG (+$40)"
+          ]
+        },
+        {
+          "nombre": "Diseño",
+          "valores": [
+            "Este diseño",
+            "Mi propio diseño"
+          ]
+        },
+        {
+          "nombre": "Impresión",
+          "valores": [
+            "Frente",
+            "Frente y espalda (+$90)"
+          ]
+        }
+      ],
+      "tipo": "Playeras de algodón"
+    },
+    {
+      "id": "vaso-negro-logo",
+      "cat": "termos",
+      "nombre": "Vaso térmico negro · Logo grabado",
+      "precio": 329,
+      "destacado": true,
+      "activo": true,
+      "img": "img/productos/vaso-negro-logo.jpg",
+      "tecnica": "Grabado láser",
+      "area": "20 oz (590 ml) · grabado 8 × 12 cm por cara",
+      "desc": "Acero inoxidable de doble pared con tapa transparente. Tu logo grabado permanente.",
+      "opciones": [
+        {
+          "nombre": "Grabado",
+          "valores": [
+            "Una cara",
+            "Dos caras (+$60)"
+          ]
+        },
+        {
+          "nombre": "Diseño",
+          "valores": [
+            "Este diseño",
+            "Mi propio diseño"
+          ]
+        }
+      ],
+      "tipo": "Vasos térmicos 20 oz"
+    },
+    {
+      "id": "vaso-acero-montana",
+      "cat": "termos",
+      "nombre": "Vaso térmico acero · Montaña",
+      "precio": 319,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/vaso-acero-montana.jpg",
+      "tecnica": "Grabado láser",
+      "area": "20 oz (590 ml) · grabado 8 × 12 cm por cara",
+      "desc": "Acabado acero cepillado con paisaje grabado.",
+      "opciones": [
+        {
+          "nombre": "Grabado",
+          "valores": [
+            "Una cara",
+            "Dos caras (+$60)"
+          ]
+        },
+        {
+          "nombre": "Diseño",
+          "valores": [
+            "Este diseño",
+            "Mi propio diseño"
+          ]
+        }
+      ],
+      "tipo": "Vasos térmicos 20 oz"
+    },
+    {
+      "id": "vaso-blanco-arquitectura",
+      "cat": "termos",
+      "nombre": "Vaso térmico blanco · Arquitectura",
+      "precio": 349,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/vaso-blanco-arquitectura.jpg",
+      "tecnica": "Sublimación",
+      "area": "20 oz (590 ml) · grabado 8 × 12 cm por cara",
+      "desc": "Blanco sublimable con ilustración arquitectónica a detalle.",
+      "opciones": [
+        {
+          "nombre": "Grabado",
+          "valores": [
+            "Una cara",
+            "Dos caras (+$60)"
+          ]
+        },
+        {
+          "nombre": "Diseño",
+          "valores": [
+            "Este diseño",
+            "Mi propio diseño"
+          ]
+        }
+      ],
+      "tipo": "Vasos térmicos 20 oz"
+    },
+    {
+      "id": "vaso-madera-montana",
+      "cat": "termos",
+      "nombre": "Vaso térmico acabado madera · Montaña",
+      "precio": 379,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/vaso-madera-montana.jpg",
+      "tecnica": "Grabado láser",
+      "area": "20 oz (590 ml) · grabado 8 × 12 cm por cara",
+      "desc": "Acabado tipo madera con grabado en tono claro.",
+      "opciones": [
+        {
+          "nombre": "Grabado",
+          "valores": [
+            "Una cara",
+            "Dos caras (+$60)"
+          ]
+        },
+        {
+          "nombre": "Diseño",
+          "valores": [
+            "Este diseño",
+            "Mi propio diseño"
+          ]
+        }
+      ],
+      "tipo": "Vasos térmicos 20 oz"
+    },
+    {
+      "id": "vaso-azul-lobo",
+      "cat": "termos",
+      "nombre": "Vaso térmico azul marino · Lobo",
+      "precio": 329,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/vaso-azul-lobo.jpg",
+      "tecnica": "Grabado láser",
+      "area": "20 oz (590 ml) · grabado 8 × 12 cm por cara",
+      "desc": "Pintura en polvo azul marino con lobo grabado.",
+      "opciones": [
+        {
+          "nombre": "Grabado",
+          "valores": [
+            "Una cara",
+            "Dos caras (+$60)"
+          ]
+        },
+        {
+          "nombre": "Diseño",
+          "valores": [
+            "Este diseño",
+            "Mi propio diseño"
+          ]
+        }
+      ],
+      "tipo": "Vasos térmicos 20 oz"
+    },
+    {
+      "id": "vaso-rosa-monograma",
+      "cat": "termos",
+      "nombre": "Vaso térmico rosa · Monograma",
+      "precio": 329,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/vaso-rosa-monograma.jpg",
+      "tecnica": "Grabado láser",
+      "area": "20 oz (590 ml) · grabado 8 × 12 cm por cara",
+      "desc": "Monograma con inicial y laurel; ideal para regalo.",
+      "opciones": [
+        {
+          "nombre": "Grabado",
+          "valores": [
+            "Una cara",
+            "Dos caras (+$60)"
+          ]
+        },
+        {
+          "nombre": "Diseño",
+          "valores": [
+            "Este diseño",
+            "Mi propio diseño"
+          ]
+        }
+      ],
+      "tipo": "Vasos térmicos 20 oz"
+    },
+    {
+      "id": "botella-negra-logo",
+      "cat": "termos",
+      "nombre": "Botella térmica negra · Logo",
+      "precio": 449,
+      "destacado": true,
+      "activo": true,
+      "img": "img/productos/botella-negra-logo.jpg",
+      "tecnica": "Grabado láser",
+      "area": "32 oz (950 ml) · grabado 9 × 14 cm por cara",
+      "desc": "Botella de doble pared con asa; frío 24 h y caliente 12 h.",
+      "opciones": [
+        {
+          "nombre": "Grabado",
+          "valores": [
+            "Una cara",
+            "Dos caras (+$60)"
+          ]
+        },
+        {
+          "nombre": "Diseño",
+          "valores": [
+            "Este diseño",
+            "Mi propio diseño"
+          ]
+        }
+      ],
+      "tipo": "Botellas térmicas 32 oz"
+    },
+    {
+      "id": "botella-acero-montana",
+      "cat": "termos",
+      "nombre": "Botella térmica acero · Montaña",
+      "precio": 429,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/botella-acero-montana.jpg",
+      "tecnica": "Grabado láser",
+      "area": "32 oz (950 ml) · grabado 9 × 14 cm por cara",
+      "desc": "Acero cepillado con paisaje de montaña grabado.",
+      "opciones": [
+        {
+          "nombre": "Grabado",
+          "valores": [
+            "Una cara",
+            "Dos caras (+$60)"
+          ]
+        },
+        {
+          "nombre": "Diseño",
+          "valores": [
+            "Este diseño",
+            "Mi propio diseño"
+          ]
+        }
+      ],
+      "tipo": "Botellas térmicas 32 oz"
+    },
+    {
+      "id": "botella-verde-brujula",
+      "cat": "termos",
+      "nombre": "Botella térmica verde olivo · Brújula",
+      "precio": 449,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/botella-verde-brujula.jpg",
+      "tecnica": "Grabado láser",
+      "area": "32 oz (950 ml) · grabado 9 × 14 cm por cara",
+      "desc": "Rosa de los vientos grabada; para viajeros y aventureros.",
+      "opciones": [
+        {
+          "nombre": "Grabado",
+          "valores": [
+            "Una cara",
+            "Dos caras (+$60)"
+          ]
+        },
+        {
+          "nombre": "Diseño",
+          "valores": [
+            "Este diseño",
+            "Mi propio diseño"
+          ]
+        }
+      ],
+      "tipo": "Botellas térmicas 32 oz"
+    },
+    {
+      "id": "botella-blanca-arquitectura",
+      "cat": "termos",
+      "nombre": "Botella térmica blanca · Arquitectura",
+      "precio": 469,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/botella-blanca-arquitectura.jpg",
+      "tecnica": "Sublimación",
+      "area": "32 oz (950 ml) · grabado 9 × 14 cm por cara",
+      "desc": "Blanca sublimable con ilustración de casa contemporánea.",
+      "opciones": [
+        {
+          "nombre": "Grabado",
+          "valores": [
+            "Una cara",
+            "Dos caras (+$60)"
+          ]
+        },
+        {
+          "nombre": "Diseño",
+          "valores": [
+            "Este diseño",
+            "Mi propio diseño"
+          ]
+        }
+      ],
+      "tipo": "Botellas térmicas 32 oz"
+    },
+    {
+      "id": "botella-negra-leon",
+      "cat": "termos",
+      "nombre": "Botella térmica negra · León",
+      "precio": 449,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/botella-negra-leon.jpg",
+      "tecnica": "Grabado láser",
+      "area": "32 oz (950 ml) · grabado 9 × 14 cm por cara",
+      "desc": "León de gran detalle grabado sobre pintura negra.",
+      "opciones": [
+        {
+          "nombre": "Grabado",
+          "valores": [
+            "Una cara",
+            "Dos caras (+$60)"
+          ]
+        },
+        {
+          "nombre": "Diseño",
+          "valores": [
+            "Este diseño",
+            "Mi propio diseño"
+          ]
+        }
+      ],
+      "tipo": "Botellas térmicas 32 oz"
+    },
+    {
+      "id": "botella-acero-logo",
+      "cat": "termos",
+      "nombre": "Botella térmica acero · Logo vertical",
+      "precio": 429,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/botella-acero-logo.jpg",
+      "tecnica": "Grabado láser",
+      "area": "32 oz (950 ml) · grabado 9 × 14 cm por cara",
+      "desc": "Logo en vertical sobre acero cepillado; ideal para empresas.",
+      "opciones": [
+        {
+          "nombre": "Grabado",
+          "valores": [
+            "Una cara",
+            "Dos caras (+$60)"
+          ]
+        },
+        {
+          "nombre": "Diseño",
+          "valores": [
+            "Este diseño",
+            "Mi propio diseño"
+          ]
+        }
+      ],
+      "tipo": "Botellas térmicas 32 oz"
+    },
+    {
+      "id": "llavero-madera-piel",
+      "cat": "llaveros",
+      "nombre": "Llavero de madera con piel",
+      "precio": 89,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/llavero-madera-piel.jpg",
+      "tecnica": "Grabado láser",
+      "area": "6 × 4 cm",
+      "desc": "Madera natural con correa de piel y remache metálico.",
+      "opciones": [
+        {
+          "nombre": "Diseño",
+          "valores": [
+            "Este diseño",
+            "Mi propio diseño"
+          ]
+        }
+      ],
+      "tipo": "Llaveros de madera"
+    },
+    {
+      "id": "llavero-metal-rectangular",
+      "cat": "llaveros",
+      "nombre": "Llavero metálico rectangular",
+      "precio": 99,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/llavero-metal-rectangular.jpg",
+      "tecnica": "Grabado láser",
+      "area": "5 × 3 cm",
+      "desc": "Acero inoxidable cepillado; grabado permanente de logo o nombre.",
+      "opciones": [
+        {
+          "nombre": "Grabado",
+          "valores": [
+            "Una cara",
+            "Dos caras (+$30)"
+          ]
+        }
+      ],
+      "tipo": "Llaveros metálicos"
+    },
+    {
+      "id": "llavero-madera-circular",
+      "cat": "llaveros",
+      "nombre": "Llavero de madera circular",
+      "precio": 69,
+      "destacado": true,
+      "activo": true,
+      "img": "img/productos/llavero-madera-circular.jpg",
+      "tecnica": "Grabado láser",
+      "area": "Ø 5 cm",
+      "desc": "Madera natural con grabado a detalle. El favorito para recuerdos de eventos.",
+      "opciones": [
+        {
+          "nombre": "Diseño",
+          "valores": [
+            "Este diseño",
+            "Mi propio diseño"
+          ]
+        }
+      ],
+      "tipo": "Llaveros de madera"
+    },
+    {
+      "id": "llavero-metal-circular",
+      "cat": "llaveros",
+      "nombre": "Llavero metálico circular",
+      "precio": 99,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/llavero-metal-circular.jpg",
+      "tecnica": "Grabado láser",
+      "area": "Ø 4 cm",
+      "desc": "Acero inoxidable con acabado espejo o cepillado.",
+      "opciones": [
+        {
+          "nombre": "Grabado",
+          "valores": [
+            "Una cara",
+            "Dos caras (+$30)"
+          ]
+        }
+      ],
+      "tipo": "Llaveros metálicos"
+    },
+    {
+      "id": "llavero-acrilico-rectangular",
+      "cat": "llaveros",
+      "nombre": "Llavero de acrílico rectangular",
+      "precio": 75,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/llavero-acrilico-rectangular.jpg",
+      "tecnica": "Grabado láser",
+      "area": "6 × 4 cm",
+      "desc": "Acrílico cristal de 3 mm con grabado que brilla al contraluz.",
+      "opciones": [],
+      "tipo": "Llaveros de acrílico"
+    },
+    {
+      "id": "llavero-acrilico-circular",
+      "cat": "llaveros",
+      "nombre": "Llavero de acrílico circular",
+      "precio": 69,
+      "destacado": true,
+      "activo": true,
+      "img": "img/productos/llavero-acrilico-circular.jpg",
+      "tecnica": "Grabado láser",
+      "area": "Ø 5 cm",
+      "desc": "Acrílico cristal con grabado de línea fina.",
+      "opciones": [],
+      "tipo": "Llaveros de acrílico"
+    },
+    {
+      "id": "llavero-piel",
+      "cat": "llaveros",
+      "nombre": "Llavero de piel grabado",
+      "precio": 119,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/llavero-piel.jpg",
+      "tecnica": "Grabado láser",
+      "area": "5 × 5 cm",
+      "desc": "Piel sintética premium con costura y remache; grabado en relieve.",
+      "opciones": [
+        {
+          "nombre": "Color",
+          "valores": [
+            "Negro",
+            "Café"
+          ]
+        }
+      ],
+      "tipo": "Llaveros de piel"
+    },
+    {
+      "id": "llavero-placa-qr",
+      "cat": "llaveros",
+      "nombre": "Placa metálica con código QR",
+      "precio": 109,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/llavero-placa-qr.jpg",
+      "tecnica": "Grabado láser",
+      "area": "5 × 3 cm",
+      "desc": "Placa tipo militar con QR a tu sitio, redes, menú o datos de contacto.",
+      "opciones": [],
+      "tipo": "Llaveros metálicos"
+    },
+    {
+      "id": "usb-giratoria-metal",
+      "cat": "usb",
+      "nombre": "USB giratoria metálica",
+      "precio": 199,
+      "destacado": true,
+      "activo": true,
+      "img": "img/productos/usb-giratoria-metal.jpg",
+      "tecnica": "Grabado láser",
+      "area": "Grabado hasta 3 × 1.5 cm",
+      "desc": "Memoria con broche giratorio de metal; tu logo grabado.",
+      "opciones": [
+        {
+          "nombre": "Capacidad",
+          "valores": [
+            "16 GB",
+            "32 GB (+$60)",
+            "64 GB (+$150)"
+          ]
+        }
+      ],
+      "tipo": "Memorias USB"
+    },
+    {
+      "id": "usb-bambu",
+      "cat": "usb",
+      "nombre": "USB de bambú con tapa",
+      "precio": 229,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/usb-bambu.jpg",
+      "tecnica": "Grabado láser",
+      "area": "Grabado hasta 4 × 2 cm",
+      "desc": "Carcasa de bambú natural con tapa magnética. Ideal para fotógrafos y bodas.",
+      "opciones": [
+        {
+          "nombre": "Capacidad",
+          "valores": [
+            "16 GB",
+            "32 GB (+$60)",
+            "64 GB (+$150)"
+          ]
+        }
+      ],
+      "tipo": "Memorias USB"
+    },
+    {
+      "id": "usb-metal-compacta",
+      "cat": "usb",
+      "nombre": "USB metálica compacta",
+      "precio": 209,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/usb-metal-compacta.jpg",
+      "tecnica": "Grabado láser",
+      "area": "Grabado hasta 3 × 1.2 cm",
+      "desc": "Cuerpo de aluminio con argolla, USB 3.0 de alta velocidad.",
+      "opciones": [
+        {
+          "nombre": "Capacidad",
+          "valores": [
+            "16 GB",
+            "32 GB (+$60)",
+            "64 GB (+$150)"
+          ]
+        }
+      ],
+      "tipo": "Memorias USB"
+    },
+    {
+      "id": "usb-madera-giratoria",
+      "cat": "usb",
+      "nombre": "USB de madera giratoria",
+      "precio": 239,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/usb-madera-giratoria.jpg",
+      "tecnica": "Grabado láser",
+      "area": "Grabado hasta 4 × 1.5 cm",
+      "desc": "Madera natural con broche giratorio; protege el conector sin tapa.",
+      "opciones": [
+        {
+          "nombre": "Capacidad",
+          "valores": [
+            "16 GB",
+            "32 GB (+$60)",
+            "64 GB (+$150)"
+          ]
+        }
+      ],
+      "tipo": "Memorias USB"
+    },
+    {
+      "id": "laser-panel-calado",
+      "cat": "laser",
+      "nombre": "Panel decorativo calado",
+      "precio": 1190,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/laser-panel-calado.jpg",
+      "tecnica": "Corte láser",
+      "area": "60 × 40 cm · MDF 6 mm",
+      "desc": "Celosía de ramas para muro o cabecera; se ve espectacular retroiluminada.",
+      "opciones": [
+        {
+          "nombre": "Tamaño",
+          "valores": [
+            "60 × 40 cm",
+            "90 × 60 cm (+$900)"
+          ]
+        },
+        {
+          "nombre": "Iluminación",
+          "valores": [
+            "Sin luz",
+            "Tira LED cálida (+$350)"
+          ]
+        }
+      ],
+      "tipo": "Decoración"
+    },
+    {
+      "id": "laser-maqueta",
+      "cat": "laser",
+      "nombre": "Maqueta arquitectónica en MDF",
+      "precio": 3500,
+      "destacado": true,
+      "activo": true,
+      "img": "img/productos/laser-maqueta.jpg",
+      "tecnica": "Corte y grabado láser",
+      "area": "Escala 1:100 · base 40 × 30 cm",
+      "desc": "Maqueta a partir de tus planos DWG/DXF, con árboles y detalles. Precio desde, según tamaño y complejidad.",
+      "opciones": [
+        {
+          "nombre": "Escala",
+          "valores": [
+            "1:100",
+            "1:75 (+$1200)",
+            "1:50 (+$2800)"
+          ]
+        }
+      ],
+      "tipo": "Maquetas"
+    },
+    {
+      "id": "laser-lampara-calada",
+      "cat": "laser",
+      "nombre": "Lámpara calada de árbol",
+      "precio": 890,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/laser-lampara-calada.jpg",
+      "tecnica": "Corte láser",
+      "area": "15 × 15 × 22 cm",
+      "desc": "Farol de MDF negro con silueta de árbol y luz LED cálida.",
+      "opciones": [],
+      "tipo": "Iluminación"
+    },
+    {
+      "id": "laser-lampara-acrilico",
+      "cat": "laser",
+      "nombre": "Lámpara de acrílico grabado",
+      "precio": 749,
+      "destacado": true,
+      "activo": true,
+      "img": "img/productos/laser-lampara-acrilico.jpg",
+      "tecnica": "Grabado láser",
+      "area": "Acrílico 20 × 15 cm · base de madera con LED",
+      "desc": "Grabado que se ilumina desde la base. Tu casa, logo o foto en luz.",
+      "opciones": [
+        {
+          "nombre": "Luz",
+          "valores": [
+            "Cálida",
+            "Blanca",
+            "RGB con control (+$120)"
+          ]
+        }
+      ],
+      "tipo": "Iluminación"
+    },
+    {
+      "id": "laser-organizador",
+      "cat": "laser",
+      "nombre": "Organizador de escritorio",
+      "precio": 389,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/laser-organizador.jpg",
+      "tecnica": "Corte láser",
+      "area": "24 × 16 × 14 cm · MDF 3 mm",
+      "desc": "Portaplumas, notas y cajón; personalizable con nombre o logo.",
+      "opciones": [],
+      "tipo": "Oficina"
+    },
+    {
+      "id": "laser-posavasos",
+      "cat": "laser",
+      "nombre": "Posavasos mandala (juego de 4)",
+      "precio": 199,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/laser-posavasos.jpg",
+      "tecnica": "Corte láser",
+      "area": "Ø 10 cm · MDF 3 mm",
+      "desc": "Juego de 4 posavasos calados con diseño de mandala.",
+      "opciones": [],
+      "tipo": "Hogar y regalo"
+    },
+    {
+      "id": "laser-llaveros-mdf",
+      "cat": "laser",
+      "nombre": "Llaveros de MDF con silueta",
+      "precio": 35,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/laser-llaveros-mdf.jpg",
+      "tecnica": "Corte y grabado láser",
+      "area": "Hasta 6 cm",
+      "desc": "Casa, auto, huella o tu logo. Precio por pieza; pedido mínimo 10 piezas.",
+      "opciones": [],
+      "tipo": "Recuerdos y eventos",
+      "unidad": "por pieza"
+    },
+    {
+      "id": "laser-numero-casa",
+      "cat": "laser",
+      "nombre": "Número de casa retroiluminado",
+      "precio": 1190,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/laser-numero-casa.jpg",
+      "tecnica": "Corte láser",
+      "area": "40 × 20 cm · acrílico negro",
+      "desc": "Números en relieve con luz LED posterior; para exterior techado.",
+      "opciones": [],
+      "tipo": "Señalización"
+    },
+    {
+      "id": "laser-caja-regalo",
+      "cat": "laser",
+      "nombre": "Caja de regalo calada",
+      "precio": 289,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/laser-caja-regalo.jpg",
+      "tecnica": "Corte láser",
+      "area": "15 × 15 × 12 cm",
+      "desc": "Caja de MDF con calado floral; tapa grabable con nombre.",
+      "opciones": [],
+      "tipo": "Hogar y regalo"
+    },
+    {
+      "id": "laser-portacartas",
+      "cat": "laser",
+      "nombre": "Servilletero / portacartas",
+      "precio": 199,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/laser-portacartas.jpg",
+      "tecnica": "Corte láser",
+      "area": "18 × 8 × 9 cm",
+      "desc": "Calado geométrico; para mesa, recepción o escritorio.",
+      "opciones": [],
+      "tipo": "Hogar y regalo"
+    },
+    {
+      "id": "laser-topografico",
+      "cat": "laser",
+      "nombre": "Maqueta topográfica",
+      "precio": 1690,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/laser-topografico.jpg",
+      "tecnica": "Corte láser",
+      "area": "30 × 30 cm · capas de MDF",
+      "desc": "Curvas de nivel por capas a partir de tu levantamiento o de datos del terreno.",
+      "opciones": [
+        {
+          "nombre": "Tamaño",
+          "valores": [
+            "30 × 30 cm",
+            "50 × 50 cm (+$1100)"
+          ]
+        }
+      ],
+      "tipo": "Maquetas"
+    },
+    {
+      "id": "laser-reconocimiento",
+      "cat": "laser",
+      "nombre": "Reconocimiento de acrílico",
+      "precio": 489,
+      "destacado": false,
+      "activo": true,
+      "img": "img/productos/laser-reconocimiento.jpg",
+      "tecnica": "Grabado láser",
+      "area": "Acrílico 8 mm · 20 cm con base",
+      "desc": "Trofeo para empresas, escuelas y eventos, con nombre y logo.",
+      "opciones": [],
+      "tipo": "Reconocimientos"
+    }
+  ],
+  "laser": {
+    "arranque": 90,
+    "servicios": [
+      {
+        "nombre": "Corte",
+        "factor": 1
+      },
+      {
+        "nombre": "Grabado",
+        "factor": 0.8
+      },
+      {
+        "nombre": "Corte + grabado",
+        "factor": 1.4
+      }
+    ],
+    "materiales": [
+      {
+        "nombre": "MDF 3 mm",
+        "tarifa": 0.04,
+        "nota": "Económico, ideal para maquetas"
+      },
+      {
+        "nombre": "MDF 6 mm",
+        "tarifa": 0.055,
+        "nota": "Más rígido: letreros y cajas"
+      },
+      {
+        "nombre": "Triplay / madera 3 mm",
+        "tarifa": 0.065,
+        "nota": "Acabado natural"
+      },
+      {
+        "nombre": "Acrílico 3 mm",
+        "tarifa": 0.1,
+        "nota": "Cristal, color o espejo"
+      },
+      {
+        "nombre": "Piel / cuero",
+        "tarifa": 0.09,
+        "nota": "Grabado en carteras y parches"
+      },
+      {
+        "nombre": "Vidrio (solo grabado)",
+        "tarifa": 0.08,
+        "nota": "Copas, botellas y espejos"
+      }
+    ]
+  },
+  "arquitectura": {
+    "servicios": [
+      {
+        "id": "consulta",
+        "nombre": "Consulta de arquitectura (1 h)",
+        "precio": 700,
+        "unidad": "por sesión",
+        "pagable": true,
+        "desc": "Asesoría para tu terreno, ampliación o remodelación. En línea o presencial; se descuenta si contratas el proyecto."
+      },
+      {
+        "id": "anteproyecto",
+        "nombre": "Anteproyecto arquitectónico",
+        "precio": 120,
+        "unidad": "por m²",
+        "desc": "Levantamiento, plantas, fachadas, cortes y modelo 3D para definir tu proyecto."
+      },
+      {
+        "id": "ejecutivo",
+        "nombre": "Proyecto ejecutivo",
+        "precio": 220,
+        "unidad": "por m²",
+        "desc": "Planos constructivos, instalaciones, detalles y cuantificación para construir."
+      },
+      {
+        "id": "interiorismo",
+        "nombre": "Diseño de interiores",
+        "precio": 180,
+        "unidad": "por m²",
+        "desc": "Distribución, mobiliario, iluminación, materiales y acabados para casa, oficina o comercio."
+      },
+      {
+        "id": "renders",
+        "nombre": "Renders fotorrealistas",
+        "precio": 1800,
+        "unidad": "por imagen",
+        "desc": "Imágenes para vender, presentar o decidir acabados. Recorridos 3D bajo cotización."
+      },
+      {
+        "id": "tramites",
+        "nombre": "Trámites y licencia de construcción",
+        "precio": 5500,
+        "unidad": "por trámite",
+        "desc": "Integración de expediente, alineamiento, número oficial y licencia."
+      }
+    ],
+    "portafolio": [
+      {
+        "img": "img/portafolio/showroom.jpg",
+        "tipo": "Proyecto comercial",
+        "titulo": "Showroom",
+        "desc": "Del levantamiento y la demolición a la entrega: plafones de madera, iluminación lineal y área de exhibición."
+      },
+      {
+        "img": "img/portafolio/casa-contemporanea.jpg",
+        "tipo": "Residencial",
+        "titulo": "Casa contemporánea",
+        "desc": "Concepto, asoleamiento, volumetría, planos, obra negra y resultado final con piedra, madera y concreto."
+      },
+      {
+        "img": "img/portafolio/agencia-automotriz.jpg",
+        "tipo": "Comercial",
+        "titulo": "Agencia automotriz",
+        "desc": "Concepto, análisis del predio, volumetría, planos, estructura metálica, obra y fachada final iluminada."
+      },
+      {
+        "img": "img/portafolio/oficinas-corporativas.jpg",
+        "tipo": "Interiores",
+        "titulo": "Oficinas corporativas",
+        "desc": "Boceto, distribución, isométrico, materiales, mobiliario, canceles y recepción terminada."
+      }
+    ]
+  }
+}
