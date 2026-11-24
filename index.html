@@ -123,8 +123,6 @@ var APPS=[
   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 3h6"/><path d="M10 3v6l-5 9a2 2 0 0 0 1.7 3h10.6a2 2 0 0 0 1.7-3l-5-9V3"/><path d="M7.5 15h9"/></svg>'},
  {dir:'atlas',data:{ls:['atlas:'],idb:['atlas-escudos']},name:'Atlas de Capitales',desc:'Países, México y Estados Unidos: banderas, escudos, capitales, quiz, juegos, gráficas, tarjetas y herramientas de geografía',color:'#0F6E6A',
   icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18"/><path d="M12 3c-3.5 4-3.5 14 0 18"/><path d="M12 3c3.5 4 3.5 14 0 18"/></svg>'},
- {dir:'fichero',data:{ls:['fichero:'],idb:['fichero-app']},name:'Fichero',desc:'Bases de datos configurables con revisión, gráficas y catálogo en PDF; varios proyectos. Pide contraseña',color:'#1B9E3A',
-  icon:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>'},
 ];
 document.getElementById('apps').innerHTML=APPS.map(function(a){
  return '<a class="app" href="./'+a.dir+'/"><span class="ic" style="background:'+a.color+'">'+a.icon+'</span><span class="tx"><b>'+a.name+'</b><span>'+a.desc+'</span></span><span class="go" aria-hidden="true">›</span></a>';
