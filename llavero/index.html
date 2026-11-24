@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Llavero</title>
+<title>Administrador de contraseñas</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='6' fill='%232563eb'/%3E%3Cg transform='translate(4.2 4.2) scale(.65)' fill='none' stroke='white' stroke-width='2.3' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M2.59 17.41A2 2 0 0 0 2 18.83V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.17a2 2 0 0 0 1.41-.59l.81-.81a6.5 6.5 0 1 0-4-4z'/%3E%3Ccircle cx='16.5' cy='7.5' r='.5' fill='white'/%3E%3C/g%3E%3C/svg%3E">
 <style>
   :root{
     color-scheme:dark;
@@ -278,6 +279,18 @@
   .formbar .progress .pb{margin-top:6px;}
   #formGrid{margin-top:0;}
   @media(max-width:760px){.formbar{margin:-18px -14px 14px; padding:10px 14px;} .formbar .pagehead{flex-wrap:wrap;} .formbar .pagehead h1{font-size:18px;} .formbar .pagehead p{display:none;}}
+
+  /* ---- v21: edición completa/parcial ---- */
+  .actions .info{margin:0 6px 0 4px;}
+  .modes{display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:8px; font-size:12px; font-weight:600;}
+  .seg{display:inline-flex; border:1px solid var(--border); border-radius:8px; overflow:hidden;}
+  .seg button{border:0; border-radius:0; background:var(--panel); color:var(--muted); padding:5px 12px; font-size:12px;}
+  .seg button.on{background:var(--accent); color:var(--on-accent);}
+  .fd{display:block; font-size:11px; color:var(--muted); margin:-3px 0 5px;}
+  .fd:empty{display:none;}
+  .rvidle{color:var(--muted); font-weight:400; font-size:11px;}
+  .field.idle .rvbtn{background:transparent; color:var(--muted); border-color:var(--border);}
+  .sect h3 .info{margin-left:6px; vertical-align:middle;}
 </style>
 </head>
 <body>
@@ -295,7 +308,7 @@
 
 <div class="cardmodal" id="cardModal" aria-hidden="true"><div class="cardmodal-in" id="cardModalIn"></div></div>
 <header class="topbar">
-  <div class="brand"><span class="star"><span data-ic="key"></span></span> <span id="appName">Llavero</span></div>
+  <div class="brand"><span class="star"><span data-ic="key"></span></span> <span id="appName">Administrador de contraseñas</span></div>
   <div class="tabs" id="tabbar">
     <div class="tabs-main" id="tabsMain"></div>
     <div><button class="tabbtn" id="tabCfg" data-tab="config" title="Nombre, tema, orden de pestañas y preferencias">Configuración</button></div>
@@ -341,7 +354,7 @@
     <select id="qCat"></select>
     <select id="qEst"></select>
     <select id="q2fa"><option value="">2FA: todas</option><option value="con">Con 2FA</option><option value="sin">Sin 2FA</option><option value="na">2FA no aplica</option></select>
-    <label class="checkline" style="margin:0;"><input type="checkbox" id="qFlag"> Solo con alertas <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Cuentas con contraseña repetida o corta, sin 2FA, hackeadas antes o con revisión vencida.">i</i></label>
+    <label class="checkline" style="margin:0;"><input type="checkbox" id="qFlag"> Solo con alertas <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Cuentas con contraseña repetida o corta, sin 2FA, hackeadas antes o con revisión vencida.">?</i></label>
   </div>
   <div class="sub" id="qCount" style="margin:0 0 10px;"></div>
   <div class="cards" id="results"></div>
@@ -352,8 +365,8 @@
     <div class="pagehead">
       <div><h1 id="formTitle">Agregar cuenta</h1><p id="formSub">Registra y organiza tus accesos de forma segura.</p></div>
       <div class="actions">
-        <button class="btn-secondary" id="btnClearForm">Cancelar</button>
-        <button class="btn-primary" id="btnAdd">Guardar</button>
+        <button class="btn-secondary" id="btnClearForm">Cancelar</button><i class="info" id="infoCancel" tabindex="0" role="button" aria-label="Ayuda" data-tip="">?</i>
+        <button class="btn-primary" id="btnAdd">Guardar</button><i class="info" id="infoSave" tabindex="0" role="button" aria-label="Ayuda" data-tip="">?</i>
       </div>
     </div>
     <div id="trackBanner"></div>
@@ -366,7 +379,7 @@
     <div class="toolbar">
       <div style="display:flex; gap:8px; align-items:center; flex-wrap:wrap;">
         <input class="search" id="search" placeholder="Filtrar la tabla...">
-        <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Pulsa «Revisar» en una fila para auditarla en la pestaña Agregar cuenta: cada campo sale en rojo hasta que lo modifiques o lo confirmes. Usa el botón de copiar para copiar correo o contraseña sin mostrarlos.">i</i>
+        <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Pulsa «Revisar» en una fila para auditarla en la pestaña Agregar cuenta: cada campo sale en rojo hasta que lo modifiques o lo confirmes. Usa el botón de copiar para copiar correo o contraseña sin mostrarlos.">?</i>
         <span class="count" id="count"></span>
       </div>
     </div>
@@ -418,7 +431,7 @@
     </div>
   </div>
   <div class="panel">
-    <h2 class="secttitle"><span data-ic="cloud"></span> Supabase (copia cifrada) <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Sube una copia cifrada con tu clave maestra (AES-256) a tu Supabase personal. Supabase solo guarda texto cifrado: sin la clave nadie puede leerla. Usa internet solo cuando pulsas estos botones; el resto de la app funciona sin conexión. Se conserva también la copia anterior.">i</i></h2>
+    <h2 class="secttitle"><span data-ic="cloud"></span> Supabase (copia cifrada) <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Sube una copia cifrada con tu clave maestra (AES-256) a tu Supabase personal. Supabase solo guarda texto cifrado: sin la clave nadie puede leerla. Usa internet solo cuando pulsas estos botones; el resto de la app funciona sin conexión. Se conserva también la copia anterior.">?</i></h2>
     <div class="actions" style="margin-top:0;">
       <button class="btn-primary" id="btnCloudUp"><span data-ic="upload"></span> Subir copia cifrada</button>
       <button class="btn-secondary" id="btnCloudDown"><span data-ic="download"></span> Restaurar desde Supabase</button>
@@ -435,7 +448,7 @@
 
 <div class="tabpage" id="tab-config">
   <div class="panel">
-    <h2 class="secttitle"><span data-ic="tag"></span> Nombre de la aplicación <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="El navegador no puede renombrar el archivo en tu disco. Este nombre cambia el título de la app y los nombres de los archivos que exportas. Para tener el archivo .html con ese nombre, descarga la copia. Ojo: en Firefox los datos se guardan por archivo; si renombras o mueves el original, haz primero un backup cifrado.">i</i></h2>
+    <h2 class="secttitle"><span data-ic="tag"></span> Nombre de la aplicación <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="El navegador no puede renombrar el archivo en tu disco. Este nombre cambia el título de la app y los nombres de los archivos que exportas. Para tener el archivo .html con ese nombre, descarga la copia. Ojo: en Firefox los datos se guardan por archivo; si renombras o mueves el original, haz primero un backup cifrado.">?</i></h2>
     <div class="cfgrow">
       <input id="cfgAppName" type="text" maxlength="40" style="max-width:280px;" autocomplete="off">
       <button class="btn-primary rowbtn" id="cfgAppSave">Guardar nombre</button>
@@ -449,14 +462,14 @@
     <div class="themes" id="themeCards"></div>
   </div>
   <div class="panel">
-    <h2 class="secttitle"><span data-ic="sort"></span> Orden de las pestañas <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Arrastra las pestañas de la barra superior o usa las flechas. Configuración siempre queda a la derecha. La app siempre abre en Buscador.">i</i></h2>
+    <h2 class="secttitle"><span data-ic="sort"></span> Orden de las pestañas <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Arrastra las pestañas de la barra superior o usa las flechas. Configuración siempre queda a la derecha. La app siempre abre en Buscador.">?</i></h2>
     <div id="orderList"></div>
     <button class="btn-secondary rowbtn" id="orderReset" style="margin-top:6px;">Restablecer orden</button>
   </div>
   <div class="panel">
     <h2 class="secttitle"><span data-ic="shield"></span> Privacidad y seguridad</h2>
     <div class="cfgrow">
-      <label style="margin:0;" for="cfgClip">Borrar el portapapeles después de copiar <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Si copiaste otra cosa en ese tiempo, también se vacía. No funciona si la pestaña está en segundo plano.">i</i></label>
+      <label style="margin:0;" for="cfgClip">Borrar el portapapeles después de copiar <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Si copiaste otra cosa en ese tiempo, también se vacía. No funciona si la pestaña está en segundo plano.">?</i></label>
       <select id="cfgClip">
         <option value="0">No borrar</option>
         <option value="15">15 segundos</option>
@@ -465,14 +478,14 @@
       </select>
     </div>
     <div class="cfgrow">
-      <label style="margin:0;" for="cfgStale">Marcar «revisión vencida» después de <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Cuentas activas cuya última modificación es más antigua que este plazo aparecen en las alertas.">i</i></label>
+      <label style="margin:0;" for="cfgStale">Marcar «revisión vencida» después de <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Cuentas activas cuya última modificación es más antigua que este plazo aparecen en las alertas.">?</i></label>
       <select id="cfgStale">
         <option value="90">90 días</option>
         <option value="180">180 días</option>
         <option value="365">365 días</option>
       </select>
     </div>
-    <label class="checkline" style="margin-top:12px;"><input type="checkbox" id="cfgMask"> Ocultar en la tabla los datos sensibles <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Oculta contraseñas, PIN, códigos y respuestas de seguridad en la pestaña Datos. Siempre puedes copiarlos con el botón de copiar.">i</i></label>
+    <label class="checkline" style="margin-top:12px;"><input type="checkbox" id="cfgMask"> Ocultar en la tabla los datos sensibles <i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="Oculta contraseñas, PIN, códigos y respuestas de seguridad en la pestaña Datos. Siempre puedes copiarlos con el botón de copiar.">?</i></label>
   </div>
   <div class="panel">
     <h2 class="secttitle"><span data-ic="info"></span> Acerca de</h2>
@@ -484,7 +497,7 @@
 </div>
 
 <script>
-const APP_VERSION = "20";
+const APP_VERSION = "21";
 /* ---------- iconos (SVG de línea, estilo Lucide) ---------- */
 const IC = {
   copy:'<rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>',
@@ -534,19 +547,19 @@ const CATEGORIAS = [
 const ST3 = ["SI","NO","NA"];
 const STHELP = "«No» = no lo tiene, pero podrías activarlo. «No aplica» = esta cuenta no permite usarlo.";
 const GROUPS = [
-  {id:"id", title:"Identificación"},
-  {id:"acc", title:"Acceso"},
-  {id:"2fa", title:"Verificación en dos pasos"},
-  {id:"rec", title:"Recuperación"},
-  {id:"pin", title:"PIN y códigos"},
-  {id:"pay", title:"Pagos y notas"},
+  {id:"id", title:"Identificación", help:"Datos básicos para reconocer la cuenta: de qué tipo es, dónde está, en qué estado se encuentra y qué tan crítica es."},
+  {id:"acc", title:"Acceso", help:"Cómo entras a la cuenta: usuarios, correo y contraseña, con la longitud que permite el sitio."},
+  {id:"2fa", title:"Verificación en dos pasos", help:"El segundo paso de seguridad que tiene la cuenta: app de autenticación, teléfono, passkey o Face ID."},
+  {id:"rec", title:"Recuperación", help:"Cómo recuperarías la cuenta si pierdes el acceso: correo de recuperación, códigos de respaldo y pregunta de seguridad."},
+  {id:"pin", title:"PIN y códigos", help:"PIN y códigos extra que usa la cuenta: anti-phishing, transacciones y autorización de transferencias."},
+  {id:"pay", title:"Pagos y notas", help:"Tarjeta o método de pago vinculado a la cuenta y notas libres."},
 ];
 const FIELDS = [
-  {g:"id", key:"categoria", label:"CATEGORÍA", type:"select", options:CATEGORIAS},
-  {g:"id", key:"app", label:"APP/WEB/DOMINIO", type:"text"},
-  {g:"id", key:"estado", label:"ESTADO", type:"select", options:["ACTIVA","INACTIVA","PENDIENTE","ELIMINADA"]},
-  {g:"id", key:"prioridad", label:"PRIORIDAD TRAS HACKEO", type:"select", options:["ALTA","MEDIA","BAJA","N/A"]},
-  {g:"id", key:"hackeada", label:"HACKEADA ALGUNA VEZ", type:"select", options:["SI","NO"]},
+  {g:"id", key:"categoria", label:"CATEGORÍA", type:"select", options:CATEGORIAS, help:"Tipo de cuenta (banca, redes sociales, software…). Elige de la lista; sirve para filtrar y para las estadísticas."},
+  {g:"id", key:"app", label:"APP/WEB/DOMINIO", type:"text", help:"Nombre de la app, sitio web o dominio donde tienes la cuenta, por ejemplo netflix.com."},
+  {g:"id", key:"estado", label:"ESTADO", type:"select", options:["ACTIVA","INACTIVA","PENDIENTE","ELIMINADA"], help:"ACTIVA: la usas. INACTIVA: existe pero no la usas. PENDIENTE: falta decidir qué hacer con ella. ELIMINADA: ya la diste de baja."},
+  {g:"id", key:"prioridad", label:"PRIORIDAD TRAS HACKEO", type:"select", options:["ALTA","MEDIA","BAJA","N/A"], help:"Qué tan urgente sería cambiar esta cuenta si te hackearan: ALTA (banca, correo principal), MEDIA o BAJA. N/A si no aplica."},
+  {g:"id", key:"hackeada", label:"HACKEADA ALGUNA VEZ", type:"select", options:["SI","NO"], help:"Elige SI si la cuenta ya fue vulnerada alguna vez: aparecerá como alerta de seguridad en Estadísticas."},
 
   {g:"acc", key:"usuarios", label:"USUARIO", type:"chipmulti", db:"usuarios", splitRe:/[;,|]/, help:"Puedes guardar varios usuarios por cuenta. Elige de la lista o agrega uno nuevo."},
   {g:"acc", key:"correo", label:"CORREO", type:"dbselect", db:"correos", extra:["No aplica"], help:"Elige un correo de tu base de datos o «+ Agregar nuevo…». «No aplica» si la cuenta no usa correo."},
@@ -567,7 +580,7 @@ const FIELDS = [
   {g:"pin", key:"codigoaut", label:"NÚMERO / CÓDIGO DE AUTORIZACIÓN DE TRANSFERENCIAS", type:"statusvalue", statuses:ST3, defaultOff:true, secret:true, help:"Número o código para autorizar transferencias. Viene desactivado hasta que aplique. " + STHELP},
 
   {g:"pay", key:"tarjeta", label:"TARJETA/MÉTODO DE PAGO VINCULADO", type:"statuschips", db:"tarjetas", statuses:ST3, splitRe:/[;|]/, help:"Puedes registrar varias tarjetas. Guarda solo un alias o los últimos 4 dígitos; nunca el número completo ni el CVV. " + STHELP},
-  {g:"pay", key:"notas", label:"NOTAS", type:"notas", wide:true},
+  {g:"pay", key:"notas", label:"NOTAS", type:"notas", wide:true, help:"Cualquier detalle útil de la cuenta. Marca «No aplica» si no tienes nada que anotar."},
 ];
 const FMAP = {}; FIELDS.forEach(f => FMAP[f.key] = f);
 
@@ -601,6 +614,7 @@ const DB_KEYS = {}; DB_META.forEach(m => DB_KEYS[m.k] = m.key);
 
 let rows = [], DB = {}, notes = [], hist = [], snaps = [], cfg = {theme:"minimal", clip:30, mask:true, appName:"", tabOrder:null, staleDays:180};
 DB_META.forEach(m => DB[m.k] = []);
+let editMode = "full", dirty = {};   // edición completa (lote) o parcial (fecha por campo)
 let reviewIndex = null;      // null = cuenta nueva
 let reviewed = {};           // key -> true cuando el campo se modificó o se confirmó
 const chips = {};            // key -> valores seleccionados (campos con chips)
@@ -1003,7 +1017,10 @@ function migrateRow(r){
   else o.tarjeta = {status: tj ? "SI" : "", values: tj ? [tj] : []};
   o.estado = r.estado || ""; o.prioridad = r.prioridad || ""; o.hackeada = r.hackeada || "";
   o.notas = (r.notas && typeof r.notas === "object") ? {na:!!r.notas.na, value:r.notas.value||""} : {na:false, value:r.notas||""};
-  o.fecha = r.fecha || ""; o.__v4 = true; o.id = r.id || uid();
+  o.fecha = r.fecha || "";
+  o.fechas = {}; if(r.fechas && typeof r.fechas === "object") Object.keys(r.fechas).forEach(k => { if(FMAP[k] && /^\d{4}-\d{2}-\d{2}$/.test(String(r.fechas[k]))) o.fechas[k] = String(r.fechas[k]); });
+  o.lote = r.lote ? String(r.lote) : "";
+  o.__v4 = true; o.id = r.id || uid();
   return o;
 }
 
@@ -1075,6 +1092,7 @@ const THEMES = [
 function loadConfig(){
   try{ const c = JSON.parse(lsGet(CONFIG_KEY) || "null"); if(c) cfg = Object.assign(cfg, c); }catch(e){}
   if(!cfg.uiv){ cfg.uiv = 18; cfg.theme = "minimal"; saveConfig(); }   // v18: estrena la interfaz minimal una sola vez
+  if(cfg.uiv < 21){ cfg.uiv = 21; if(!cfg.appName || /^llavero$/i.test(String(cfg.appName).trim())) cfg.appName = ""; saveConfig(); }   // v21: nuevo nombre por defecto
   if(!THEMES.some(t => t.id === cfg.theme)) cfg.theme = "minimal";
   if(!cfg.appName) cfg.appName = document.documentElement.dataset.appname || "";
   if(!Array.isArray(cfg.tabOrder)) cfg.tabOrder = null;
@@ -1083,8 +1101,8 @@ function loadConfig(){
 }
 function saveConfig(){ lsSet(CONFIG_KEY, JSON.stringify(cfg)); }
 function applyTheme(){ document.documentElement.dataset.theme = cfg.theme; }
-function appName(){ return (cfg.appName||"").trim() || "Llavero"; }
-function slug(x){ return (x||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-zA-Z0-9]+/g,"_").replace(/^_+|_+$/g,"").toLowerCase() || "llavero"; }
+function appName(){ return (cfg.appName||"").trim() || "Administrador de contraseñas"; }
+function slug(x){ return (x||"").normalize("NFD").replace(/[̀-ͯ]/g,"").replace(/[^a-zA-Z0-9]+/g,"_").replace(/^_+|_+$/g,"").toLowerCase() || "administrador_de_contrasenas"; }
 function applyAppName(){
   $("appName").textContent = appName(); document.title = appName();
   $("appVersionName").textContent = appName();
@@ -1099,7 +1117,7 @@ function downloadAppCopy(){
   downloadBlob("<!DOCTYPE html>\n" + clone.outerHTML, slug(appName()) + ".html", "text/html;charset=utf-8");
   showToast("Copia descargada: " + slug(appName()) + ".html");
 }
-function updateFileHint(){ $("cfgFileName").textContent = slug($("cfgAppName").value.trim() || "Llavero") + ".html"; }
+function updateFileHint(){ $("cfgFileName").textContent = slug($("cfgAppName").value.trim() || "Administrador de contraseñas") + ".html"; }
 function buildConfig(){
   $("appVersion").textContent = APP_VERSION;
   $("cfgAppName").value = appName(); updateFileHint();
@@ -1165,7 +1183,7 @@ function exportCodesTxt(app, text){
 }
 
 /* ---------- ayuda contextual (iconos ⓘ) ---------- */
-function info(t){ return `<i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="${esc(t)}">i</i>`; }
+function info(t){ return `<i class="info" tabindex="0" role="button" aria-label="Ayuda" data-tip="${esc(t)}">?</i>`; }
 const tipEl = $("tip"); let tipPinned = null;
 function showTip(el){
   tipEl.textContent = el.dataset.tip; tipEl.style.display = "block";
@@ -1362,8 +1380,8 @@ function refreshDbUsers(k){
 function buildForm(){
   $("formGrid").innerHTML = GROUPS.map((g) => {
     const fs = FIELDS.filter(f => f.g === g.id);
-    return `<section class="sect"><h3><span class="sn">${String(GROUPS.indexOf(g)+1).padStart(2,"0")}</span>${esc(g.title)}<span class="sp" id="gp_${g.id}"></span></h3><div class="grid">` +
-      fs.map(f => `<div class="field${f.wide ? " wide" : ""}" data-key="${f.key}"><label><span class="lt">${esc(f.label)}${f.help ? info(f.help) : ""}</span><span class="rv"></span></label>${T[f.type].build(f)}</div>`).join("") +
+    return `<section class="sect"><h3><span class="sn">${String(GROUPS.indexOf(g)+1).padStart(2,"0")}</span>${esc(g.title)}${info(g.help)}<span class="sp" id="gp_${g.id}"></span></h3><div class="grid">` +
+      fs.map(f => `<div class="field${f.wide ? " wide" : ""}" data-key="${f.key}"><label><span class="lt">${esc(f.label)}${f.help ? info(f.help) : ""}</span><span class="rv"></span></label><span class="fd"></span>${T[f.type].build(f)}</div>`).join("") +
       `</div></section>`;
   }).join("");
   FIELDS.forEach(f => { if(T[f.type].wire) T[f.type].wire(f); });
@@ -1379,18 +1397,25 @@ function buildForm(){
 function buildHeader(){
   $("theadRow").innerHTML = `<th>Acciones</th>` + FIELDS.map(f => `<th>${esc(f.label)}</th>`).join("") + `<th>FECHA</th>`;
 }
+const fieldDate = (r, key) => (r && r.fechas && r.fechas[key]) || (r && r.fecha) || "";
+const isPartial = () => reviewIndex !== null && editMode === "partial";
 function fieldEl(key){ return $("formGrid").querySelector('.field[data-key="'+key+'"]'); }
 function isDone(key){ const f = FMAP[key]; return !!reviewed[key] && isFilled(f, getFieldValue(f)); }
 
 function refreshTrack(key, skipProgress){
-  const f = FMAP[key], el = fieldEl(key), rv = el.querySelector(".rv");
+  const f = FMAP[key], el = fieldEl(key), rv = el.querySelector(".rv"), fd = el.querySelector(".fd");
   const v = getFieldValue(f), filled = isFilled(f, v), done = !!reviewed[key] && filled;
-  el.classList.toggle("done", done); el.classList.toggle("pending", !done);
+  const idle = isPartial() && !done && !dirty[key];
+  el.classList.toggle("done", done); el.classList.toggle("idle", idle); el.classList.toggle("pending", !done && !idle);
   if(done) rv.innerHTML = '<span class="rvdone">' + ic("check") + ' Listo</span>';
   else if(filled){
-    const txt = (f.defaultOff && v.status === "NA") ? "Confirmar: " + (f.naLabel || "No aplica").toLowerCase() : "Correcto";
-    rv.innerHTML = `<button type="button" class="rvbtn" data-confirm="${key}">${ic("check")} ${esc(txt)}</button>`;
-  } else rv.innerHTML = `<span class="rvmiss">${esc(T[f.type].hint ? T[f.type].hint(f, v) : "Falta llenar")}</span>`;
+    const txt = idle ? "Confirmar sin cambios" : ((f.defaultOff && v.status === "NA") ? "Confirmar: " + (f.naLabel || "No aplica").toLowerCase() : "Correcto");
+    rv.innerHTML = `<button type="button" class="rvbtn" data-confirm="${key}" title="Marca este campo como revisado y registra la fecha de hoy">${ic("check")} ${esc(txt)}</button>`;
+  } else rv.innerHTML = idle ? '<span class="rvidle">Sin datos</span>' : `<span class="rvmiss">${esc(T[f.type].hint ? T[f.type].hint(f, v) : "Falta llenar")}</span>`;
+  if(fd){
+    if(reviewIndex === null) fd.textContent = "";
+    else fd.textContent = done ? "Nueva fecha: hoy (" + todayLocal() + ")" : "Última modificación: " + (fieldDate(rows[reviewIndex], key) || "sin fecha");
+  }
   if(!skipProgress) updateProgress();
 }
 function refreshAllTracking(){ FIELDS.forEach(f => refreshTrack(f.key, true)); updateProgress(); }
@@ -1403,7 +1428,7 @@ function touchField(key, ev){
     if(t.id && t.id.startsWith("sel_")) return;   // elegir en la lista no cambia nada hasta pulsar "+ Agregar"
   }
   const f = FMAP[key];
-  reviewed[key] = isFilled(f, getFieldValue(f));
+  reviewed[key] = isFilled(f, getFieldValue(f)); dirty[key] = true;
   refreshTrack(key);
 }
 function updateProgress(){
@@ -1414,23 +1439,33 @@ function updateProgress(){
     const fs = FIELDS.filter(f => f.g === g.id), d = fs.filter(f => isDone(f.key)).length, el = $("gp_"+g.id);
     if(el) el.innerHTML = (d === fs.length ? ic("check") + " " : "") + d + " / " + fs.length;
   });
-  $("btnAdd").disabled = !all;
-  $("btnAdd").title = all ? "" : "Faltan campos por llenar o confirmar.";
+  const part = isPartial(), bad = FIELDS.some(f => dirty[f.key] && !isDone(f.key));
+  const ok = part ? (n > 0 && !bad) : all;
+  $("btnAdd").disabled = !ok;
+  $("btnAdd").title = ok ? "" : (part ? (bad ? "Hay campos que modificaste y quedaron incompletos." : "Modifica o confirma al menos un campo.") : "Faltan campos por llenar o confirmar.");
 }
 function renderBanner(){
-  const N = FIELDS.length, rev = reviewIndex !== null;
-  const help = info("Cada casilla se marca en rojo hasta que la llenes o la confirmes, y pasa a verde cuando está lista. En los campos que vienen desactivados (Face ID, PIN de transacciones…) solo confirma «no aplica». Para guardar, todas deben estar en verde.");
-  $("trackBanner").innerHTML = `<div class="progress${rev ? " review" : ""}"><div class="pt"><span>Progreso del registro ${help}</span><span class="mu">${rev ? "Revisando: " + esc((rows[reviewIndex] && rows[reviewIndex].app) || "(sin nombre)") + " · " : ""}<b id="trackCount">0</b> de ${N} campos ${rev ? "revisados" : "listos"}</span></div><div class="pb"><i id="trackBar"></i></div></div>`;
+  const N = FIELDS.length, rev = reviewIndex !== null, part = isPartial();
+  const help = info(part
+    ? "Edición parcial: solo se marcan los campos que cambies o confirmes. Los que no toques quedan en gris y conservan su fecha. Para guardar, los campos que modifiques deben quedar en verde."
+    : "Cada casilla se marca en rojo hasta que la llenes o la confirmes, y pasa a verde cuando está lista. En los campos que vienen desactivados (Face ID, PIN de transacciones…) solo confirma «no aplica». Para guardar, todas deben estar en verde.");
+  const modes = rev ? `<div class="modes"><span>Tipo de edición ${info("Completa: revisas y confirmas todos los campos y se guarda como un lote, con la misma fecha de hoy en todos. Parcial: cambias o confirmas solo los campos que quieras y cada uno guarda su propia fecha; los demás conservan la suya.")}</span><div class="seg"><button type="button" data-mode="full" class="${part ? "" : "on"}">Completa (lote)</button><button type="button" data-mode="partial" class="${part ? "on" : ""}">Parcial</button></div></div>` : "";
+  $("trackBanner").innerHTML = `<div class="progress${rev ? " review" : ""}">${modes}<div class="pt"><span>Progreso del registro ${help}</span><span class="mu">${rev ? "Revisando: " + esc((rows[reviewIndex] && rows[reviewIndex].app) || "(sin nombre)") + " · " : ""}<b id="trackCount">0</b> de ${N} campos ${rev ? (part ? "actualizados" : "revisados") : "listos"}</span></div><div class="pb"><i id="trackBar"></i></div></div>`;
   $("formTitle").textContent = rev ? "Revisar cuenta" : "Agregar cuenta";
-  $("formSub").textContent = rev ? "Confirma cada casilla para sobrescribir esta cuenta." : "Registra y organiza tus accesos de forma segura.";
+  $("formSub").textContent = rev ? (part ? "Edición parcial: cada campo que cambies guarda su propia fecha." : "Edición completa: al guardar, todos los campos reciben la misma fecha (lote).") : "Registra y organiza tus accesos de forma segura.";
+  $("formGrid").classList.toggle("partial", part);
+  $("infoCancel").dataset.tip = rev ? "Cierra la revisión sin guardar nada: la cuenta queda como estaba." : "Vacía el formulario y descarta lo que hayas escrito.";
+  $("infoSave").dataset.tip = rev ? (part ? "Guarda solo los campos que modificaste o confirmaste, cada uno con la fecha de hoy. Se habilita cuando hay al menos uno y ninguno quedó incompleto." : "Guarda la cuenta completa y pone la fecha de hoy en todos los campos (lote). Se habilita cuando todos están en verde.") : "Guarda la cuenta nueva. Se habilita cuando todos los campos están listos (en verde).";
 }
+function setEditMode(m){ editMode = m; renderBanner(); refreshAllTracking(); }
+$("trackBanner").addEventListener("click", e => { const b = e.target.closest("[data-mode]"); if(b && b.dataset.mode !== editMode) setEditMode(b.dataset.mode); });
 function clearForm(){
-  reviewed = {};
+  reviewed = {}; dirty = {};
   FIELDS.forEach(f => setFieldValue(f, defaultValue(f)));
   renderBanner(); refreshAllTracking();
 }
 function startReview(i){
-  reviewIndex = i; reviewed = {};
+  reviewIndex = i; reviewed = {}; dirty = {}; editMode = "full";
   const r = rows[i];
   FIELDS.forEach(f => setFieldValue(f, r[f.key] !== undefined ? r[f.key] : defaultValue(f)));
   $("btnAdd").textContent = "Guardar revisión";
@@ -1438,7 +1473,7 @@ function startReview(i){
   renderBanner(); refreshAllTracking(); markTab();
 }
 function exitReview(){
-  reviewIndex = null;
+  reviewIndex = null; editMode = "full";
   $("btnAdd").textContent = "Guardar";
   $("btnClearForm").textContent = "Cancelar";
   clearForm();
@@ -1453,17 +1488,29 @@ function requestReview(i){
 }
 
 $("btnAdd").addEventListener("click", () => {
-  if(FIELDS.some(f => !isDone(f.key))){ alert("Aún hay campos en rojo: llénalos o confírmalos para guardar."); return; }
-  const vals = {}; FIELDS.forEach(f => vals[f.key] = getFieldValue(f));
-  if(reviewIndex === null){
+  const part = isPartial();
+  if(part){
+    if(!FIELDS.some(f => isDone(f.key)) || FIELDS.some(f => dirty[f.key] && !isDone(f.key))){ alert("Modifica o confirma al menos un campo y termina los que dejaste en rojo."); return; }
+  } else if(FIELDS.some(f => !isDone(f.key))){ alert("Aún hay campos en rojo: llénalos o confírmalos para guardar."); return; }
+  const wasReview = reviewIndex !== null, orig = wasReview ? rows[reviewIndex] : null, today = todayLocal();
+  const vals = {}; FIELDS.forEach(f => vals[f.key] = (part && !isDone(f.key)) ? (orig[f.key] !== undefined ? orig[f.key] : defaultValue(f)) : getFieldValue(f));
+  if(!wasReview){
     const dup = rows.some(r => (r.app||"").trim().toLowerCase() === vals.app.trim().toLowerCase() && r.correo === vals.correo);
     if(dup && !confirm("Ya existe una cuenta «" + vals.app + "» con ese mismo correo.\n\n¿Guardar otra de todos modos? (Para actualizar la existente usa «Revisar» en la tabla.)")) return;
   }
-  vals.fecha = todayLocal(); vals.__v4 = true;
-  const wasReview = reviewIndex !== null;
-  vals.id = wasReview ? rows[reviewIndex].id : uid();
-  if(wasReview){ rows[reviewIndex] = vals; saveRows(); logEvent(vals, "revisión"); saveHist(); exitReview(); } else { rows.push(vals); saveRows(); logEvent(vals, "alta"); saveHist(); clearForm(); }
-  renderTable(); showToast(wasReview ? "Revisión guardada." : "Cuenta agregada.");
+  const changed = FIELDS.filter(f => isDone(f.key));
+  const fechas = {};
+  FIELDS.forEach(f => { fechas[f.key] = (part && !isDone(f.key)) ? (fieldDate(orig, f.key) || today) : today; });
+  vals.fecha = today; vals.fechas = fechas; vals.__v4 = true;
+  vals.lote = part ? ((orig && orig.lote) || "") : today + "·" + uid().slice(-4);
+  vals.id = wasReview ? orig.id : uid();
+  if(wasReview){
+    rows[reviewIndex] = vals; saveRows();
+    if(part) changed.forEach(f => logEvent(vals, "edición parcial · " + f.label.toLowerCase()));
+    else logEvent(vals, "revisión completa (lote)");
+    saveHist(); exitReview();
+  } else { rows.push(vals); saveRows(); logEvent(vals, "alta"); saveHist(); clearForm(); }
+  renderTable(); showToast(wasReview ? (part ? "Edición parcial guardada: " + changed.length + " campo(s)." : "Revisión completa guardada (lote).") : "Cuenta agregada.");
 });
 $("btnClearForm").addEventListener("click", () => {
   if(reviewIndex !== null){
@@ -1485,13 +1532,18 @@ function cellHtml(f, r, i){
   if(f.key === "recoverykey" && v && v.status === "SI" && v.value) return txt + `<button class="cpbtn" data-copy="recoverykey" data-i="${i}" title="Copiar códigos">${ic("copy")}</button><button class="cpbtn" data-txt="${i}" title="Exportar códigos a .txt">⬇</button>`;
   return txt;
 }
+function fechaTip(r){
+  const dif = FIELDS.filter(f => fieldDate(r, f.key) && fieldDate(r, f.key) !== r.fecha);
+  if(!dif.length) return "Todos los campos: " + (r.fecha || "sin fecha") + (r.lote ? " · lote " + r.lote : "");
+  return "Fechas distintas por campo:\n" + dif.map(f => f.label + ": " + fieldDate(r, f.key)).join("\n") + "\nLos demás: " + (r.fecha || "sin fecha");
+}
 function renderTable(){
   const filter = ($("search").value || "").toLowerCase();
   const list = rows.map((r,i) => ({r,i})).filter(({r}) => !filter || FIELDS.some(f => fieldDisplay(f, r[f.key], true).toLowerCase().includes(filter)) || (r.fecha||"").includes(filter));
   $("tbody").innerHTML = list.map(({r,i}) => `<tr>
       <td><button class="rowbtn btn-secondary" data-review="${i}">Revisar</button> <button class="rowbtn btn-danger" data-del="${i}">Borrar</button></td>
       ${FIELDS.map(f => `<td>${cellHtml(f, r, i)}</td>`).join("")}
-      <td>${esc(r.fecha||"")}</td></tr>`).join("");
+      <td title="${esc(fechaTip(r))}">${esc(r.fecha||"")}</td></tr>`).join("");
   $("count").textContent = rows.length + " cuenta(s)";
   const hint = $("tableHint");
   if(rows.length === 0){
@@ -1522,12 +1574,13 @@ $("search").addEventListener("input", renderTable);
 
 /* ---------- exportar ---------- */
 function csvEscape(v){ v = String(v); if(/[",\n\r]/.test(v)) v = '"' + v.replace(/"/g,'""') + '"'; return v; }
-function csvHeaders(){ const h = []; FIELDS.forEach(f => T[f.type].csvH(f).forEach(x => h.push(x))); h.push("FECHA"); return h; }
+function csvHeaders(){ const h = []; FIELDS.forEach(f => T[f.type].csvH(f).forEach(x => h.push(x))); h.push("FECHA"); h.push("FECHAS POR CAMPO"); return h; }
+const fechasToStr = r => Object.keys(r.fechas || {}).map(k => k + "=" + r.fechas[k]).join("; ");
 function accountsTable(){
   const t = [csvHeaders()];
   rows.forEach(r => {
     const cells = []; FIELDS.forEach(f => T[f.type].toCsv(f, r[f.key] !== undefined ? r[f.key] : defaultValue(f)).forEach(x => cells.push(x)));
-    cells.push(r.fecha || ""); t.push(cells);
+    cells.push(r.fecha || ""); cells.push(fechasToStr(r)); t.push(cells);
   });
   return t;
 }
@@ -1713,6 +1766,8 @@ function importCSVTable(table, label, extra){
     const get = h => { const i = idx[normalizeHeader(h)]; return i === undefined ? undefined : cols[i]; };
     const vals = {}; FIELDS.forEach(f => vals[f.key] = T[f.type].fromCsv(f, get));
     const fe = get("FECHA"); vals.fecha = (fe && String(fe).trim()) ? String(fe).trim() : todayLocal(); vals.__v4 = true; vals.id = uid();
+    const fc = get("FECHAS POR CAMPO"); vals.fechas = {};
+    if(fc) String(fc).split(/;\s*/).forEach(par => { const m = par.match(/^([a-z0-9]+)=(\d{4}-\d{2}-\d{2})$/i); if(m && FMAP[m[1]]) vals.fechas[m[1]] = m[2]; });
     imported.push(vals);
   });
   if(!imported.length){ alert("El archivo no trae filas con datos."); return; }
