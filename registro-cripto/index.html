@@ -168,6 +168,8 @@ html.ui-min .card{padding:20px 22px;margin-bottom:16px}
 html.ui-min .topbar{padding-bottom:14px;margin-bottom:0;border-bottom:1px solid var(--ln)}
 html.ui-min .topbar .sub{color:var(--mu)}
 /* navegación como texto, activo subrayado */
+#mktLive{margin:2px 0 0;font-size:12px;color:var(--mu)}
+#mktLive.ok{color:var(--buy)}#mktLive.warn{color:#b7791f}#mktLive.bad{color:var(--sell)}
 html.ui-min .tabs{gap:2px;border-bottom:1px solid var(--ln);width:100%;padding:0 0 0;margin-top:4px}
 html.ui-min .tabs button{border:0!important;background:transparent!important;border-radius:0!important;color:var(--mu)!important;padding:12px 12px 11px;font-size:14px;box-shadow:none!important}
 html.ui-min .tabs button:hover{color:var(--ink)!important}
@@ -580,6 +582,7 @@ svg.heat{width:100%;height:auto;display:block}
 <div>
 <h1>Registro de actividad</h1>
 <p class="sub" id="sum"></p>
+<p class="mkt-live" id="mktLive" aria-live="off"></p>
 </div>
 <div class="topright">
 <div class="bkgen">
@@ -1395,9 +1398,24 @@ function tcCardHtml(){
 function renderTradeChart(){
  var card=$('#tcCard');if(!card)return;card.innerHTML=tcCardHtml();tcLoad();
 }
+var tcLiveBusy=false;
+function tcLive(){
+ if(tab!=3||!TC.bars||!TC.key||tcLiveBusy||!$('#tcBox'))return;
+ var tf=TC.curTf,coin=TC.coin,key=TC.key,bm={'15m':15,'1h':60,'4h':240,'1d':'D','1w':'W'}[tf];tcLiveBusy=true;
+ var norm=function(L){return L.map(function(k){return{t:+k[0],o:+k[1],h:+k[2],l:+k[3],c:+k[4]}})};
+ fetchJson('https://api.binance.com/api/v3/klines?symbol='+coin+'USDT&interval='+tf+'&limit=5').then(function(j){if(!Array.isArray(j)||!j.length)throw 0;return norm(j)})
+ .catch(function(){return fetchJson('https://api.bybit.com/v5/market/kline?category=spot&symbol='+coin+'USDT&interval='+bm+'&limit=5').then(function(j){var L=j&&j.result&&j.result.list;if(!L||!L.length)throw 0;return norm(L).reverse()})})
+ .then(function(nb){
+  tcLiveBusy=false;if(TC.key!=key||TC.coin!=coin||!TC.bars)return;
+  var B=TC.bars,atEnd=TC.v1>=B.length-1,added=0;
+  nb.forEach(function(b){var i=B.length-1;while(i>=0&&B[i].t>b.t)i--;if(i>=0&&B[i].t==b.t)B[i]=b;else if(i==B.length-1){B.push(b);added++}});
+  if(added&&atEnd){TC.v0+=added;TC.v1+=added}
+  TCCACHE[coin+'|'+tf]={at:Date.now(),bars:{src:TC.src,bars:B}};TC.liveAt=Date.now();tcDraw();
+ }).catch(function(){tcLiveBusy=false});
+}
 function tcLoad(){
  var tf=TC.tf=='auto'?tcAutoTf():TC.tf,key=TC.coin+'|'+tf;TC.curTf=tf;
- if(TC.bars&&TC.key==key){tcDraw();return}
+ if(TC.bars&&TC.key==key){tcDraw();tcLive();return}
  TC.loading=true;var box=$('#tcBox');if(box)box.innerHTML='<p class="mu empty">Cargando velas de '+esc(TC.coin)+'…</p>';
  tcFetch(TC.coin,tf).then(function(d){TC.loading=false;
   if(!d){TC.bars=null;TC.key='';var b=$('#tcBox');if(b)b.innerHTML='<p class="mu empty">No se pudieron traer las velas de '+esc(TC.coin)+' (ni Binance ni Bybit la tienen contra USDT, o no hay conexión).</p>';return}
@@ -1722,29 +1740,55 @@ $('#v3').addEventListener('change',function(e){if(e.target.id=='chCoinSel'){char
 
 /* ---------- mercado ---------- */
 var MKT={},mktTime=null,mktBusy=false;
-function fetchJson(u){return fetch(u).then(function(r){return r.json()})}
+function fetchJson(u,ms){var ac=window.AbortController?new AbortController():null,t=ac?setTimeout(function(){ac.abort()},ms||8000):null;
+ return fetch(u,ac?{signal:ac.signal,cache:'no-store'}:{cache:'no-store'}).then(function(r){if(t)clearTimeout(t);return r.json()},function(e){if(t)clearTimeout(t);throw e})}
+var MKTST={binance:{},bybit:{},bingx:{}};
+function mktOk(k){MKTST[k].ok=true;MKTST[k].at=Date.now();MKTST[k].err=''}
+function mktFail(k,why){MKTST[k].ok=false;MKTST[k].err=why||'sin respuesta'}
 function bingxPrice(j){var d=j&&j.data,p=null;
  if(Array.isArray(d)&&d[0]){p=d[0].trades&&d[0].trades[0]?d[0].trades[0].price:d[0].price}
  else if(d){p=d.trades&&d.trades[0]?d.trades[0].price:d.price}
  return p?parseFloat(p):null}
+var mktBusyAt=0;
 function fetchMarket(withBingx){
- if(mktBusy)return Promise.resolve();
- mktBusy=true;var coins=COINS.slice(),jobs=[];if(typeof alMarketCoins=='function')alMarketCoins().forEach(function(c){if(coins.indexOf(c)<0)coins.push(c)});
+ if(mktBusy&&Date.now()-mktBusyAt<20000)return Promise.resolve();
+ mktBusy=true;mktBusyAt=Date.now();var coins=COINS.slice(),jobs=[];if(typeof alMarketCoins=='function')alMarketCoins().forEach(function(c){if(coins.indexOf(c)<0)coins.push(c)});
+ var bnOk=0,bnBad=0,bnMsg='';
  coins.forEach(function(c){
   var o=MKT[c]||(MKT[c]={});
   jobs.push(fetchJson('https://api.binance.com/api/v3/ticker/24hr?symbol='+c+'USDT').then(function(j){
-   if(j&&j.lastPrice){o.binance=parseFloat(j.lastPrice);o.chg=parseFloat(j.priceChangePercent);o.high=parseFloat(j.highPrice);o.low=parseFloat(j.lowPrice);o.vol=parseFloat(j.quoteVolume)}else o.binance=null;
-  }).catch(function(){}));
-  if(withBingx)jobs.push(fetchJson('https://open-api.bingx.com/openApi/spot/v1/ticker/price?symbol='+c+'-USDT').then(function(j){o.bingx=bingxPrice(j)}).catch(function(){}));
+   if(j&&j.lastPrice){o.binance=parseFloat(j.lastPrice);o.bnAt=Date.now();o.chg=parseFloat(j.priceChangePercent);o.high=parseFloat(j.highPrice);o.low=parseFloat(j.lowPrice);o.vol=parseFloat(j.quoteVolume);bnOk++}
+   else{o.binance=null;bnBad++;bnMsg=(j&&j.msg)||'respuesta inválida'}
+  }).catch(function(){bnBad++;bnMsg='sin respuesta'}));
+  if(withBingx)jobs.push(fetchJson('https://open-api.bingx.com/openApi/spot/v1/ticker/price?symbol='+c+'-USDT').then(function(j){o.bingx=bingxPrice(j);if(o.bingx)o.bxAt=Date.now()}).catch(function(){}));
  });
  jobs.push(fetchJson('https://api.bybit.com/v5/market/tickers?category=spot').then(function(j){
   var map={};(j.result.list||[]).forEach(function(t){map[t.symbol]=parseFloat(t.lastPrice)});
-  coins.forEach(function(c){(MKT[c]||(MKT[c]={})).bybit=map[c+'USDT']||null});
- }).catch(function(){}));
- return Promise.allSettled(jobs).then(function(){mktBusy=false;mktTime=new Date()});
+  coins.forEach(function(c){var o=MKT[c]||(MKT[c]={});o.bybit=map[c+'USDT']||null;if(o.bybit)o.byAt=Date.now()});
+  mktOk('bybit');
+ }).catch(function(){mktFail('bybit')}));
+ var done=Promise.allSettled(jobs),guard=new Promise(function(res){setTimeout(res,15000)});
+ return Promise.race([done,guard]).then(function(){
+  mktBusy=false;mktTry=new Date();
+  if(bnOk)mktOk('binance');else if(bnBad)mktFail('binance',bnMsg);
+  if(bnOk||MKTST.bybit.ok)mktTime=new Date();
+  mktBadge();
+ });
 }
-function afterMarket(){if(typeof checkAlerts=='function')try{checkAlerts()}catch(e){window.__showErr&&__showErr((e&&e.stack)||e,'alertas')}if(typeof recordHist=='function')recordHist();if(tab==10&&typeof renderDecisions=='function')renderDecisions();if(tab==6)renderMarket();if(tab==7)renderPositions();if(tab==1)render()}
-function refPrice(c){var o=MKT[c]||{};return o.binance||o.bybit||o.bingx||null}
+var mktTry=null;
+function mktAgo(t){if(!t)return '—';var s=Math.max(0,Math.round((Date.now()-t)/1000));return s<60?'hace '+s+' s':'hace '+Math.round(s/60)+' min'}
+function mktBadge(){
+ var el=document.getElementById('mktLive');if(!el)return;
+ var b=MKTST.binance,y=MKTST.bybit,txt,cls;
+ if(b.ok&&Date.now()-b.at<90000){txt='Binance en vivo · '+mktAgo(b.at);cls='ok'}
+ else if(y.ok&&Date.now()-y.at<90000){txt='Binance no responde'+(b.err?' ('+b.err+')':'')+' · usando Bybit · '+mktAgo(y.at);cls='warn'}
+ else if(mktTry){txt='Sin precios nuevos · último intento '+mktAgo(+mktTry)+(b.err?' · Binance: '+b.err:'');cls='bad'}
+ else{txt='Consultando precios…';cls='warn'}
+ el.className='mkt-live '+cls;el.textContent='● '+txt;el.title='Los precios se actualizan solos cada 15 segundos'}
+function afterMarket(){mktBadge();if(typeof tcLive=='function'&&tab==3)tcLive();if(typeof checkAlerts=='function')try{checkAlerts()}catch(e){window.__showErr&&__showErr((e&&e.stack)||e,'alertas')}if(typeof recordHist=='function')recordHist();if(tab==10&&typeof renderDecisions=='function')renderDecisions();if(tab==6)renderMarket();if(tab==7)renderPositions();if(tab==1)render()}
+function refPrice(c){var o=MKT[c]||{},now=Date.now(),L=[[o.binance,o.bnAt],[o.bybit,o.byAt],[o.bingx,o.bxAt]],i;
+ for(i=0;i<L.length;i++)if(L[i][0]&&L[i][1]&&now-L[i][1]<180000)return L[i][0];
+ return o.binance||o.bybit||o.bingx||null}
 function px(p){return p==null||isNaN(p)?'—':'$'+n(p,p<1?6:p<100?4:2)}
 $('#v6').innerHTML='<div class="card"><div class="row"><h2 style="margin:0">Mercado de tus criptomonedas</h2><span class="sp"></span><span class="mu" id="mktMsg"></span><button id="mktRefresh" type="button">Actualizar</button></div>'+
 '<p class="mu" style="margin:6px 0 10px">Precios públicos de Binance, Bybit y BingX para las monedas de tu lista (se editan en Datos). Se refresca solo cada minuto.</p><div class="wrap" id="mktTable"></div></div>';
@@ -1759,7 +1803,10 @@ function renderMarket(){
  $('#mktMsg').textContent=mktTime?'Actualizado '+fmtDT(mktTime):(mktBusy?'Consultando…':'Sin datos aún (¿sin internet?)');
 }
 $('#mktRefresh').onclick=function(){$('#mktMsg').textContent='Consultando…';fetchMarket(true).then(afterMarket)};
-setInterval(function(){if(!document.hidden)fetchMarket(false).then(afterMarket)},60000);
+setInterval(function(){if(!document.hidden)fetchMarket(false).then(afterMarket)},15000);
+setInterval(function(){mktBadge();if(tab==6&&mktTime){var m=$('#mktMsg');if(m&&!mktBusy)m.textContent='Actualizado '+fmtDT(mktTime)}},5000);
+document.addEventListener('visibilitychange',function(){if(!document.hidden){fetchMarket(false).then(afterMarket);if(typeof tcLive=='function')tcLive()}});
+window.addEventListener('online',function(){fetchMarket(true).then(afterMarket)});
 
 /* ================= Alertas de precio: administrador, creación en masa, avisos ================= */
 var KALR='registro-cripto.alerts';
