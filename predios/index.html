@@ -683,22 +683,55 @@ function addFigure(local, name, rot){ const c=map.getCenter(); const l=layerFrom
 
 /* ================= Búsqueda ================= */
 const q=document.getElementById("q"), res=document.getElementById("results");
-let qT=null;
-q.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); doSearch(); } if(e.key==="Escape"){ res.hidden=true; q.blur(); } });
-q.addEventListener("input", ()=>{ clearTimeout(qT); if(q.value.trim().length<3){ res.hidden=true; return; } qT=setTimeout(doSearch, 600); });
-async function doSearch(){
-  const s=q.value.trim(); if(!s) return;
-  const m=s.match(/^\s*(-?\d+(?:\.\d+)?)\s*[, ]\s*(-?\d+(?:\.\d+)?)\s*$/);
-  if(m){ const lat=+m[1], lng=+m[2]; if(Math.abs(lat)<=90&&Math.abs(lng)<=180){ map.flyTo([lat,lng], Math.max(map.getZoom(),17)); res.hidden=true; return; } }
-  try{
-    const r=await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=6&accept-language=es&q="+encodeURIComponent(s));
-    const d=await r.json();
-    if(!d.length){ res.innerHTML=`<button disabled>Sin resultados para «${esc(s)}»</button>`; res.hidden=false; return; }
-    res.innerHTML=d.map((x,i)=>`<button data-i="${i}">${esc(x.display_name)}</button>`).join(""); res.hidden=false;
-    res.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>{ const x=d[+b.dataset.i]; res.hidden=true;
-      if(x.boundingbox){ const bb=x.boundingbox.map(Number); map.flyToBounds([[bb[0],bb[2]],[bb[1],bb[3]]],{maxZoom:18,duration:1}); } else map.flyTo([+x.lat,+x.lon],17); });
-  }catch(e){ res.innerHTML=`<button disabled>No se pudo buscar. Revisa tu conexión o escribe coordenadas (lat, lng).</button>`; res.hidden=false; }
+// Ciudades de México: respuesta inmediata sin internet
+const CITIES=[["Ciudad de México",19.4326,-99.1332],["Guadalajara, Jal.",20.6767,-103.3475],["Monterrey, N.L.",25.6866,-100.3161],["Aguascalientes, Ags.",21.8818,-102.2916],["Puebla, Pue.",19.0414,-98.2063],["Querétaro, Qro.",20.5888,-100.3899],["León, Gto.",21.1250,-101.6860],["San Luis Potosí, S.L.P.",22.1565,-100.9855],["Zacatecas, Zac.",22.7709,-102.5833],["Morelia, Mich.",19.7060,-101.1950],["Toluca, Edo. Méx.",19.2826,-99.6557],["Tijuana, B.C.",32.5149,-117.0382],["Mexicali, B.C.",32.6245,-115.4523],["Hermosillo, Son.",29.0729,-110.9559],["Chihuahua, Chih.",28.6320,-106.0691],["Ciudad Juárez, Chih.",31.6904,-106.4245],["Saltillo, Coah.",25.4232,-101.0053],["Torreón, Coah.",25.5428,-103.4068],["Durango, Dgo.",24.0277,-104.6532],["Culiacán, Sin.",24.8091,-107.3940],["Mazatlán, Sin.",23.2494,-106.4111],["Tepic, Nay.",21.5042,-104.8946],["Puerto Vallarta, Jal.",20.6534,-105.2253],["Colima, Col.",19.2433,-103.7250],["Guanajuato, Gto.",21.0190,-101.2574],["Irapuato, Gto.",20.6767,-101.3563],["Celaya, Gto.",20.5235,-100.8157],["Pachuca, Hgo.",20.1011,-98.7591],["Tlaxcala, Tlax.",19.3182,-98.2375],["Cuernavaca, Mor.",18.9242,-99.2216],["Acapulco, Gro.",16.8531,-99.8237],["Chilpancingo, Gro.",17.5515,-99.5006],["Oaxaca, Oax.",17.0732,-96.7266],["Veracruz, Ver.",19.1738,-96.1342],["Xalapa, Ver.",19.5438,-96.9102],["Villahermosa, Tab.",17.9892,-92.9475],["Tuxtla Gutiérrez, Chis.",16.7516,-93.1029],["Campeche, Camp.",19.8301,-90.5349],["Mérida, Yuc.",20.9674,-89.5926],["Cancún, Q. Roo",21.1619,-86.8515],["Chetumal, Q. Roo",18.5001,-88.2961],["Ciudad Victoria, Tamps.",23.7369,-99.1411],["Tampico, Tamps.",22.2331,-97.8611],["Reynosa, Tamps.",26.0922,-98.2779],["La Paz, B.C.S.",24.1426,-110.3128],["Los Cabos, B.C.S.",22.8905,-109.9167],["Lagos de Moreno, Jal.",21.3564,-101.9356],["Zapopan, Jal.",20.7214,-103.3918]];
+const norm=t=>t.normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase();
+const qCache=new Map(); let qT=null, qCtl=null, lastHits=[];
+function showHits(hits, note){
+  lastHits=hits;
+  res.innerHTML=(hits.length? hits.map((h,i)=>`<button data-i="${i}">${esc(h.label)}${h.sub?`<small style="display:block;color:var(--muted);font-size:11.5px">${esc(h.sub)}</small>`:""}</button>`).join("") : "")+(note?`<button disabled style="color:var(--muted);font-size:12px">${esc(note)}</button>`:"");
+  res.hidden=!(hits.length||note);
+  res.querySelectorAll("[data-i]").forEach(b=>b.onclick=()=>goHit(lastHits[+b.dataset.i]));
 }
+function goHit(h){ if(!h) return; res.hidden=true; q.blur();
+  if(h.bb) map.flyToBounds(h.bb,{maxZoom:18,duration:.9}); else map.flyTo([h.lat,h.lng], h.zoom||16, {duration:.9}); }
+function localHits(s){ const n=norm(s); return CITIES.filter(c=>norm(c[0]).includes(n)).slice(0,5).map(c=>({label:c[0], lat:c[1], lng:c[2], zoom:13, sub:"Ciudad"})); }
+async function remoteHits(s, signal){
+  const key=s.toLowerCase(); if(qCache.has(key)) return qCache.get(key);
+  const c=map.getCenter(); let hits=[];
+  try{ // Photon: rápido y pensado para autocompletar
+    const r=await fetch(`https://photon.komoot.io/api/?limit=7&q=${encodeURIComponent(s)}&lat=${c.lat.toFixed(3)}&lon=${c.lng.toFixed(3)}`,{signal});
+    const d=await r.json();
+    hits=(d.features||[]).map(f=>{ const p=f.properties||{}, [lng,lat]=f.geometry.coordinates;
+      const sub=[p.street&&p.name!==p.street?p.street:null, p.city&&p.city!==p.name?p.city:null, p.state, p.country].filter(Boolean).join(", ");
+      const e=p.extent; return {label:p.name||sub, sub, lat, lng, zoom:17, bb: e? [[e[3],e[0]],[e[1],e[2]]] : null}; });
+  }catch(e){ if(e.name==="AbortError") throw e;
+    const r=await fetch("https://nominatim.openstreetmap.org/search?format=json&limit=6&accept-language=es&q="+encodeURIComponent(s),{signal});
+    const d=await r.json();
+    hits=d.map(x=>{ const bb=x.boundingbox?x.boundingbox.map(Number):null; return {label:x.display_name.split(",")[0], sub:x.display_name.split(",").slice(1,4).join(",").trim(), lat:+x.lat, lng:+x.lon, bb: bb?[[bb[0],bb[2]],[bb[1],bb[3]]]:null}; });
+  }
+  qCache.set(key,hits); return hits;
+}
+async function doSearch(now){
+  const s=q.value.trim(); clearTimeout(qT); if(qCtl) qCtl.abort();
+  if(s.length<2){ res.hidden=true; return; }
+  const m=s.match(/^\s*(-?\d+(?:\.\d+)?)\s*[, ]\s*(-?\d+(?:\.\d+)?)\s*$/);
+  if(m){ const lat=+m[1], lng=+m[2]; if(Math.abs(lat)<=90&&Math.abs(lng)<=180){ showHits([{label:`Ir a ${lat}, ${lng}`, lat, lng, zoom:Math.max(map.getZoom(),17)}]); if(now) goHit(lastHits[0]); return; } }
+  const local=localHits(s);
+  showHits(local, s.length>=3?"Buscando…":"");
+  if(s.length<3){ return; }
+  const run=async()=>{ qCtl=new AbortController(); const ctl=qCtl;
+    try{ const remote=await remoteHits(s, ctl.signal); if(ctl.signal.aborted) return;
+      const seen=new Set(local.map(h=>norm(h.label).split(",")[0]));
+      const all=local.concat(remote.filter(h=>!seen.has(norm(h.label)))).slice(0,8);
+      showHits(all, all.length?"":`Sin resultados para «${s}»`); if(now) goHit(all[0]);
+    }catch(e){ if(e.name!=="AbortError") showHits(local, "No se pudo buscar en línea. Revisa tu conexión o escribe coordenadas (lat, lng)."); } };
+  if(now) run(); else qT=setTimeout(run, 250);
+}
+q.addEventListener("keydown", e=>{ if(e.key==="Enter"){ e.preventDefault(); if(!res.hidden && lastHits.length && q.value.trim().length>=2 && res.querySelector("[data-i]") && !res.textContent.includes("Buscando")) goHit(lastHits[0]); else doSearch(true); }
+  if(e.key==="Escape"){ res.hidden=true; q.blur(); } });
+q.addEventListener("input", ()=>doSearch(false));
+q.addEventListener("focus", ()=>{ if(q.value.trim().length>=2 && lastHits.length) res.hidden=false; });
 document.addEventListener("click", e=>{ if(!e.target.closest(".search")) res.hidden=true; });
 
 /* ================= Vista dividida ================= */
@@ -970,21 +1003,43 @@ function drawContours(g, E, N, I){
   stroke(segs[0],0.9,"rgba(255,236,190,.85)"); stroke(segs[1],1.6,"rgba(255,214,140,.95)");
 }
 
+// Copia los píxeles de origen necesarios a un búfer contiguo y muestrea una rejilla 257×257 (sin búsquedas por píxel)
+function regionGrid(zs, sc, gx0, gy0){
+  const span=256/sc, px0=Math.floor(gx0)-2, py0=Math.floor(gy0)-2, px1=Math.ceil(gx0+span)+3, py1=Math.ceil(gy0+span)+3;
+  const w=px1-px0, h=py1-py0, buf=new Float32Array(w*h).fill(NaN), n=1<<zs;
+  for(let ty=Math.floor(py0/256); ty<=Math.floor((py1-1)/256); ty++) for(let tx=Math.floor(px0/256); tx<=Math.floor((px1-1)/256); tx++){
+    const e=tcache.get(zs+"/"+(((tx%n)+n)%n)+"/"+ty); if(!e||!e.d) continue; const d=e.d;
+    const ax=Math.max(px0,tx*256), bx=Math.min(px1,tx*256+256), ay=Math.max(py0,ty*256), by=Math.min(py1,ty*256+256);
+    for(let y=ay;y<by;y++){ const so=(y-ty*256)*256-tx*256, bo=(y-py0)*w-px0; for(let x=ax;x<bx;x++) buf[bo+x]=d[so+x]; }
+  }
+  const N=257, E=new Float32Array(N*N);
+  for(let j=0;j<N;j++){ const fy=gy0+(j+0.5)/sc-0.5-py0, y0=Math.floor(fy), ay=fy-y0, ry=y0*w;
+    for(let i=0;i<N;i++){ const fx=gx0+(i+0.5)/sc-0.5-px0, x0=Math.floor(fx), ax=fx-x0, o=ry+x0;
+      E[j*N+i]= ax===0&&ay===0 ? buf[o] : (buf[o]*(1-ax)+buf[o+1]*ax)*(1-ay)+(buf[o+w]*(1-ax)+buf[o+w+1]*ax)*ay; } }
+  return E;
+}
+// Cola de pintado: reparte el trabajo en pedazos de ~10 ms para que el mapa siga respondiendo
+const paintQ=[]; let paintBusy=false;
+function queuePaint(fn){ paintQ.push(fn); if(!paintBusy){ paintBusy=true; setTimeout(runPaintQ,0); } }
+function runPaintQ(){ const t0=performance.now(); while(paintQ.length && performance.now()-t0<10) paintQ.shift()(); if(paintQ.length) setTimeout(runPaintQ,0); else paintBusy=false; }
+
 const TerrainLayer=L.GridLayer.extend({
   initialize(mode, opts){ this.mode=mode; this.range=null; this.stats=new Map(); L.setOptions(this, opts); },
   createTile(coords, done){
     const c=document.createElement("canvas"); c.width=c.height=256;
-    const zs=Math.min(coords.z,TZ_MAX), sc=2**(coords.z-zs), gx0=coords.x*256/sc, gy0=coords.y*256/sc, span=256/sc;
-    ensureTiles(zs, gx0-2, gy0-2, gx0+span+2, gy0+span+2).then(()=>{ try{ this.paint(c,coords,zs,sc,gx0,gy0); }catch(e){ console.error(e); } done(null,c); });
+    const zs=Math.min(coords.z,TZ_MAX), sc=2**(coords.z-zs), gx0=coords.x*256/sc, gy0=coords.y*256/sc, span=256/sc, key=this._tileCoordsToKey(coords);
+    ensureTiles(zs, gx0-3, gy0-3, gx0+span+3, gy0+span+3).then(()=>queuePaint(()=>{
+      if(this._map && this._tiles[key]){ try{ this.paint(c,coords,zs,sc,gx0,gy0); }catch(e){ console.error(e); } }
+      done(null,c); }));
     return c;
   },
   paint(c, coords, zs, sc, gx0, gy0){
-    const N=257, E=new Float32Array(N*N); let lo=Infinity, hi=-Infinity;
-    for(let j=0;j<N;j++) for(let i=0;i<N;i++){ const v=elevAt(zs, gx0+(i+0.5)/sc, gy0+(j+0.5)/sc); E[j*N+i]=v; if(i<256&&j<256&&v===v){ if(v<lo)lo=v; if(v>hi)hi=v; } }
+    const N=257, E=regionGrid(zs,sc,gx0,gy0); let lo=Infinity, hi=-Infinity;
+    for(let j=0;j<256;j++) for(let i=0;i<256;i++){ const v=E[j*N+i]; if(v===v){ if(v<lo)lo=v; if(v>hi)hi=v; } }
     this.stats.set(this._tileCoordsToKey(coords), [lo,hi]);
     if(!(hi>=lo)) return;
     const g=c.getContext("2d");
-    if(this.mode==="cont"){ drawContours(g,E,N,ov.ci==="auto"?autoCI(coords.z):+ov.ci); return; }
+    if(this.mode==="cont"){ const I=ov.ci==="auto"?autoCI(coords.z):+ov.ci; if((hi-lo)/I<400) drawContours(g,E,N,I); return; }
     const yy=Math.PI-2*Math.PI*(coords.y+0.5)/2**coords.z, lat=Math.atan(Math.sinh(yy));
     const mpp=156543.03392*Math.cos(lat)/2**coords.z;
     const [rlo,rhi]=this.range||[lo,hi], rs=Math.max(1,rhi-rlo);
@@ -1007,20 +1062,20 @@ map.createPane("hill"); map.getPane("hill").style.zIndex=240; map.getPane("hill"
 map.createPane("terrain"); map.getPane("terrain").style.zIndex=250;
 map.createPane("refs"); map.getPane("refs").style.zIndex=260;
 map.createPane("site"); map.getPane("site").style.zIndex=450;
-const OVL={};
+const OVL={}; let arT=null;
 function ovLayer(k){
   if(OVL[k]) return OVL[k];
   if(k==="hill") OVL[k]=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Elevation/World_Hillshade/MapServer/tile/{z}/{y}/{x}",{pane:"hill",maxZoom:20,maxNativeZoom:16,attribution:"Relieve © Esri"});
   if(k==="roads") OVL[k]=L.tileLayer("https://server.arcgisonline.com/ArcGIS/rest/services/Reference/World_Transportation/MapServer/tile/{z}/{y}/{x}",{pane:"refs",maxZoom:20,maxNativeZoom:19});
   if(k==="elev"||k==="slope"||k==="cont"){ OVL[k]=new TerrainLayer(k,{pane:"terrain",maxZoom:20,attribution:"Elevación © Mapzen, AWS Terrain Tiles"});
-    if(k==="elev") OVL[k].on("load", autoRange); }
+    if(k==="elev") OVL[k].on("load", ()=>{ clearTimeout(arT); arT=setTimeout(autoRange,450); }); }
   return OVL[k];
 }
 function autoRange(){
   const t=OVL.elev; if(!t||!map.hasLayer(t)) return; let lo=Infinity, hi=-Infinity;
   for(const key in t._tiles){ if(!t._tiles[key].current) continue; const s=t.stats.get(key); if(s&&s[1]>=s[0]){ lo=Math.min(lo,s[0]); hi=Math.max(hi,s[1]); } }
   if(!(hi>=lo)) return;
-  if(!t.range || Math.abs(t.range[0]-lo)>0.5 || Math.abs(t.range[1]-hi)>0.5){ t.range=[lo,hi]; t.redraw(); }
+  const tol=Math.max(2,(hi-lo)*0.08); if(!t.range || Math.abs(t.range[0]-lo)>tol || Math.abs(t.range[1]-hi)>tol){ t.range=[lo,hi]; t.redraw(); }
   renderLegend();
 }
 map.on("zoomend", ()=>{ if(OVL.cont && map.hasLayer(OVL.cont)) renderLegend(); });
