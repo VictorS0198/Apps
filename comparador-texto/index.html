@@ -1,0 +1,1001 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Cotejo · Comparador de texto</title>
+<!--
+  Cotejo — Comparador de texto en tiempo real
+  Versión 1.0
+  © 2026 Victor Manuel Salazar Castro. Todos los derechos reservados.
+  Código original, sin dependencias externas.
+-->
+<script>
+try{var s0=JSON.parse(localStorage.getItem('cotejo.v1.settings')||'{}'),t0=s0.theme||'system';
+document.documentElement.dataset.theme=(t0==='dark'||(t0==='system'&&matchMedia('(prefers-color-scheme: dark)').matches))?'dark':'light';}
+catch(e){document.documentElement.dataset.theme='light'}
+</script>
+<style>
+:root{
+  --bg:#f4f5f8;--panel:#ffffff;--panel2:#eef0f4;--fg:#1a1d23;--muted:#667085;--line:#e1e4ea;
+  --accent:#4f46e5;--accent-fg:#fff;--warn:#b45309;--shadow:0 1px 2px rgba(16,24,40,.05),0 2px 6px rgba(16,24,40,.06);
+  --same:rgba(34,197,94,.35);--diff:rgba(239,68,68,.35);--vari:rgba(245,158,11,.35);
+  --same-solid:#22c55e;--diff-solid:#ef4444;--vari-solid:#f59e0b;
+  --fs:15px;--ff:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  color-scheme:light;
+}
+:root[data-theme="dark"]{
+  --bg:#0e1014;--panel:#161920;--panel2:#1d212a;--fg:#e5e7eb;--muted:#9aa3b2;--line:#2a2f3a;
+  --accent:#8b8cf8;--accent-fg:#0e1014;--warn:#fbbf24;--shadow:none;color-scheme:dark;
+}
+*{box-sizing:border-box}
+html,body{height:100%;margin:0}
+body{background:var(--bg);color:var(--fg);font:14px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;display:flex;flex-direction:column;overflow:hidden}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+svg.i{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* Header */
+.top{display:flex;align-items:center;gap:16px;padding:10px 16px;background:var(--panel);border-bottom:1px solid var(--line);flex-wrap:wrap}
+.brand{display:flex;align-items:center;gap:10px;margin-right:auto}
+.brand b{font-size:17px;letter-spacing:.2px}
+.brand span{color:var(--muted);font-size:13px}
+.logo{width:28px;height:28px}
+.tabs{display:flex;gap:4px;background:var(--panel2);padding:3px;border-radius:10px}
+.tabs button{border:0;background:none;padding:6px 14px;border-radius:8px;color:var(--muted);font-weight:500}
+.tabs button.on{background:var(--panel);color:var(--fg);box-shadow:var(--shadow)}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--panel);padding:6px 10px;border-radius:8px;white-space:nowrap}
+.btn:hover{border-color:var(--muted)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.ib{border:0;background:none;padding:5px;border-radius:6px;color:var(--muted);display:inline-flex}
+.ib:hover{background:var(--panel2);color:var(--fg)}
+
+main{flex:1;min-height:0;display:flex}
+.tab{display:none;flex:1;min-width:0}
+.tab.on{display:flex}
+
+/* Compare tab */
+#tab-comparar{flex-direction:column;gap:10px;padding:12px}
+.toolbar{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:10px 12px;display:flex;flex-direction:column;gap:10px;box-shadow:var(--shadow)}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:10px 18px}
+.fld{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13px}
+.fld select,.fld input[type=number],.fld input[type=time]{background:var(--panel2);border:1px solid var(--line);border-radius:7px;padding:5px 8px;color:var(--fg)}
+.fld input[type=number]{width:70px}
+input[type=range]{accent-color:var(--accent);width:130px}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border:1px solid var(--line);border-radius:999px;font-size:13px;color:var(--muted);cursor:pointer;user-select:none}
+.chip input{position:absolute;opacity:0;pointer-events:none}
+.chip:has(input:checked){background:color-mix(in srgb,var(--accent) 14%,transparent);border-color:var(--accent);color:var(--fg)}
+.chip:has(input:focus-visible){outline:2px solid var(--accent)}
+.legend{display:flex;gap:14px;margin-left:auto;flex-wrap:wrap}
+.sw{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--muted);cursor:pointer}
+input[type=color]{width:22px;height:22px;border:0;padding:0;background:none;cursor:pointer}
+input[type=color]::-webkit-color-swatch-wrapper{padding:0}
+input[type=color]::-webkit-color-swatch{border-radius:50%;border:2px solid var(--line)}
+input[type=color]::-moz-color-swatch{border-radius:50%;border:2px solid var(--line)}
+body.mode-exacto .for-tramos{display:none!important}
+
+.stats{display:flex;flex-wrap:wrap;align-items:center;gap:8px 16px;font-size:13px;color:var(--muted);padding:0 4px;min-height:22px}
+.stats b{color:var(--fg)}
+.meter{display:flex;align-items:center;gap:8px}
+.meter-bar{width:120px;height:8px;border-radius:9px;background:var(--panel2);overflow:hidden;border:1px solid var(--line)}
+.meter-bar i{display:block;height:100%;background:var(--same-solid);transition:width .25s}
+.meter b{font-size:15px}
+.warn{color:var(--warn)}
+
+.split{flex:1;min-height:240px;display:grid;grid-template-columns:minmax(0,1fr) 40px minmax(0,1fr)}
+.pane{display:flex;flex-direction:column;min-height:0;background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+.pane-head{display:flex;align-items:center;gap:6px;padding:6px 8px 6px 12px;border-bottom:1px solid var(--line)}
+.pane-title{border:0;background:none;font-weight:600;min-width:0;flex:1;padding:4px;border-radius:6px}
+.pane-title:focus{outline:none;background:var(--panel2)}
+.cnt{font-size:12px;color:var(--muted);white-space:nowrap;margin-right:4px}
+.edwrap{flex:1;min-height:0;display:grid;grid-template-columns:minmax(0,1fr) 12px}
+.editor{position:relative;min-height:0}
+.editor.drag::after{content:"Suelta el archivo aquí";position:absolute;inset:8px;border:2px dashed var(--accent);border-radius:10px;display:grid;place-items:center;background:color-mix(in srgb,var(--panel) 85%,transparent);color:var(--accent);font-weight:600;z-index:3}
+.backdrop,.editor textarea{position:absolute;inset:0;margin:0;border:0;padding:14px 16px;font-family:var(--ff);font-size:var(--fs);line-height:1.6;letter-spacing:normal;white-space:pre-wrap;overflow-wrap:break-word;word-wrap:break-word;overflow-x:hidden;overflow-y:scroll;scrollbar-width:thin;tab-size:4}
+.backdrop{color:transparent;pointer-events:none;z-index:0}
+.editor textarea{background:transparent;color:var(--fg);resize:none;outline:none;z-index:1;caret-color:var(--fg)}
+.editor textarea::placeholder{color:var(--muted)}
+mark{color:inherit;padding:0;border-radius:3px;-webkit-box-decoration-break:clone;box-decoration-break:clone}
+mark.s{background:var(--same)} mark.d{background:var(--diff)} mark.v{background:var(--vari)}
+body.paint-text .editor textarea{color:transparent}
+body.paint-text .backdrop{color:var(--fg)}
+body.paint-text mark{background:none}
+body.paint-text mark.s{color:var(--same-solid)} body.paint-text mark.d{color:var(--diff-solid)} body.paint-text mark.v{color:var(--vari-solid)}
+.flash{outline:2px solid var(--accent);outline-offset:1px;border-radius:3px;animation:fl 1.6s ease-out}
+@keyframes fl{0%,40%{outline-color:var(--accent)}100%{outline-color:transparent}}
+.minimap{position:relative;background:var(--panel2);border-left:1px solid var(--line);cursor:pointer}
+.mm{position:absolute;left:2px;right:2px;border-radius:1px}
+.mm.s{background:var(--same-solid)} .mm.d{background:var(--diff-solid)} .mm.v{background:var(--vari-solid)}
+.mm-view{position:absolute;left:0;right:0;border:1px solid var(--muted);background:rgba(127,127,127,.15);border-radius:2px;pointer-events:none}
+.mid{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px}
+.round{width:30px;height:30px;border-radius:50%;border:1px solid var(--line);background:var(--panel);display:grid;place-items:center;color:var(--muted)}
+.round:hover{color:var(--fg);border-color:var(--muted)}
+.round.on{color:var(--accent);border-color:var(--accent)}
+
+.results{background:var(--panel);border:1px solid var(--line);border-radius:12px;display:flex;flex-direction:column;height:210px;min-height:0;box-shadow:var(--shadow)}
+.results.closed{height:auto}
+.results.closed .list{display:none}
+.res-head{display:flex;align-items:center;gap:8px;padding:6px 8px 6px 12px;border-bottom:1px solid var(--line);flex-wrap:wrap}
+.results.closed .res-head{border-bottom:0}
+.res-head h3{margin:0;font-size:14px;margin-right:auto}
+.res-head h3 small{color:var(--muted);font-weight:400}
+.list{overflow:auto;flex:1}
+.item{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);cursor:pointer;align-items:start}
+.item:hover{background:var(--panel2)}
+.item.on{background:var(--panel2);box-shadow:inset 3px 0 var(--accent)}
+.badge{min-width:24px;height:22px;padding:0 6px;border-radius:6px;display:grid;place-items:center;font-size:12px;font-weight:600;color:#fff}
+.badge.s{background:var(--same-solid)} .badge.d{background:var(--diff-solid)}
+.it-h{font-size:12px;color:var(--muted)}
+.it-t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.it-t del,.it-t ins{text-decoration:none;padding:0 3px;border-radius:3px}
+.it-t del{background:var(--diff)} .it-t ins{background:var(--same)}
+.empty{padding:18px;color:var(--muted);text-align:center}
+
+/* Config tab */
+#tab-config{overflow:auto;padding:16px}
+.cfg{max-width:1100px;margin:0 auto;width:100%;display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px;align-content:start}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:16px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:12px}
+.card h2{margin:0;font-size:15px}
+.card p.hint{margin:0;color:var(--muted);font-size:13px}
+.opts{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+.opt{display:flex;align-items:center;gap:8px;padding:10px;border:1px solid var(--line);border-radius:10px;cursor:pointer}
+.opt:has(input:checked){border-color:var(--accent);background:color-mix(in srgb,var(--accent) 10%,transparent)}
+.opt input{accent-color:var(--accent)}
+.line{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.line label{color:var(--muted)}
+.card textarea{width:100%;min-height:110px;resize:vertical;background:var(--panel2);border:1px solid var(--line);border-radius:8px;padding:8px;font:13px/1.5 ui-monospace,Consolas,monospace}
+.btns{display:flex;flex-wrap:wrap;gap:8px}
+.kbd{font:12px ui-monospace,Consolas,monospace;background:var(--panel2);border:1px solid var(--line);border-bottom-width:2px;border-radius:5px;padding:1px 6px}
+.about dl{display:grid;grid-template-columns:auto 1fr;gap:6px 14px;margin:0}
+.about dt{color:var(--muted)}
+.about dd{margin:0}
+
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(20px);background:var(--fg);color:var(--bg);padding:9px 16px;border-radius:9px;opacity:0;transition:.2s;pointer-events:none;z-index:50;font-size:13px}
+.toast.on{opacity:1;transform:translateX(-50%)}
+
+@media (max-width:820px){
+  body{overflow:auto}
+  main{min-height:auto}
+  #tab-comparar{overflow:visible}
+  .split{grid-template-columns:1fr;grid-template-rows:minmax(300px,45vh) 44px minmax(300px,45vh)}
+  .mid{flex-direction:row}
+  .legend{margin-left:0}
+  .brand span{display:none}
+  .results{height:260px}
+}
+</style>
+</head>
+<body class="mode-tramos">
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-open" viewBox="0 0 24 24"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/></symbol>
+  <symbol id="i-paste" viewBox="0 0 24 24"><rect x="6" y="4" width="12" height="17" rx="2"/><path d="M9 4V3h6v1M9 10h6M9 14h6"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V6a2 2 0 0 1 2-2h8"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+  <symbol id="i-swap" viewBox="0 0 24 24"><path d="M7 7h12l-4-4M17 17H5l4 4"/></symbol>
+  <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M6 15l6-6 6 6"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"/></symbol>
+  <symbol id="i-file" viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8z"/><path d="M14 3v5h5M9 13h6M9 17h6"/></symbol>
+  <symbol id="i-code" viewBox="0 0 24 24"><path d="M8 8l-4 4 4 4M16 8l4 4-4 4"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-spark" viewBox="0 0 24 24"><path d="M12 3l2 5 5 2-5 2-2 5-2-5-5-2 5-2z"/></symbol>
+</svg>
+
+<header class="top">
+  <div class="brand">
+    <svg class="logo" viewBox="0 0 32 32" aria-hidden="true"><rect x="3" y="5" width="15" height="22" rx="3" fill="var(--accent)" opacity=".25"/><rect x="14" y="5" width="15" height="22" rx="3" fill="var(--accent)" opacity=".55"/><path d="M7 11h7M7 15h5M18 11h7M18 15h7M18 19h4" stroke="var(--fg)" stroke-width="1.8" stroke-linecap="round"/></svg>
+    <b>Cotejo</b><span>Comparador de texto</span>
+  </div>
+  <nav class="tabs" role="tablist">
+    <button class="on" data-tab="comparar" role="tab">Comparar</button>
+    <button data-tab="config" role="tab">Configuración</button>
+  </nav>
+  <button class="btn" id="themeBtn" title="Cambiar tema"><svg class="i"><use href="#i-sun"/></svg><span>Sistema</span></button>
+</header>
+
+<main>
+<!-- ================= COMPARAR ================= -->
+<section class="tab on" id="tab-comparar">
+  <div class="toolbar">
+    <div class="row">
+      <label class="fld">Modo
+        <select data-k="mode">
+          <option value="tramos">Por tramos (ideas)</option>
+          <option value="exacto">Exacto (palabra por palabra)</option>
+        </select>
+      </label>
+      <label class="fld for-tramos" title="Cantidad mínima de palabras seguidas iguales para considerar un tramo como similar">Tramo mínimo
+        <input type="range" min="2" max="200" data-k="minWords">
+        <input type="number" min="1" max="1000" data-k="minWords"> palabras
+      </label>
+      <label class="fld for-tramos" title="Palabras distintas permitidas dentro de un tramo (cambios de redacción). 0 = coincidencia literal">Tolerancia
+        <input type="number" min="0" max="50" data-k="gap"> palabras
+      </label>
+      <label class="fld">Resaltar
+        <select data-k="show">
+          <option value="both">Iguales y diferentes</option>
+          <option value="same">Solo iguales</option>
+          <option value="diff">Solo diferentes</option>
+        </select>
+      </label>
+      <label class="fld">Ajuste rápido
+        <select id="preset">
+          <option value="ideas">Ideas largas (50)</option>
+          <option value="frases">Frases (12)</option>
+          <option value="citas">Citas cortas (6)</option>
+          <option value="versiones">Versiones de un documento</option>
+          <option value="custom">Personalizado</option>
+        </select>
+      </label>
+      <button class="btn" id="exampleBtn" title="Cargar textos de ejemplo"><svg class="i"><use href="#i-spark"/></svg>Ejemplo</button>
+    </div>
+    <div class="row">
+      <div class="chips" aria-label="Filtros">
+        <label class="chip" title="Casa = casa"><input type="checkbox" data-k="f.case">Ignorar mayúsculas</label>
+        <label class="chip" title="acción = accion"><input type="checkbox" data-k="f.accents">Ignorar acentos</label>
+        <label class="chip" title="casa, = casa"><input type="checkbox" data-k="f.punct">Ignorar puntuación</label>
+        <label class="chip" title="No compara cifras"><input type="checkbox" data-k="f.numbers">Ignorar números</label>
+        <label class="chip" title="Omite de, la, que, el, y, the, of…"><input type="checkbox" data-k="f.stop">Ignorar palabras vacías</label>
+        <label class="chip" title="casas = casa, papeles = papel"><input type="checkbox" data-k="f.plural">Ignorar plurales</label>
+        <label class="chip" title="Usa tu lista de sinónimos (Configuración)"><input type="checkbox" data-k="f.syn">Sinónimos</label>
+      </div>
+      <div class="legend">
+        <label class="sw"><input type="color" data-k="colors.same">Igual / similar</label>
+        <label class="sw"><input type="color" data-k="colors.diff">Diferente</label>
+        <label class="sw for-tramos"><input type="color" data-k="colors.vari">Variación</label>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats" id="stats"></div>
+
+  <div class="split">
+    <div class="pane" data-side="a">
+      <div class="pane-head">
+        <input class="pane-title" value="Texto A" aria-label="Nombre del texto A">
+        <span class="cnt"></span>
+        <button class="ib" data-act="open" title="Abrir archivo"><svg class="i"><use href="#i-open"/></svg></button>
+        <button class="ib" data-act="paste" title="Pegar"><svg class="i"><use href="#i-paste"/></svg></button>
+        <button class="ib" data-act="copy" title="Copiar"><svg class="i"><use href="#i-copy"/></svg></button>
+        <button class="ib" data-act="clear" title="Limpiar"><svg class="i"><use href="#i-x"/></svg></button>
+      </div>
+      <div class="edwrap">
+        <div class="editor"><div class="backdrop"></div><textarea spellcheck="false" placeholder="Pega, escribe o arrastra aquí el primer texto…"></textarea></div>
+        <div class="minimap" title="Mapa del documento"></div>
+      </div>
+    </div>
+    <div class="mid">
+      <button class="round" id="swapBtn" title="Intercambiar textos (Alt+X)"><svg class="i"><use href="#i-swap"/></svg></button>
+      <button class="round" id="syncBtn" title="Desplazamiento sincronizado"><svg class="i"><use href="#i-link"/></svg></button>
+    </div>
+    <div class="pane" data-side="b">
+      <div class="pane-head">
+        <input class="pane-title" value="Texto B" aria-label="Nombre del texto B">
+        <span class="cnt"></span>
+        <button class="ib" data-act="open" title="Abrir archivo"><svg class="i"><use href="#i-open"/></svg></button>
+        <button class="ib" data-act="paste" title="Pegar"><svg class="i"><use href="#i-paste"/></svg></button>
+        <button class="ib" data-act="copy" title="Copiar"><svg class="i"><use href="#i-copy"/></svg></button>
+        <button class="ib" data-act="clear" title="Limpiar"><svg class="i"><use href="#i-x"/></svg></button>
+      </div>
+      <div class="edwrap">
+        <div class="editor"><div class="backdrop"></div><textarea spellcheck="false" placeholder="Pega, escribe o arrastra aquí el segundo texto…"></textarea></div>
+        <div class="minimap" title="Mapa del documento"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="results" id="results">
+    <div class="res-head">
+      <h3 id="resTitle">Coincidencias</h3>
+      <button class="ib" id="prevBtn" title="Anterior (Alt+↑)"><svg class="i"><use href="#i-up"/></svg></button>
+      <button class="ib" id="nextBtn" title="Siguiente (Alt+↓)"><svg class="i"><use href="#i-down"/></svg></button>
+      <button class="btn" id="reportBtn" title="Reporte HTML para compartir o imprimir (Alt+R)"><svg class="i"><use href="#i-file"/></svg>Reporte</button>
+      <button class="btn" id="jsonBtn" title="Exportar resultados en JSON"><svg class="i"><use href="#i-code"/></svg>JSON</button>
+      <button class="ib" id="toggleRes" title="Mostrar u ocultar lista"><svg class="i"><use href="#i-down"/></svg></button>
+    </div>
+    <div class="list" id="list"></div>
+  </div>
+</section>
+
+<!-- ================= CONFIGURACIÓN ================= -->
+<section class="tab" id="tab-config">
+  <div class="cfg">
+    <div class="card">
+      <h2>Tema</h2>
+      <div class="opts">
+        <label class="opt"><input type="radio" name="theme" value="light" data-k="theme">Claro</label>
+        <label class="opt"><input type="radio" name="theme" value="dark" data-k="theme">Oscuro</label>
+        <label class="opt"><input type="radio" name="theme" value="system" data-k="theme">Según el sistema</label>
+        <label class="opt"><input type="radio" name="theme" value="hour" data-k="theme">Según la hora</label>
+      </div>
+      <div class="line"><label>Oscuro desde</label><span class="fld"><input type="time" data-k="darkFrom"></span></div>
+      <div class="line"><label>Claro desde</label><span class="fld"><input type="time" data-k="lightFrom"></span></div>
+      <p class="hint">“Según la hora” cambia solo a oscuro y a claro en los horarios que elijas.</p>
+    </div>
+
+    <div class="card">
+      <h2>Colores y resaltado</h2>
+      <div class="line"><label>Igual / similar</label><input type="color" data-k="colors.same"></div>
+      <div class="line"><label>Diferente</label><input type="color" data-k="colors.diff"></div>
+      <div class="line"><label>Variación dentro de un tramo</label><input type="color" data-k="colors.vari"></div>
+      <div class="line"><label>Intensidad del fondo</label><input type="range" min="10" max="80" data-k="alpha"></div>
+      <div class="opts">
+        <label class="opt"><input type="radio" name="paint" value="bg" data-k="paint">Pintar el fondo</label>
+        <label class="opt"><input type="radio" name="paint" value="text" data-k="paint">Pintar el texto</label>
+      </div>
+      <div class="btns"><button class="btn" id="resetColors">Restaurar colores</button></div>
+    </div>
+
+    <div class="card">
+      <h2>Texto y lectura</h2>
+      <div class="line"><label>Tamaño de letra</label><span class="fld"><input type="range" min="12" max="24" data-k="fontSize"></span></div>
+      <div class="line"><label>Tipografía</label>
+        <span class="fld"><select data-k="font"><option value="sans">Sans</option><option value="serif">Serif</option><option value="mono">Monoespaciada</option></select></span></div>
+      <div class="line"><label>Desplazamiento sincronizado</label><input type="checkbox" data-k="syncScroll"></div>
+    </div>
+
+    <div class="card">
+      <h2>Comparación avanzada</h2>
+      <div class="line"><label title="Con tolerancia mayor a 0, se buscan primero coincidencias de este tamaño y luego se unen en tramos">Semilla mínima (palabras)</label>
+        <span class="fld"><input type="number" min="2" max="20" data-k="seed"></span></div>
+      <p class="hint"><b>Tramo mínimo:</b> cuántas palabras iguales seguidas cuentan como similitud. <b>Tolerancia:</b> cuántas palabras distintas puede haber entre partes iguales sin cortar el tramo (detecta ideas reescritas). <b>Semilla:</b> tamaño mínimo de cada parte igual; más alto = menos falsos positivos.</p>
+    </div>
+
+    <div class="card">
+      <h2>Palabras vacías propias</h2>
+      <p class="hint">Se suman a las incluidas (español e inglés) cuando activas “Ignorar palabras vacías”. Separa con comas, espacios o saltos de línea.</p>
+      <textarea data-k="customStop" placeholder="por ejemplo: dicho, mismo, respectivamente"></textarea>
+    </div>
+
+    <div class="card">
+      <h2>Sinónimos</h2>
+      <p class="hint">Un grupo por línea, separado con comas. Con el filtro “Sinónimos” activo se consideran la misma palabra.</p>
+      <textarea data-k="synonyms" placeholder="casa, hogar, vivienda&#10;edificio, inmueble&#10;rápido, veloz"></textarea>
+    </div>
+
+    <div class="card">
+      <h2>Datos</h2>
+      <div class="line"><label>Guardar mis textos en este navegador</label><input type="checkbox" data-k="autosave"></div>
+      <p class="hint">Todo se queda en tu equipo; nada se envía a internet.</p>
+      <div class="btns">
+        <button class="btn" id="expCfg">Exportar configuración</button>
+        <button class="btn" id="impCfg">Importar configuración</button>
+        <button class="btn" id="resetAll">Restablecer todo</button>
+      </div>
+    </div>
+
+    <div class="card about">
+      <h2>Acerca de</h2>
+      <dl>
+        <dt>Producto</dt><dd>Cotejo · Comparador de texto</dd>
+        <dt>Versión</dt><dd>1.0</dd>
+        <dt>Autor</dt><dd>Victor Manuel Salazar Castro</dd>
+        <dt>Derechos</dt><dd>© 2026 Todos los derechos reservados</dd>
+      </dl>
+      <div>
+        <div class="it-h" style="margin-bottom:6px">Atajos de teclado</div>
+        <div><span class="kbd">Alt</span> + <span class="kbd">↓</span> / <span class="kbd">↑</span> siguiente / anterior</div>
+        <div><span class="kbd">Alt</span> + <span class="kbd">X</span> intercambiar textos</div>
+        <div><span class="kbd">Alt</span> + <span class="kbd">R</span> generar reporte</div>
+      </div>
+    </div>
+  </div>
+</section>
+</main>
+
+<input type="file" id="fileInput" hidden accept=".txt,.md,.csv,.html,.htm,.json,.srt,.xml,.log,text/*">
+<input type="file" id="cfgInput" hidden accept=".json,application/json">
+<div class="toast" id="toast"></div>
+<noscript><p style="padding:20px">Cotejo necesita JavaScript activado.</p></noscript>
+
+<script>
+/* © 2026 Victor Manuel Salazar Castro — Cotejo. Todos los derechos reservados. */
+'use strict';
+
+/*ALGO-START*/
+// ===================== Motor de comparación =====================
+const STOP_BASE = ('a al algo algun alguna algunas alguno algunos ante antes aqui asi aun cada como con contra cual cuales cuando de del desde donde dos durante e el ella ellas ello ellos en entre era eran es esa esas ese eso esos esta estaba estado estan estar este esto estos fue fueron ha han hasta hay la las le les lo los mas me mi mis mientras muy nada ni no nos nosotros o otra otras otro otros para pero poco por porque pues que quien se sea segun ser si sido sin sobre son su sus tal tambien tan te tiene tienen todo todos tu un una uno unos y ya yo ' +
+ 'about above after again all am an and any are as at be because been before being below between both but by can could did do does doing down during each few for from further had has have having he her here hers him his how i if in into is it its just more most my nor not now of off on once only or other our out over own same she should so some such than that the their them then there these they this those through to too under until up very was we were what when where which while who whom why will with would you your').split(' ');
+
+function basic(w){ return w.toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^\p{L}\p{N}]+/gu,''); }
+function stem(x){
+  if (x.length <= 3) return x;
+  if (x.length > 4 && /[lrndjy]es$/i.test(x)) return x.slice(0,-2);
+  if (/[^s]s$/i.test(x)) return x.slice(0,-1);
+  return x;
+}
+function buildStop(custom){
+  const s = new Set(STOP_BASE);
+  (custom||'').split(/[\s,;]+/).map(basic).filter(Boolean).forEach(w=>s.add(w));
+  return s;
+}
+function buildSyn(txt){
+  const m = new Map();
+  (txt||'').split(/\n/).forEach((line,i)=>{
+    const ws = line.split(/[,;=|]/).map(basic).filter(Boolean);
+    if (ws.length < 2) return;
+    ws.forEach(w=>{ m.set(w,'§'+i); m.set(stem(w),'§'+i); });
+  });
+  return m;
+}
+function makeNormalizer(f, stopSet, synMap){
+  return function(w){
+    const key = basic(w);
+    if (!key && f.punct) return '';
+    if (key){
+      if (f.stop && stopSet.has(key)) return '';
+      if (f.numbers && /^\p{N}+$/u.test(key)) return '';
+      if (f.syn){ const g = synMap.get(key) || (f.plural ? synMap.get(stem(key)) : undefined); if (g) return g; }
+    }
+    let x = w;
+    if (f.case) x = x.toLowerCase();
+    if (f.accents) x = x.normalize('NFD').replace(/[\u0300-\u036f]/g,'');
+    if (f.punct) x = x.replace(/[^\p{L}\p{N}]+/gu,'');
+    if (!x) return '';
+    if (f.plural) x = stem(x);
+    return x;
+  };
+}
+function tokenize(text, norm){
+  const out = []; const re = /\S+/g; let m;
+  while ((m = re.exec(text))){ const n = norm(m[0]); if (n) out.push({s:m.index, e:m.index+m[0].length, n}); }
+  return out;
+}
+function toIds(TA, TB){
+  const map = new Map();
+  const f = t => { let v = map.get(t.n); if (v === undefined){ v = map.size + 1; map.set(t.n, v); } return v; };
+  return [Int32Array.from(TA, f), Int32Array.from(TB, f)];
+}
+
+// --- Modo exacto: diff de Myers (mínimo de cambios) ---
+function myers(a, b, limit, mark){
+  const n = a.length, m = b.length;
+  if (!n || !m) return true;
+  const max = n + m, off = max + 1;
+  const v = new Int32Array(2*max + 3);
+  const trace = []; let D = -1;
+  outer: for (let d = 0; d <= max; d++){
+    if (d > limit) return false;
+    for (let k = -d; k <= d; k += 2){
+      let x = (k === -d || (k !== d && v[off+k-1] < v[off+k+1])) ? v[off+k+1] : v[off+k-1] + 1;
+      let y = x - k;
+      while (x < n && y < m && a[x] === b[y]){ x++; y++; }
+      v[off+k] = x;
+      if (x >= n && y >= m){ trace.push(v.slice(off-d, off+d+1)); D = d; break outer; }
+    }
+    trace.push(v.slice(off-d, off+d+1));
+  }
+  let x = n, y = m;
+  for (let d = D; d > 0; d--){
+    const vp = trace[d-1], k = x - y, g = kk => vp[kk + d - 1];
+    const pk = (k === -d || (k !== d && g(k-1) < g(k+1))) ? k + 1 : k - 1;
+    const px = g(pk), py = px - pk;
+    while (x > px && y > py){ x--; y--; mark(x, y); }
+    x = px; y = py;
+  }
+  while (x > 0 && y > 0){ x--; y--; mark(x, y); }
+  return true;
+}
+function diffExact(A, B, limit){
+  const n = A.length, m = B.length;
+  const eqA = new Uint8Array(n), eqB = new Uint8Array(m);
+  let p = 0; while (p < n && p < m && A[p] === B[p]){ eqA[p] = eqB[p] = 1; p++; }
+  let s = 0; while (s < n-p && s < m-p && A[n-1-s] === B[m-1-s]){ eqA[n-1-s] = eqB[m-1-s] = 1; s++; }
+  const ok = myers(A.subarray(p, n-s), B.subarray(p, m-s), limit, (x,y)=>{ eqA[p+x] = 1; eqB[p+y] = 1; });
+  if (!ok) return null;
+  const hunks = []; let i = 0, j = 0;
+  while (i < n || j < m){
+    if (i < n && j < m && eqA[i] && eqB[j]){ i++; j++; continue; }
+    const a0 = i, b0 = j;
+    while (i < n && !eqA[i]) i++;
+    while (j < m && !eqB[j]) j++;
+    if (i === a0 && j === b0) break;
+    hunks.push({a:a0, ea:i, b:b0, eb:j});
+  }
+  return {eqA, eqB, hunks};
+}
+
+// --- Modo por tramos: coincidencias de N palabras seguidas, con tolerancia ---
+function diffTramos(A, B, N, G, seed){
+  const n = A.length, m = B.length;
+  const markA = new Uint8Array(n), markB = new Uint8Array(m); // 0 diferente, 1 igual, 2 variación
+  const segs = [];
+  const S = Math.max(1, G > 0 ? Math.min(N, seed) : N);
+  if (n < S || m < S) return {markA, markB, segs};
+  const P = 1000003; let pw = 1; for (let i = 1; i < S; i++) pw = Math.imul(pw, P);
+  const hashes = X => {
+    const L = X.length - S + 1, H = new Int32Array(L); let h = 0;
+    for (let i = 0; i < S; i++) h = (Math.imul(h, P) + X[i]) | 0;
+    H[0] = h;
+    for (let i = 1; i < L; i++){ h = (h - Math.imul(X[i-1], pw)) | 0; h = (Math.imul(h, P) + X[i+S-1]) | 0; H[i] = h; }
+    return H;
+  };
+  const HA = hashes(A), HB = hashes(B);
+  const CAP = 64, idx = new Map();
+  for (let j = 0; j < HB.length; j++){ let arr = idx.get(HB[j]); if (!arr){ arr = []; idx.set(HB[j], arr); } if (arr.length <= CAP) arr.push(j); }
+  const same = (i,j) => { for (let t = 0; t < S; t++) if (A[i+t] !== B[j+t]) return false; return true; };
+  const runs = [], active = new Map();
+  for (let i = 0; i < HA.length; i++){
+    const arr = idx.get(HA[i]); if (!arr || arr.length > CAP) continue;
+    for (const j of arr){
+      if (!same(i,j)) continue;
+      const d = i - j; let r = active.get(d);
+      if (r && r.li === i - 1) r.li = i;
+      else { r = {a:i, b:j, li:i}; active.set(d, r); runs.push(r); }
+    }
+  }
+  for (const r of runs){ r.ea = r.li + S; r.eb = r.b + (r.li - r.a) + S; r.len = r.ea - r.a; }
+  // Encadenar partes iguales separadas por pocas palabras distintas
+  let open = []; const chains = []; let lastA = -1;
+  for (const r of runs){
+    if (r.a !== lastA){ open = open.filter(c => c.ea >= r.a - G); lastA = r.a; }
+    let best = null;
+    for (const c of open){
+      if (r.a >= c.ea && r.b >= c.eb && r.a - c.ea <= G && r.b - c.eb <= G && (!best || c.score > best.score)) best = c;
+    }
+    if (best){ best.runs.push(r); best.ea = r.ea; best.eb = r.eb; best.score += r.len; }
+    else { const c = {runs:[r], a:r.a, b:r.b, ea:r.ea, eb:r.eb, score:r.len}; chains.push(c); open.push(c); }
+  }
+  for (const c of chains){
+    if (c.score < N) continue;
+    let pa = -1, pb = -1;
+    for (const r of c.runs){
+      if (pa >= 0){
+        for (let t = pa; t < r.a; t++) if (!markA[t]) markA[t] = 2;
+        for (let t = pb; t < r.b; t++) if (!markB[t]) markB[t] = 2;
+      }
+      for (let t = r.a; t < r.ea; t++) markA[t] = 1;
+      for (let t = r.b; t < r.eb; t++) markB[t] = 1;
+      pa = r.ea; pb = r.eb;
+    }
+    segs.push({a:c.a, ea:c.ea, b:c.b, eb:c.eb, words:c.score, span:c.ea - c.a});
+  }
+  segs.sort((x,y) => x.a - y.a || x.b - y.b);
+  return {markA, markB, segs};
+}
+/*ALGO-END*/
+
+// ===================== Estado y configuración =====================
+const $ = (s, r=document) => r.querySelector(s);
+const $$ = (s, r=document) => [...r.querySelectorAll(s)];
+const KEY_S = 'cotejo.v1.settings', KEY_T = 'cotejo.v1.texts';
+const EXACT_LIMIT = 3500;
+const DEF = {
+  mode:'tramos', minWords:50, gap:3, seed:4, show:'both', preset:'ideas',
+  f:{case:true, accents:true, punct:true, numbers:false, stop:false, plural:false, syn:false},
+  colors:{same:'#22c55e', diff:'#ef4444', vari:'#f59e0b'}, alpha:35, paint:'bg',
+  theme:'system', darkFrom:'19:00', lightFrom:'07:00', fontSize:15, font:'sans',
+  syncScroll:true, autosave:true, customStop:'', synonyms:'', resultsOpen:true
+};
+const PRESETS = {
+  ideas:     {mode:'tramos', minWords:50, gap:3, f:{case:true,accents:true,punct:true,numbers:false,stop:false,plural:true}},
+  frases:    {mode:'tramos', minWords:12, gap:2, f:{case:true,accents:true,punct:true,numbers:false,stop:false,plural:true}},
+  citas:     {mode:'tramos', minWords:6,  gap:0, f:{case:true,accents:true,punct:true,numbers:false,stop:false,plural:false}},
+  versiones: {mode:'exacto', f:{case:false,accents:false,punct:false,numbers:false,stop:false,plural:false}}
+};
+const PRESET_KEYS = /^(mode|minWords|gap|f\.(case|accents|punct|numbers|stop|plural))$/;
+const clone = o => JSON.parse(JSON.stringify(o));
+function merge(base, extra){
+  for (const k in extra){
+    if (extra[k] && typeof extra[k] === 'object' && !Array.isArray(extra[k]) && base[k] && typeof base[k] === 'object') merge(base[k], extra[k]);
+    else if (k in base) base[k] = extra[k];
+  }
+  return base;
+}
+let S = clone(DEF);
+try { merge(S, JSON.parse(localStorage.getItem(KEY_S) || '{}')); } catch(e){}
+function save(){ try { localStorage.setItem(KEY_S, JSON.stringify(S)); } catch(e){} }
+
+const getK = p => p.split('.').reduce((o,k) => o == null ? o : o[k], S);
+function setK(p, v){ const ks = p.split('.'); let o = S; for (let i = 0; i < ks.length-1; i++) o = o[ks[i]]; o[ks[ks.length-1]] = v; }
+function readEl(el){ if (el.type === 'checkbox') return el.checked; if (el.type === 'number' || el.type === 'range') return +el.value; return el.value; }
+function writeEl(el, v){ if (el.type === 'checkbox') el.checked = !!v; else if (el.type === 'radio') el.checked = (el.value === v); else el.value = v; }
+function syncControls(){ $$('[data-k]').forEach(el => writeEl(el, getK(el.dataset.k))); $('#preset').value = S.preset; updateModeUI(); }
+
+// Caches de listas
+let stopCache = {src:null, set:null}, synCache = {src:null, map:null};
+function stopSet(){ if (stopCache.src !== S.customStop){ stopCache = {src:S.customStop, set:buildStop(S.customStop)}; } return stopCache.set; }
+function synMap(){ if (synCache.src !== S.synonyms){ synCache = {src:S.synonyms, map:buildSyn(S.synonyms)}; } return synCache.map; }
+
+// ===================== Apariencia =====================
+const mq = matchMedia('(prefers-color-scheme: dark)');
+const THEME_LABEL = {light:'Claro', dark:'Oscuro', system:'Sistema', hour:'Por hora'};
+function resolveTheme(){
+  if (S.theme === 'light' || S.theme === 'dark') return S.theme;
+  if (S.theme === 'system') return mq.matches ? 'dark' : 'light';
+  const toM = s => { const [h,m] = String(s||'0:0').split(':').map(Number); return (h||0)*60 + (m||0); };
+  const d = new Date(), cur = d.getHours()*60 + d.getMinutes(), df = toM(S.darkFrom), lf = toM(S.lightFrom);
+  const dark = df > lf ? (cur >= df || cur < lf) : (cur >= df && cur < lf);
+  return dark ? 'dark' : 'light';
+}
+function applyTheme(){ document.documentElement.dataset.theme = resolveTheme(); $('#themeBtn span').textContent = THEME_LABEL[S.theme]; }
+mq.addEventListener('change', applyTheme);
+setInterval(applyTheme, 60000);
+function rgba(hex, a){ const h = hex.replace('#',''); const n = parseInt(h.length === 3 ? h.split('').map(c=>c+c).join('') : h, 16); return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`; }
+const FONTS = {sans:'system-ui,-apple-system,"Segoe UI",Roboto,sans-serif', serif:'Georgia,"Times New Roman",serif', mono:'ui-monospace,Consolas,"Cascadia Mono",Menlo,monospace'};
+function applyAppearance(){
+  const r = document.documentElement.style, a = S.alpha/100;
+  r.setProperty('--same', rgba(S.colors.same, a)); r.setProperty('--diff', rgba(S.colors.diff, a)); r.setProperty('--vari', rgba(S.colors.vari, a));
+  r.setProperty('--same-solid', S.colors.same); r.setProperty('--diff-solid', S.colors.diff); r.setProperty('--vari-solid', S.colors.vari);
+  r.setProperty('--fs', S.fontSize + 'px'); r.setProperty('--ff', FONTS[S.font] || FONTS.sans);
+  document.body.classList.toggle('paint-text', S.paint === 'text');
+  $('#syncBtn').classList.toggle('on', S.syncScroll);
+  $('#results').classList.toggle('closed', !S.resultsOpen);
+  applyTheme();
+}
+function updateModeUI(){ document.body.classList.toggle('mode-exacto', S.mode === 'exacto'); document.body.classList.toggle('mode-tramos', S.mode !== 'exacto'); }
+
+// ===================== Editores =====================
+const sides = {};
+$$('.pane').forEach(p => {
+  const k = p.dataset.side;
+  const view = document.createElement('b'); view.className = 'mm-view';
+  sides[k] = {k, p, ta:$('textarea',p), bd:$('.backdrop',p), mm:$('.minimap',p), cnt:$('.cnt',p), title:$('.pane-title',p), ed:$('.editor',p), els:[], view};
+  sides[k].mm.appendChild(view);
+});
+const other = k => sides[k === 'a' ? 'b' : 'a'];
+const esc = s => s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+const CLS = ['', 's', 'v', 'd'];
+
+function paintHTML(text, toks, codes){
+  let html = '', pos = 0, i = 0; const n = toks.length;
+  while (i < n){
+    const c = codes[i]; let j = i;
+    while (j+1 < n && codes[j+1] === c) j++;
+    const s = toks[i].s, e = toks[j].e;
+    html += esc(text.slice(pos, s));
+    html += c ? `<mark class="${CLS[c]}" data-s="${s}">${esc(text.slice(s, e))}</mark>` : `<span data-s="${s}">${esc(text.slice(s, e))}</span>`;
+    pos = e; i = j + 1;
+  }
+  return html + esc(text.slice(pos)) + ' ';
+}
+
+let progUntil = 0, syncing = false;
+function onScroll(k){
+  const s = sides[k];
+  s.bd.scrollTop = s.ta.scrollTop;
+  updView(k);
+  if (S.syncScroll && !syncing && performance.now() > progUntil){
+    const o = other(k), r = s.ta.scrollTop / Math.max(1, s.ta.scrollHeight - s.ta.clientHeight);
+    syncing = true; o.ta.scrollTop = r * (o.ta.scrollHeight - o.ta.clientHeight);
+    requestAnimationFrame(() => { syncing = false; });
+  }
+}
+function updView(k){
+  const s = sides[k], H = Math.max(1, s.ta.scrollHeight);
+  s.view.style.top = (s.ta.scrollTop / H * 100) + '%';
+  s.view.style.height = Math.min(100, s.ta.clientHeight / H * 100) + '%';
+}
+function renderMinimap(k){
+  const s = sides[k], H = Math.max(1, s.bd.scrollHeight), frag = document.createDocumentFragment(); let n = 0;
+  for (const el of s.els){
+    if (el.tagName !== 'MARK') continue;
+    if (++n > 4000) break;
+    const d = document.createElement('i');
+    d.className = 'mm ' + el.classList[0];
+    d.style.top = (el.offsetTop / H * 100) + '%';
+    d.style.height = Math.max(el.offsetHeight / H * 100, 0.4) + '%';
+    frag.appendChild(d);
+  }
+  frag.appendChild(s.view);
+  s.mm.replaceChildren(frag);
+  updView(k);
+}
+
+// ===================== Cálculo =====================
+let last = null, cur = -1, tmr = 0;
+function schedule(ms){ clearTimeout(tmr); tmr = setTimeout(compute, ms); }
+
+function compute(){
+  const t0 = performance.now();
+  const tA = sides.a.ta.value, tB = sides.b.ta.value;
+  const norm = makeNormalizer(S.f, stopSet(), synMap());
+  const TA = tokenize(tA, norm), TB = tokenize(tB, norm);
+  const [A, B] = toIds(TA, TB);
+  const cA = new Uint8Array(TA.length), cB = new Uint8Array(TB.length);
+  let items = [], mode = S.mode, notice = '';
+  const both = TA.length && TB.length;
+  if (both && mode === 'exacto'){
+    const r = diffExact(A, B, EXACT_LIMIT);
+    if (r){
+      for (let i = 0; i < cA.length; i++) cA[i] = r.eqA[i] ? 1 : 3;
+      for (let i = 0; i < cB.length; i++) cB[i] = r.eqB[i] ? 1 : 3;
+      items = r.hunks;
+    } else { mode = 'tramos'; notice = 'Textos muy distintos para el modo exacto; se muestran por tramos.'; }
+  }
+  if (both && mode === 'tramos'){
+    const r = diffTramos(A, B, Math.max(1, S.minWords|0), Math.max(0, S.gap|0), Math.max(2, S.seed|0));
+    for (let i = 0; i < cA.length; i++) cA[i] = r.markA[i] === 1 ? 1 : r.markA[i] === 2 ? 2 : 3;
+    for (let i = 0; i < cB.length; i++) cB[i] = r.markB[i] === 1 ? 1 : r.markB[i] === 2 ? 2 : 3;
+    items = r.segs;
+  }
+  const ms = performance.now() - t0;
+  last = {tA, tB, TA, TB, cA, cB, items, mode, notice, ms, both};
+  if (cur >= items.length) cur = -1;
+  render();
+}
+
+function shown(codes){
+  if (S.show === 'both') return codes;
+  const out = new Uint8Array(codes.length);
+  for (let i = 0; i < codes.length; i++){ const c = codes[i]; out[i] = S.show === 'same' ? (c === 3 ? 0 : c) : (c === 3 ? 3 : 0); }
+  return out;
+}
+function render(){
+  const L = last; if (!L) return;
+  for (const [k, text, toks, codes] of [['a', L.tA, L.TA, L.cA], ['b', L.tB, L.TB, L.cB]]){
+    const s = sides[k];
+    s.bd.innerHTML = paintHTML(text, toks, shown(codes));
+    s.els = [...s.bd.children];
+    s.bd.scrollTop = s.ta.scrollTop;
+    const raw = (text.match(/\S+/g) || []).length;
+    s.cnt.textContent = raw ? `${raw.toLocaleString('es-MX')} palabras${raw !== toks.length ? ` · ${toks.length.toLocaleString('es-MX')} comparadas` : ''}` : '';
+    renderMinimap(k);
+  }
+  renderStats(); renderList();
+}
+function pct(codes){ if (!codes.length) return 0; let n = 0; for (const c of codes) if (c === 1 || c === 2) n++; return n; }
+function renderStats(){
+  const L = last, el = $('#stats');
+  if (!L.both){ el.innerHTML = '<span>Escribe o pega texto en ambos lados para comparar.</span>'; return; }
+  const sA = pct(L.cA), sB = pct(L.cB), nA = L.cA.length, nB = L.cB.length;
+  const g = Math.round((sA + sB) / Math.max(1, nA + nB) * 100);
+  let extra;
+  if (L.mode === 'tramos'){
+    const mx = L.items.reduce((m, x) => Math.max(m, x.words), 0);
+    extra = `<span><b>${L.items.length}</b> ${L.items.length === 1 ? 'tramo' : 'tramos'}${L.items.length ? ` · el mayor de <b>${mx}</b> palabras` : ''}</span>`;
+  } else {
+    let eq = 0; for (const c of L.cA) if (c === 1) eq++;
+    extra = `<span><b>${eq.toLocaleString('es-MX')}</b> palabras iguales · <b>${L.items.length}</b> cambios</span>`;
+  }
+  el.innerHTML = `<div class="meter"><div class="meter-bar"><i style="width:${g}%"></i></div><b>${g}%</b><span>similitud global</span></div>
+    <span><b>${esc(sides.a.title.value)}</b> ${Math.round(sA/Math.max(1,nA)*100)}%</span>
+    <span><b>${esc(sides.b.title.value)}</b> ${Math.round(sB/Math.max(1,nB)*100)}%</span>
+    ${extra}<span>${L.ms < 1 ? '<1' : Math.round(L.ms)} ms</span>${L.notice ? `<span class="warn">${L.notice}</span>` : ''}`;
+}
+function excerpt(text, toks, a, ea, max=18){
+  if (a >= ea) return '';
+  const e = Math.min(ea, a + max);
+  return text.slice(toks[a].s, toks[e-1].e).replace(/\s+/g, ' ') + (ea - a > max ? '…' : '');
+}
+function renderList(){
+  const L = last, list = $('#list');
+  const word = L.mode === 'tramos' ? 'Tramos similares' : 'Cambios';
+  $('#resTitle').innerHTML = `${word} <small>(${L.items.length})</small>`;
+  if (!L.both){ list.innerHTML = '<div class="empty">Aquí aparecerán los tramos similares o los cambios.</div>'; return; }
+  if (!L.items.length){
+    list.innerHTML = `<div class="empty">${L.mode === 'tramos' ? `No hay tramos de ${S.minWords} palabras o más. Prueba bajar el tramo mínimo o subir la tolerancia.` : 'Los textos son idénticos con los filtros actuales.'}</div>`;
+    return;
+  }
+  const frag = document.createDocumentFragment();
+  L.items.slice(0, 1500).forEach((it, i) => {
+    const d = document.createElement('div'); d.className = 'item' + (i === cur ? ' on' : ''); d.dataset.i = i;
+    if (L.mode === 'tramos'){
+      d.innerHTML = `<span class="badge s">${i+1}</span><div><div class="it-h">${it.words} palabras iguales${it.span !== it.words ? ` en un tramo de ${it.span}` : ''} · A ${it.a+1}–${it.ea} · B ${it.b+1}–${it.eb}</div><div class="it-t">${esc(excerpt(L.tA, L.TA, it.a, it.ea))}</div></div>`;
+    } else {
+      const xa = excerpt(L.tA, L.TA, it.a, it.ea, 10), xb = excerpt(L.tB, L.TB, it.b, it.eb, 10);
+      d.innerHTML = `<span class="badge d">${i+1}</span><div><div class="it-h">${it.ea > it.a && it.eb > it.b ? 'Reemplazo' : it.ea > it.a ? 'Solo en A' : 'Solo en B'} · A ${it.ea - it.a} · B ${it.eb - it.b} palabras</div><div class="it-t">${xa ? `<del>${esc(xa)}</del>` : '<i>—</i>'} → ${xb ? `<ins>${esc(xb)}</ins>` : '<i>—</i>'}</div></div>`;
+    }
+    frag.appendChild(d);
+  });
+  list.replaceChildren(frag);
+}
+
+function rangeChars(text, toks, a, ea){
+  if (a < ea) return [toks[a].s, toks[ea-1].e];
+  const p = a < toks.length ? toks[a].s : text.length; return [p, p];
+}
+function revealSide(k, s0, e0, focus){
+  const s = sides[k];
+  let top = 0, hits = [];
+  for (const el of s.els){
+    const st = +el.dataset.s;
+    if (st <= s0) top = el.offsetTop;
+    if (st >= s0 && st < Math.max(e0, s0+1)) hits.push(el);
+    if (st > e0) break;
+  }
+  if (!hits.length){ const prev = s.els.filter(el => +el.dataset.s <= s0).pop(); if (prev) hits.push(prev); }
+  s.ta.scrollTop = Math.max(0, top - s.ta.clientHeight * 0.25);
+  hits.forEach(el => { el.classList.remove('flash'); void el.offsetWidth; el.classList.add('flash'); });
+  if (focus && e0 > s0){ s.ta.focus({preventScroll:true}); s.ta.setSelectionRange(s0, e0); s.ta.scrollTop = Math.max(0, top - s.ta.clientHeight * 0.25); }
+}
+function goTo(i){
+  const L = last; if (!L || !L.items.length) return;
+  cur = (i + L.items.length) % L.items.length;
+  const it = L.items[cur];
+  progUntil = performance.now() + 400;
+  const [as, ae] = rangeChars(L.tA, L.TA, it.a, it.ea), [bs, be] = rangeChars(L.tB, L.TB, it.b, it.eb);
+  revealSide('a', as, ae, false); revealSide('b', bs, be, false);
+  $$('#list .item').forEach(el => el.classList.toggle('on', +el.dataset.i === cur));
+  const on = $(`#list .item[data-i="${cur}"]`); if (on) on.scrollIntoView({block:'nearest'});
+}
+
+// ===================== Exportar =====================
+function download(name, content, type){
+  const b = new Blob([content], {type}), u = URL.createObjectURL(b), a = document.createElement('a');
+  a.href = u; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(u), 2000);
+}
+const today = () => new Date().toISOString().slice(0,10);
+function exportReport(){
+  const L = last; if (!L || !L.both){ toast('Necesitas texto en ambos lados'); return; }
+  const a = S.alpha/100, c = S.colors, tA = esc(sides.a.title.value), tB = esc(sides.b.title.value);
+  const sA = pct(L.cA), sB = pct(L.cB), g = Math.round((sA+sB)/Math.max(1, L.cA.length+L.cB.length)*100);
+  const fl = Object.entries({case:'mayúsculas', accents:'acentos', punct:'puntuación', numbers:'números', stop:'palabras vacías', plural:'plurales', syn:'sinónimos'}).filter(([k]) => S.f[k]).map(([,v]) => v).join(', ') || 'ninguno';
+  const params = L.mode === 'tramos' ? `Por tramos · mínimo ${S.minWords} palabras · tolerancia ${S.gap}` : 'Exacto (palabra por palabra)';
+  const rows = L.items.slice(0, 2000).map((it, i) => L.mode === 'tramos'
+    ? `<tr><td>${i+1}</td><td>${it.words}</td><td>${it.a+1}–${it.ea}</td><td>${it.b+1}–${it.eb}</td><td>${esc(excerpt(L.tA, L.TA, it.a, it.ea, 25))}</td></tr>`
+    : `<tr><td>${i+1}</td><td>${esc(excerpt(L.tA, L.TA, it.a, it.ea, 15)) || '—'}</td><td>${esc(excerpt(L.tB, L.TB, it.b, it.eb, 15)) || '—'}</td></tr>`).join('');
+  const head = L.mode === 'tramos' ? '<tr><th>#</th><th>Palabras</th><th>Posición A</th><th>Posición B</th><th>Fragmento</th></tr>' : '<tr><th>#</th><th>Texto A</th><th>Texto B</th></tr>';
+  const html = `<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reporte de comparación · ${tA} vs ${tB}</title>
+<style>body{font:14px/1.5 system-ui,Segoe UI,Roboto,sans-serif;color:#1a1d23;margin:0;padding:28px;background:#fff}h1{margin:0 0 4px;font-size:22px}.meta{color:#667085;margin-bottom:18px}
+.kpis{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:20px}.kpi{border:1px solid #e1e4ea;border-radius:10px;padding:10px 14px;min-width:130px}.kpi b{display:block;font-size:22px}.kpi span{color:#667085;font-size:12px}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}.cols h2{font-size:15px;margin:0 0 6px}.txt{white-space:pre-wrap;overflow-wrap:break-word;border:1px solid #e1e4ea;border-radius:10px;padding:14px;line-height:1.65}
+mark{color:inherit;border-radius:3px;-webkit-box-decoration-break:clone;box-decoration-break:clone}mark.s{background:${rgba(c.same,a)}}mark.d{background:${rgba(c.diff,a)}}mark.v{background:${rgba(c.vari,a)}}
+.leg{display:flex;gap:14px;margin:14px 0;font-size:13px}.leg i{display:inline-block;width:12px;height:12px;border-radius:3px;margin-right:5px;vertical-align:-1px}
+table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13px}th,td{border-bottom:1px solid #e1e4ea;padding:6px 8px;text-align:left;vertical-align:top}th{background:#f4f5f8}
+footer{margin-top:24px;color:#98a2b3;font-size:12px}@media print{body{padding:0}.cols{grid-template-columns:1fr 1fr}}@media(max-width:700px){.cols{grid-template-columns:1fr}}</style></head><body>
+<h1>Reporte de comparación</h1><div class="meta">${tA} vs ${tB} · ${new Date().toLocaleString('es-MX')} · Modo: ${params} · Filtros: ${fl}</div>
+<div class="kpis"><div class="kpi"><b>${g}%</b><span>Similitud global</span></div><div class="kpi"><b>${Math.round(sA/Math.max(1,L.cA.length)*100)}%</b><span>${tA}</span></div><div class="kpi"><b>${Math.round(sB/Math.max(1,L.cB.length)*100)}%</b><span>${tB}</span></div><div class="kpi"><b>${L.items.length}</b><span>${L.mode === 'tramos' ? 'Tramos similares' : 'Cambios'}</span></div></div>
+<div class="leg"><span><i style="background:${rgba(c.same,a)}"></i>Igual / similar</span><span><i style="background:${rgba(c.diff,a)}"></i>Diferente</span>${L.mode === 'tramos' ? `<span><i style="background:${rgba(c.vari,a)}"></i>Variación</span>` : ''}</div>
+<div class="cols"><div><h2>${tA}</h2><div class="txt">${paintHTML(L.tA, L.TA, L.cA)}</div></div><div><h2>${tB}</h2><div class="txt">${paintHTML(L.tB, L.TB, L.cB)}</div></div></div>
+<h2 style="font-size:16px;margin-top:24px">${L.mode === 'tramos' ? 'Tramos similares' : 'Cambios'}</h2><table><thead>${head}</thead><tbody>${rows || '<tr><td colspan="5">Sin resultados</td></tr>'}</tbody></table>
+<footer>Generado con Cotejo · Comparador de texto</footer></body></html>`;
+  download(`Reporte_comparacion_${today()}.html`, html, 'text/html');
+  toast('Reporte descargado');
+}
+function exportJSON(){
+  const L = last; if (!L || !L.both){ toast('Necesitas texto en ambos lados'); return; }
+  const data = {
+    app:'Cotejo', version:'1.0', fecha:new Date().toISOString(), modo:L.mode,
+    parametros:{tramoMinimo:S.minWords, tolerancia:S.gap, semilla:S.seed, filtros:S.f},
+    textos:{a:sides.a.title.value, b:sides.b.title.value},
+    similitud:{a:pct(L.cA)/Math.max(1,L.cA.length), b:pct(L.cB)/Math.max(1,L.cB.length)},
+    resultados:L.items.map(it => ({...it, textoA:excerpt(L.tA, L.TA, it.a, it.ea, 1e9), textoB:excerpt(L.tB, L.TB, it.b, it.eb, 1e9)}))
+  };
+  download(`Comparacion_${today()}.json`, JSON.stringify(data, null, 2), 'application/json');
+}
+
+// ===================== Utilidades UI =====================
+let toastT = 0;
+function toast(msg){ const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toastT); toastT = setTimeout(() => t.classList.remove('on'), 2200); }
+let saveTT = 0;
+function saveTexts(){
+  clearTimeout(saveTT);
+  saveTT = setTimeout(() => {
+    try {
+      if (S.autosave) localStorage.setItem(KEY_T, JSON.stringify({a:sides.a.ta.value, b:sides.b.ta.value, ta:sides.a.title.value, tb:sides.b.title.value}));
+      else localStorage.removeItem(KEY_T);
+    } catch(e){}
+  }, 400);
+}
+function setText(k, t){ sides[k].ta.value = t; sides[k].ta.scrollTop = 0; schedule(0); saveTexts(); }
+async function readFile(k, file){
+  try {
+    let t = await file.text();
+    if (/\.html?$/i.test(file.name)) t = new DOMParser().parseFromString(t, 'text/html').body.textContent || '';
+    sides[k].title.value = file.name.replace(/\.[^.]+$/, '');
+    setText(k, t);
+  } catch(e){ toast('No se pudo leer el archivo'); }
+}
+function inputDelay(){ const len = sides.a.ta.value.length + sides.b.ta.value.length; return len < 20000 ? (S.paint === 'text' ? 0 : 60) : len < 150000 ? 250 : 600; }
+
+const EX_A = `La arquitectura bioclimática busca aprovechar las condiciones naturales del sitio para reducir el consumo de energía. Antes de dibujar la primera línea, el proyectista estudia el recorrido del sol, la dirección de los vientos dominantes, la humedad y la vegetación existente, porque cada uno de estos factores influye en la temperatura interior de los espacios y en la comodidad de quienes los habitan durante todo el año. Una fachada bien orientada, protegida con aleros y celosías, puede evitar el sobrecalentamiento en verano y permitir que el sol de invierno entre profundamente en las habitaciones.
+
+Los materiales también cumplen un papel importante. Los muros gruesos de adobe o de piedra almacenan el calor durante el día y lo liberan lentamente por la noche.
+
+Finalmente, la ventilación cruzada permite renovar el aire sin recurrir a equipos mecánicos.`;
+const EX_B = `Diseñar con el clima no es una moda, sino una forma responsable de construir. Antes de dibujar la primera línea, el proyectista estudia el recorrido del sol, la dirección de los vientos dominantes, la humedad y la vegetación existente, porque cada uno de estos factores influye en la temperatura interior de los espacios y en la comodidad de quienes los habitan durante todo el año. Una fachada correctamente orientada, protegida con aleros y celosías, puede evitar el sobrecalentamiento en verano y permitir que el sol de invierno entre profundamente en las habitaciones.
+
+En cuanto a los materiales, conviene elegir aquellos con buena inercia térmica: los muros gruesos de adobe o de piedra almacenan el calor durante el día y lo liberan lentamente por la noche.
+
+Por último, la ventilación cruzada renueva el aire sin necesidad de equipos mecánicos.`;
+function loadExample(){ sides.a.title.value = 'Artículo original'; sides.b.title.value = 'Texto a revisar'; sides.a.ta.value = EX_A; sides.b.ta.value = EX_B; schedule(0); saveTexts(); }
+
+function applyPreset(name){
+  S.preset = name;
+  if (PRESETS[name]){ const p = clone(PRESETS[name]); p.f = Object.assign({}, S.f, p.f); merge(S, p); }
+  save(); syncControls(); applyAppearance(); schedule(0);
+}
+
+// ===================== Eventos =====================
+document.addEventListener('input', e => {
+  const el = e.target.closest('[data-k]'); if (!el) return;
+  if (el.type === 'radio' && !el.checked) return;
+  const k = el.dataset.k; let v = readEl(el);
+  if (k === 'minWords'){ if (!v) return; v = Math.min(1000, Math.max(1, v|0)); }
+  if (k === 'gap') v = Math.min(50, Math.max(0, v|0));
+  if (k === 'seed'){ if (!v) return; v = Math.min(20, Math.max(2, v|0)); }
+  setK(k, v);
+  if (PRESET_KEYS.test(k)){ S.preset = 'custom'; $('#preset').value = 'custom'; }
+  $$(`[data-k="${k}"]`).forEach(o => { if (o !== el) writeEl(o, v); });
+  if (k === 'mode') updateModeUI();
+  if (k === 'autosave') saveTexts();
+  save(); applyAppearance();
+  if (!/^(theme|darkFrom|lightFrom|colors\.|alpha|paint)/.test(k)) schedule(k === 'customStop' || k === 'synonyms' ? 300 : 0);
+});
+$('#preset').addEventListener('change', e => applyPreset(e.target.value));
+$$('.tabs button').forEach(b => b.addEventListener('click', () => {
+  $$('.tabs button').forEach(x => x.classList.toggle('on', x === b));
+  $$('.tab').forEach(t => t.classList.toggle('on', t.id === 'tab-' + b.dataset.tab));
+  if (b.dataset.tab === 'comparar') requestAnimationFrame(() => { renderMinimap('a'); renderMinimap('b'); });
+}));
+$('#themeBtn').addEventListener('click', () => {
+  const order = ['system','light','dark','hour']; S.theme = order[(order.indexOf(S.theme)+1) % order.length];
+  save(); syncControls(); applyTheme(); toast('Tema: ' + THEME_LABEL[S.theme]);
+});
+
+for (const k of ['a','b']){
+  const s = sides[k];
+  s.ta.addEventListener('input', () => {
+    if (S.paint === 'text' && inputDelay() > 0){ s.bd.textContent = s.ta.value + ' '; s.els = []; }
+    schedule(inputDelay()); saveTexts();
+  });
+  s.ta.addEventListener('scroll', () => onScroll(k), {passive:true});
+  s.title.addEventListener('input', () => { saveTexts(); if (last) renderStats(); });
+  s.mm.addEventListener('pointerdown', e => {
+    const r = s.mm.getBoundingClientRect(), f = (e.clientY - r.top) / r.height;
+    s.ta.scrollTop = f * s.ta.scrollHeight - s.ta.clientHeight / 2;
+  });
+  s.p.addEventListener('click', async e => {
+    const b = e.target.closest('[data-act]'); if (!b) return;
+    const act = b.dataset.act;
+    if (act === 'open'){ const fi = $('#fileInput'); fi.dataset.side = k; fi.value = ''; fi.click(); }
+    if (act === 'paste'){ try { setText(k, await navigator.clipboard.readText()); } catch(err){ toast('El navegador no permitió pegar; usa Ctrl+V'); } }
+    if (act === 'copy'){ try { await navigator.clipboard.writeText(s.ta.value); toast('Copiado'); } catch(err){ s.ta.select(); document.execCommand('copy'); toast('Copiado'); } }
+    if (act === 'clear'){ setText(k, ''); s.ta.focus(); }
+  });
+  s.ed.addEventListener('dragover', e => { e.preventDefault(); s.ed.classList.add('drag'); });
+  s.ed.addEventListener('dragleave', () => s.ed.classList.remove('drag'));
+  s.ed.addEventListener('drop', e => { e.preventDefault(); s.ed.classList.remove('drag'); const f = e.dataTransfer.files[0]; if (f) readFile(k, f); });
+}
+$('#fileInput').addEventListener('change', e => { const f = e.target.files[0]; if (f) readFile(e.target.dataset.side || 'a', f); });
+
+function swap(){
+  const a = sides.a, b = sides.b;
+  [a.ta.value, b.ta.value] = [b.ta.value, a.ta.value];
+  [a.title.value, b.title.value] = [b.title.value, a.title.value];
+  schedule(0); saveTexts();
+}
+$('#swapBtn').addEventListener('click', swap);
+$('#syncBtn').addEventListener('click', () => { S.syncScroll = !S.syncScroll; save(); syncControls(); applyAppearance(); toast(S.syncScroll ? 'Desplazamiento sincronizado' : 'Desplazamiento independiente'); });
+$('#exampleBtn').addEventListener('click', loadExample);
+$('#list').addEventListener('click', e => { const it = e.target.closest('.item'); if (it) goTo(+it.dataset.i); });
+$('#prevBtn').addEventListener('click', () => goTo(cur < 0 ? -1 : cur - 1));
+$('#nextBtn').addEventListener('click', () => goTo(cur + 1));
+$('#reportBtn').addEventListener('click', exportReport);
+$('#jsonBtn').addEventListener('click', exportJSON);
+$('#toggleRes').addEventListener('click', () => { S.resultsOpen = !S.resultsOpen; save(); applyAppearance(); });
+$('#resetColors').addEventListener('click', () => { S.colors = clone(DEF.colors); S.alpha = DEF.alpha; S.paint = DEF.paint; save(); syncControls(); applyAppearance(); });
+$('#expCfg').addEventListener('click', () => download('Cotejo_configuracion.json', JSON.stringify(S, null, 2), 'application/json'));
+$('#impCfg').addEventListener('click', () => { const fi = $('#cfgInput'); fi.value = ''; fi.click(); });
+$('#cfgInput').addEventListener('change', async e => {
+  const f = e.target.files[0]; if (!f) return;
+  try { S = merge(clone(DEF), JSON.parse(await f.text())); save(); syncControls(); applyAppearance(); schedule(0); toast('Configuración importada'); }
+  catch(err){ toast('El archivo no es una configuración válida'); }
+});
+$('#resetAll').addEventListener('click', () => {
+  if (!confirm('¿Restablecer toda la configuración? Tus textos no se borran.')) return;
+  S = clone(DEF); save(); syncControls(); applyAppearance(); schedule(0); toast('Configuración restablecida');
+});
+document.addEventListener('keydown', e => {
+  if (!e.altKey) return;
+  if (e.key === 'ArrowDown'){ e.preventDefault(); goTo(cur + 1); }
+  else if (e.key === 'ArrowUp'){ e.preventDefault(); goTo(cur < 0 ? -1 : cur - 1); }
+  else if (e.key.toLowerCase() === 'x'){ e.preventDefault(); swap(); }
+  else if (e.key.toLowerCase() === 'r'){ e.preventDefault(); exportReport(); }
+});
+let rzT = 0;
+window.addEventListener('resize', () => { clearTimeout(rzT); rzT = setTimeout(() => { renderMinimap('a'); renderMinimap('b'); }, 150); });
+
+// ===================== Inicio =====================
+syncControls(); applyAppearance();
+let saved = null; try { saved = JSON.parse(localStorage.getItem(KEY_T) || 'null'); } catch(e){}
+if (saved && (saved.a || saved.b)){
+  sides.a.ta.value = saved.a || ''; sides.b.ta.value = saved.b || '';
+  if (saved.ta) sides.a.title.value = saved.ta; if (saved.tb) sides.b.title.value = saved.tb;
+  compute();
+} else loadExample();
+</script>
+</body>
+</html>
