@@ -390,18 +390,57 @@ body.desk .toast{bottom:28px}
 .thumb.ic{object-fit:contain; padding:6px; background:var(--surface2)}
 .thumb.big{width:72px; height:72px; border-radius:10px}
 .thumb.big.ic{padding:10px}
+
+/* ---- Estándar de mis apps ---- */
+.backapps{display:inline-flex; align-items:center; gap:4px; color:var(--chrome-ink2); text-decoration:none; font-size:13px; font-weight:650; padding:6px 8px 6px 4px; border-radius:8px; margin-right:2px; white-space:nowrap}
+.backapps:hover{background:var(--chrome2); color:var(--chrome-ink)}
+.backapps svg{width:18px; height:18px; stroke:currentColor; fill:none; stroke-width:2}
+@media (max-width:420px){ .backapps span{display:none} }
+.ribbon{position:sticky; top:calc(env(safe-area-inset-top,0px) + var(--tbh, 56px)); z-index:19; background:var(--surface); border-bottom:1px solid var(--line); display:flex; gap:2px; overflow-x:auto; scrollbar-width:none;
+  padding-left:max(10px, env(safe-area-inset-left,0px)); padding-right:max(10px, env(safe-area-inset-right,0px))}
+.ribbon::-webkit-scrollbar{display:none}
+.ribbon button{flex:none; display:flex; align-items:center; gap:7px; background:none; border:0; border-bottom:3px solid transparent; padding:11px 12px 9px; font-weight:650; font-size:13.5px; color:var(--ink2); cursor:pointer; white-space:nowrap}
+.ribbon button svg{width:19px; height:19px; stroke:currentColor; fill:none; stroke-width:1.8}
+.ribbon button:hover{color:var(--ink); background:var(--surface2)}
+.ribbon button[aria-current="page"]{color:var(--ink); border-bottom-color:var(--tag)}
+@media (max-width:520px){ .ribbon button{flex-direction:column; gap:2px; padding:8px 10px 6px; font-size:11.5px} }
+.side, .bottomnav{display:none!important}
+body.desk .app{grid-template-columns:minmax(0,1fr)}
+main{padding-block:16px 100px}
+body.desk main{padding-block:22px 100px; padding-left:max(28px, env(safe-area-inset-left,0px))}
+.fab{right:calc(84px + env(safe-area-inset-right,0px)); bottom:calc(18px + env(safe-area-inset-bottom,0px))}
+body.desk .fab{display:flex}
+.toast, body.desk .toast{bottom:calc(86px + env(safe-area-inset-bottom,0px))}
+.notesbtn{position:fixed; right:calc(18px + env(safe-area-inset-right,0px)); bottom:calc(18px + env(safe-area-inset-bottom,0px)); z-index:32; width:54px; height:54px; border-radius:50%;
+  border:1px solid var(--line); background:var(--surface); color:var(--ink); box-shadow:0 6px 18px rgba(10,14,20,.22); cursor:pointer; display:flex; align-items:center; justify-content:center}
+.notesbtn svg{width:24px; height:24px; stroke:currentColor; fill:none; stroke-width:1.8}
+.notesbtn .cnt{position:absolute; top:-3px; right:-3px; min-width:20px; height:20px; border-radius:10px; background:var(--tag); color:var(--tag-ink); font-size:11px; font-weight:800; display:flex; align-items:center; justify-content:center; padding:0 5px}
+.notespop{position:fixed; right:calc(18px + env(safe-area-inset-right,0px)); bottom:calc(82px + env(safe-area-inset-bottom,0px)); z-index:33; width:min(360px, calc(100vw - 32px)); max-height:min(70vh, 560px);
+  background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-l); box-shadow:0 16px 40px rgba(10,14,20,.3); display:flex; flex-direction:column; overflow:hidden}
+.notespop header{display:flex; align-items:center; gap:8px; padding:10px 12px; border-bottom:1px solid var(--line)}
+.notespop header b{flex:1}
+.notespop .nlist{overflow:auto; padding:8px 12px; display:flex; flex-direction:column; gap:8px; flex:1}
+.notespop .nota{background:var(--surface2); border-radius:10px; padding:8px 10px; font-size:13.5px; white-space:pre-wrap; overflow-wrap:anywhere; position:relative}
+.notespop .nota small{display:block; color:var(--ink3); font-size:11.5px; margin-top:4px}
+.notespop .nota .x{position:absolute; top:4px; right:4px; border:0; background:none; color:var(--ink3); cursor:pointer; font-size:16px; width:26px; height:26px; border-radius:6px}
+.notespop .nota .x:hover{color:var(--bad); background:var(--surface)}
+.notespop form{border-top:1px solid var(--line); padding:10px 12px; display:flex; flex-direction:column; gap:8px}
+.notespop textarea{min-height:64px}
 </style>
 
 </head>
 <body>
 <div class="app">
-  <header class="topbar">
+  <header class="topbar" id="topbar">
+    <a class="backapps" href="../" title="Volver a Mis apps"><svg viewBox="0 0 24 24"><path d="M15 18l-6-6 6-6"/></svg><span>Mis apps</span></a>
     <div class="brand"><span class="tagmini">CTO</span>Mi cuarto</div>
     <div class="spacer"></div>
     <div class="cloud" id="cloud" title="Estado de la copia en la nube"><i></i><span>Solo en este dispositivo</span></div>
     <button class="iconbtn" id="privToggle" title="Ocultar o mostrar montos" aria-label="Ocultar montos"></button>
     <button class="iconbtn" id="viewToggle" title="Cambiar vista teléfono/escritorio" aria-label="Cambiar vista"><svg viewBox="0 0 24 24"><rect x="2" y="4" width="14" height="11" rx="1.5"/><rect x="17" y="8" width="5" height="12" rx="1"/><path d="M6 19h6"/></svg></button>
+    <button class="iconbtn" id="themeToggle" title="Cambiar a tema oscuro o claro" aria-label="Cambiar tema"></button>
   </header>
+  <nav class="ribbon" id="ribbon" aria-label="Secciones"></nav>
   <nav class="side" id="sidenav" aria-label="Secciones"></nav>
   <main>
     <section class="view" id="v-inicio"></section>
@@ -416,6 +455,8 @@ body.desk .toast{bottom:28px}
 </div>
 <button class="fab" id="fab" aria-label="Agregar"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg><span>Agregar</span></button>
 <nav class="bottomnav" id="bottomnav" aria-label="Secciones"></nav>
+<button class="notesbtn" id="notesBtn" aria-label="Notas de la app" title="Notas de la app"><svg viewBox="0 0 24 24"><path d="M5 3h10l4 4v14H5z"/><path d="M15 3v4h4M8 12h8M8 16h6"/></svg><span class="cnt" id="notesCnt" hidden></span></button>
+<div class="notespop" id="notesPop" hidden role="dialog" aria-label="Notas de la app"></div>
 
 <dialog id="dlg"><div class="sheet" id="sheet"></div></dialog>
 <dialog id="dlg2" class="small"><div class="sheet" id="sheet2"></div></dialog>
@@ -477,6 +518,8 @@ const IC = {
   listas:'<path d="M8 6h13M8 12h13M8 18h13"/><path d="M3 5l1.5 1.5L3 8M3 11l1.5 1.5L3 14M3 17l1.5 1.5L3 20"/>',
   ajustes:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',
   casa:'<path d="M3 11l9-7 9 7"/><path d="M5 10v10h14V10"/><path d="M10 20v-5h4v5"/>',
+  sol:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  luna:'<path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/>',
   mas:'<circle cx="5" cy="12" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="19" cy="12" r="1.6"/>',
   eye:'<path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
   eyeoff:'<path d="M3 3l18 18"/><path d="M10.6 5.1A10 10 0 0 1 12 5c6.4 0 10 7 10 7a17 17 0 0 1-3.2 4.1M6.6 6.6C3.8 8.4 2 12 2 12s3.6 7 10 7a9.6 9.6 0 0 0 5.4-1.6"/><path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/>'
@@ -652,7 +695,7 @@ function mergeRemote(rows, full){
     const data = r.data; if (!data) continue;
     if (r.id === "_ajustes"){
       const rs = data.settings;
-      if (rs && (rs.updatedAt || "") > (S.settings.updatedAt || "")){ S.settings = {...DEFAULT_SETTINGS, ...rs}; changed = true; applyLayout(); }
+      if (rs && (rs.updatedAt || "") > (S.settings.updatedAt || "")){ S.settings = {...DEFAULT_SETTINGS, ...rs}; changed = true; applyLayout(); notasCount(); }
       continue;
     }
     remoteIds.add(r.id);
@@ -796,6 +839,9 @@ function applyLayout(){
   root.style.setProperty("--tag", st.acento || "#F2C230"); root.style.setProperty("--tag-ink", inkFor(st.acento));
   root.style.setProperty("--scale", st.escala || 1);
   $("#privToggle").innerHTML = svg(st.privado ? "eyeoff" : "eye");
+  const oscuro = temaOscuro();
+  $("#themeToggle").innerHTML = svg(oscuro ? "sol" : "luna"); $("#themeToggle").title = oscuro ? "Cambiar a tema claro" : "Cambiar a tema oscuro";
+  const tb = $("#topbar"); if (tb) root.style.setProperty("--tbh", tb.offsetHeight + "px");
   $("#privToggle").setAttribute("aria-pressed", !!st.privado);
 }
 window.addEventListener("resize", debounce(applyLayout, 150));
@@ -805,11 +851,15 @@ $("#viewToggle").addEventListener("click", () => {
   toast("Vista: " + ({auto:"automática", telefono:"teléfono", escritorio:"escritorio"}[S.settings.vista]));
 });
 $("#privToggle").addEventListener("click", () => { S.settings.privado = !S.settings.privado; touchSettings(); applyLayout(); render(); toast(S.settings.privado ? "Montos ocultos" : "Montos visibles"); });
+function temaOscuro(){ const t = S.settings.tema || "auto"; return t === "oscuro" || t === "negro" || (t === "auto" && window.matchMedia("(prefers-color-scheme: dark)").matches); }
+$("#themeToggle").addEventListener("click", () => { S.settings.tema = temaOscuro() ? "claro" : "oscuro"; touchSettings(); applyLayout(); if (S.view === "ajustes") render(); toast(S.settings.tema === "claro" ? "Tema claro" : "Tema oscuro"); });
+window.matchMedia("(prefers-color-scheme: dark)").addEventListener?.("change", () => applyLayout());
 function touchSettings(){ S.settings.updatedAt = nowISO(); persist(); syncSettings(); }
 
 /* ================= Navegación ================= */
 function buildNav(){
   $("#sidenav").innerHTML = VIEWS.map(([k,t]) => `<button data-nav="${k}">${svg(k)}${t}</button>`).join("") + `<button class="add" data-action="new">+ Agregar objeto</button>`;
+  $("#ribbon").innerHTML = VIEWS.map(([k,t]) => `<button data-nav="${k}">${svg(k)}<span>${t}</span></button>`).join("");
   $("#bottomnav").innerHTML = BOTTOM.map(k => `<button data-nav="${k}">${svg(k)}${k === "mas" ? "Más" : VIEWS.find(v => v[0] === k)[1]}</button>`).join("");
 }
 function setView(v){
@@ -817,6 +867,7 @@ function setView(v){
   S.view = v;
   $$(".view").forEach(s => s.hidden = s.id !== "v-" + v);
   $$("[data-nav]").forEach(b => b.setAttribute("aria-current", (b.dataset.nav === v || (b.dataset.nav === "mas" && MAS.includes(v))) ? "page" : "false"));
+  const rb = $(`#ribbon [data-nav="${v}"]`); if (rb) rb.scrollIntoView({block: "nearest", inline: "nearest"});
   const fab = $("#fab"); fab.hidden = ["ajustes","listas","reporte"].includes(v);
   $("span", fab).textContent = v === "compras" ? "Nueva compra" : v === "casa" ? (S.casa.zona ? "Artículo" : "Zona") : "Agregar";
   render(); window.scrollTo(0, 0);
@@ -2358,6 +2409,27 @@ async function exportCasaXLSX(){
   return saveFile(`casa-por-zonas-${today()}.xlsx`, new Blob([out], {type:"application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"}), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
 }
 
+/* ================= Notas de la app ================= */
+const VNOM = k => (VIEWS.find(v => v[0] === k) || [k, k])[1];
+function notasCount(){ const n = (S.settings.notas || []).length; const c = $("#notesCnt"); c.hidden = !n; c.textContent = n; }
+function renderNotas(){
+  const pop = $("#notesPop"); const ns = (S.settings.notas || []).slice().sort((a,b) => (b.t || "").localeCompare(a.t || ""));
+  pop.innerHTML = `<header><b>Notas de la app</b><button class="iconbtn closer" id="nClose" aria-label="Cerrar notas"><svg viewBox="0 0 24 24" style="stroke-width:2"><path d="M6 6l12 12M18 6L6 18"/></svg></button></header>
+    <div class="nlist">${ns.length ? ns.map(n => `<div class="nota">${esc(n.texto)}<small>${new Date(n.t).toLocaleString("es-MX", {dateStyle:"medium", timeStyle:"short"})} · ${esc(VNOM(n.vista))}${n.zona ? " · " + esc(zonaNombre(n.zona)) : ""}</small><button class="x" data-nx="${n.id}" aria-label="Borrar nota">×</button></div>`).join("") : `<p class="small muted" style="margin:6px 0">Anota ideas, pendientes o fallas de la app mientras la usas. Se guardan con tus ajustes.</p>`}</div>
+    <form id="nForm"><textarea id="nTxt" placeholder="Escribe una nota…" aria-label="Nueva nota"></textarea><div class="row" style="justify-content:space-between"><span class="small muted">En: ${esc(VNOM(S.view))}${S.view === "casa" && S.casa.zona ? " · " + esc(zonaNombre(S.casa.zona)) : ""}</span><button class="btn sm primary" type="submit">Guardar nota</button></div></form>`;
+  $("#nClose").onclick = () => toggleNotas(false);
+  $$("[data-nx]", pop).forEach(b => b.onclick = () => { S.settings.notas = (S.settings.notas || []).filter(n => n.id !== b.dataset.nx); touchSettings(); renderNotas(); notasCount(); });
+  $("#nForm").onsubmit = e => { e.preventDefault(); const t = $("#nTxt").value.trim(); if (!t) return;
+    S.settings.notas = [...(S.settings.notas || []), {id: uid("n"), t: nowISO(), texto: t, vista: S.view, zona: S.view === "casa" ? S.casa.zona : null}];
+    touchSettings(); renderNotas(); notasCount(); setTimeout(() => $("#nTxt")?.focus(), 30); };
+}
+function toggleNotas(open){
+  const pop = $("#notesPop"); const abrir = open ?? pop.hidden;
+  if (abrir){ renderNotas(); pop.hidden = false; setTimeout(() => $("#nTxt")?.focus(), 30); } else pop.hidden = true;
+}
+$("#notesBtn").addEventListener("click", () => toggleNotas());
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#notesPop").hidden) toggleNotas(false); });
+
 /* ================= Inicio de la app ================= */
 (async function start(){
   buildNav();
@@ -2380,6 +2452,7 @@ async function exportCasaXLSX(){
   applyPlanoCasa();
   applyPreciosCasa();
   try { const m = localStorage.getItem("casa-modo"); if (m) S.casa.modo = m; } catch(e){}
+  notasCount();
   applyLayout(); setView(VIEWS.some(v => v[0] === S.settings.inicio) ? S.settings.inicio : "inicio");
   if (n) setTimeout(() => toast(`Agregué ${n} adquisiciones de tus compras. Revísalas en Objetos › Por verificar.`, 5200), 400);
   else if (nc) setTimeout(() => toast(`Agregué ${liveZ().length} zonas y ${nc} artículos de tu Excel. Ábrelos en Casa.`, 5200), 400);
