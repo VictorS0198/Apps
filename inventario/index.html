@@ -391,6 +391,36 @@ body.desk .toast{bottom:28px}
 .thumb.big{width:72px; height:72px; border-radius:10px}
 .thumb.big.ic{padding:10px}
 
+/* Filas compactas */
+.rgroup{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius-m); padding:2px 10px 4px; margin-bottom:10px}
+.rgroup .rghead{padding:8px 0 4px}
+.rq{background:transparent; border:0; border-top:1px solid var(--line); border-radius:0; padding:6px 0; margin:0; gap:4px}
+.rghead + .rq{border-top:0}
+.rqn{grid-template-columns:30px minmax(0,1fr); gap:8px}
+.rqn .thumb{width:30px; height:30px; border-radius:7px}
+.rqn .thumb.ic{padding:4px}
+.rqt{min-width:0; display:flex; flex-direction:column}
+.rqt b{font-size:14px; line-height:1.2; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.rqt .small{font-size:11.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+.rqc{padding-left:38px; gap:4px 6px; font-size:12.5px}
+.rqc .badge{font-size:10.5px; padding:1px 6px}
+.stp button{width:28px; height:28px; font-size:16px}
+.stp input{width:36px; min-height:28px; height:28px}
+.rqi{width:44px!important; min-height:28px!important; height:28px; padding:2px 4px!important; font-size:13px}
+.rqp{width:78px!important}
+.rqf{font-size:12.5px}
+.rqok{border:1px solid var(--line); background:var(--surface2); color:var(--ink2); border-radius:20px; font-size:11px; font-weight:650; padding:3px 8px; cursor:pointer; white-space:nowrap}
+.rqok:hover{border-color:var(--ok); color:var(--ok)}
+.rqok.info{color:var(--info); border-color:color-mix(in srgb, var(--info) 40%, var(--line))}
+.rqok.warn{color:var(--warn); border-color:color-mix(in srgb, var(--warn) 45%, var(--line))}
+@media (max-width:420px){ .rqc{padding-left:0} }
+@media (min-width:900px){
+  .rq{flex-direction:row; align-items:center; gap:10px; padding:4px 0}
+  .rqn{flex:1; min-width:0}
+  .rqc{padding-left:0; flex:none; flex-wrap:nowrap}
+  .rqf{min-width:64px; text-align:right}
+}
+
 /* ---- Estándar de mis apps ---- */
 .backapps{display:inline-flex; align-items:center; gap:4px; color:var(--chrome-ink2); text-decoration:none; font-size:13px; font-weight:650; padding:6px 8px 6px 4px; border-radius:8px; margin-right:2px; white-space:nowrap}
 .backapps:hover{background:var(--chrome2); color:var(--chrome-ink)}
@@ -869,13 +899,13 @@ function setView(v){
   $$("[data-nav]").forEach(b => b.setAttribute("aria-current", (b.dataset.nav === v || (b.dataset.nav === "mas" && MAS.includes(v))) ? "page" : "false"));
   const rb = $(`#ribbon [data-nav="${v}"]`); if (rb) rb.scrollIntoView({block: "nearest", inline: "nearest"});
   const fab = $("#fab"); fab.hidden = ["ajustes","listas","reporte"].includes(v);
-  $("span", fab).textContent = v === "compras" ? "Nueva compra" : v === "casa" ? (S.casa.zona ? "Artículo" : "Zona") : "Agregar";
+  $("span", fab).textContent = v === "compras" ? "Nueva compra" : v === "casa" ? (S.casa.zona && S.casa.zona !== "__rev" ? "Artículo" : "Zona") : "Agregar";
   render(); window.scrollTo(0, 0);
 }
 function openMas(){
   openSheet(`<header>${closeBtn}<h2>Más secciones</h2></header><div class="body"><div class="menu">${MAS.map(k => { const v = VIEWS.find(x => x[0] === k); return `<button data-nav="${k}">${svg(k)}<div>${v[1]}<span>${v[2]}</span></div></button>`; }).join("")}</div></div>`);
 }
-$("#fab").addEventListener("click", () => S.view === "compras" ? openCompraForm() : S.view === "casa" ? (S.casa.zona ? openReqForm(null, S.casa.zona) : openZonaForm()) : openForm());
+$("#fab").addEventListener("click", () => S.view === "compras" ? openCompraForm() : S.view === "casa" ? (S.casa.zona && S.casa.zona !== "__rev" ? openReqForm(null, S.casa.zona) : openZonaForm()) : openForm());
 document.addEventListener("click", e => {
   const n = e.target.closest("[data-nav]"); if (n){ if (n.dataset.nav === "casa" && S.view === "casa") S.casa.zona = null; if (dlg.open && n.dataset.nav !== "mas") closeSheet(); setView(n.dataset.nav); return; }
   const a = e.target.closest("[data-action]"); if (!a) return;
@@ -1952,7 +1982,15 @@ function zonaCalc(z){
 const syncZona = z => cloudWrite(z.id, cloudDoc(z), z);
 const syncReq = r => cloudWrite(r.id, cloudDoc(r), r);
 const syncReqLater = (() => { const t = {}; return r => { clearTimeout(t[r.id]); t[r.id] = setTimeout(() => syncReq(r), 900); }; })();
-const touchReq = r => { r.updatedAt = nowISO(); persist(); syncReqLater(r); };
+const touchReq = r => { r.updatedAt = r.editado = nowISO(); persist(); syncReqLater(r); };
+const VIEJO_DIAS = 90;
+function edadEdit(r){
+  if (!r.editado) return {txt: "Sin revisar", cls: "info", d: Infinity};
+  const d = Math.max(0, Math.floor((Date.now() - new Date(r.editado)) / 86400000));
+  const txt = d === 0 ? "Hoy" : d === 1 ? "Ayer" : d < 30 ? `Hace ${d} días` : fmtDate(r.editado.slice(0, 10));
+  return {txt, cls: d > VIEJO_DIAS ? "warn" : "", d};
+}
+const porAntiguedad = (a, b) => (a.editado || "").localeCompare(b.editado || "") || (a.nombre || "").localeCompare(b.nombre || "", "es");
 
 function applyCasaSeed(){
   if (S.settings.seedCasa1) return 0;
@@ -1981,7 +2019,36 @@ function applyPreciosCasa(){
 }
 
 /* ---------- Vista Casa ---------- */
+function renderRevision(){
+  const el = $("#v-casa"); const cs = S.casa; const all = liveR(); const q = norm(cs.q);
+  const rev = all.filter(r => r.editado).length, viejos = all.filter(r => edadEdit(r).d > VIEJO_DIAS && r.editado).length;
+  const filtro = cs.rf || "sinrev";
+  let list = all.filter(r => filtro === "todos" || (filtro === "sinrev" && !r.editado) || (filtro === "viejos" && r.editado && edadEdit(r).d > VIEJO_DIAS) || (filtro === "ref" && r.precioEst) || (filtro === "faltan" && reqCalc(r).falta > 0))
+    .filter(r => !q || norm(r.nombre + " " + r.categoria + " " + (r.marca || "") + " " + zonaNombre(r.zonaId)).includes(q))
+    .filter(r => !cs.rz || r.zonaId === cs.rz)
+    .sort((a, b) => porAntiguedad(a, b) || (zonaById(a.zonaId)?.orden ?? 0) - (zonaById(b.zonaId)?.orden ?? 0));
+  const total = list.length; const lim = cs.rlim || 60; list = list.slice(0, lim);
+  el.innerHTML = `
+  <button class="btn ghost sm" id="rvBack" style="margin-bottom:6px">‹ Casa</button>
+  <h1 style="margin-bottom:6px">Revisión de la casa</h1>
+  <p class="muted" style="margin:0 0 10px; max-width:65ch">Todos los artículos de la casa, de lo que tiene más tiempo sin revisar a lo más reciente. Corrige precio y cantidades, o toca la fecha para marcarlo como revisado hoy.</p>
+  <div class="panel" style="margin-bottom:10px"><div class="row" style="justify-content:space-between"><b class="num">Revisados ${rev} de ${all.length} (${all.length ? Math.round(rev / all.length * 100) : 0}%)</b><span class="small muted">${viejos ? `${viejos} con más de ${VIEJO_DIAS} días` : ""}</span></div><div class="prog" style="margin-top:8px"><i style="width:${all.length ? rev / all.length * 100 : 0}%"></i></div></div>
+  <div class="toolbar">
+    <div class="filters" style="grid-template-columns:minmax(0,2fr) minmax(0,1fr)"><input type="search" id="rvq" placeholder="Buscar artículo, marca o zona…" value="${esc(cs.q)}" aria-label="Buscar">
+    <select id="rvz" aria-label="Zona"><option value="">Todas las zonas</option>${liveZ().map(z => `<option value="${z.id}" ${cs.rz === z.id ? "selected" : ""}>${esc(z.nombre)}</option>`).join("")}</select></div>
+    <div class="chips">${[["sinrev","Sin revisar"],["viejos",`Más de ${VIEJO_DIAS} días`],["ref","Precio de referencia ≈"],["faltan","Faltan"],["todos","Todos"]].map(([v,t]) => `<button class="chip" data-rf="${v}" aria-pressed="${filtro === v}">${t}</button>`).join("")}</div>
+  </div>
+  ${total ? `<div class="rgroup"><div class="rghead"><h3>${total} artículo(s)</h3><span class="small muted">ordenados del más viejo al más nuevo</span></div>${list.map(r => reqRowHTML(r, true).replace('<div class="rq"', '<div class="rq" data-cz="1"')).join("")}</div>
+    ${total > lim ? `<button class="btn" id="rvMore" style="width:100%">Ver ${Math.min(60, total - lim)} más (quedan ${total - lim})</button>` : ""}` : `<div class="panel empty"><b>Nada pendiente con este filtro</b>Cambia el filtro para ver otros artículos.</div>`}`;
+  $("#rvBack").onclick = () => { S.casa.zona = null; S.casa.q = ""; renderCasa(); window.scrollTo(0, 0); };
+  $("#rvq").addEventListener("input", debounce(e => { S.casa.q = e.target.value; S.casa.rlim = 60; const pos = e.target.selectionStart; renderRevision(); const i = $("#rvq"); i.focus(); try { i.setSelectionRange(pos, pos); } catch(_){} }, 220));
+  $("#rvz").onchange = e => { S.casa.rz = e.target.value; S.casa.rlim = 60; renderRevision(); };
+  $$("[data-rf]", el).forEach(b => b.onclick = () => { S.casa.rf = b.dataset.rf; S.casa.rlim = 60; renderRevision(); });
+  if ($("#rvMore")) $("#rvMore").onclick = () => { S.casa.rlim = lim + 60; renderRevision(); };
+  wireReqRows(el, null);
+}
 function renderCasa(){
+  if (S.casa.zona === "__rev") return renderRevision();
   const z = S.casa.zona && zonaById(S.casa.zona);
   if (z) return renderZona(z);
   S.casa.zona = null;
@@ -1992,12 +2059,13 @@ function renderCasa(){
   const shown = zs.filter(x => pl === "todas" || x.planta === pl);
   const plantasUsadas = PLANTAS.filter(p => zs.some(x => x.planta === p));
   el.innerHTML = `
-  <div class="row" style="justify-content:space-between"><h1>Casa</h1><div class="row"><button class="btn sm" id="cxXlsx">Excel de la casa</button><button class="btn sm primary" id="cxNew">+ Zona</button></div></div>
+  <div class="row" style="justify-content:space-between"><h1>Casa</h1><div class="row"><button class="btn sm" id="cxRev">Revisar precios</button><button class="btn sm" id="cxXlsx">Excel de la casa</button><button class="btn sm primary" id="cxNew">+ Zona</button></div></div>
   <div class="kpis" style="margin-bottom:12px">
     <div class="kpi"><span>Falta por comprar</span><b class="num">${moneyShort(tot.costo)}</b><small>${tot.faltan} artículo(s)${tot.sinPrecio ? ` · ${tot.sinPrecio} sin precio` : ""}</small></div>
     <div class="kpi"><span>Casa completa</span><b class="num">${tot.nec ? Math.round(tot.ok / tot.nec * 100) : 0}%</b><small>${tot.ok} de ${tot.nec} artículos</small></div>
     <div class="kpi"><span>Gasto mensual</span><b class="num">${moneyShort(tot.mensual)}</b><small>consumibles y servicios</small></div>
     <div class="kpi"><span>Lo que ya tienes</span><b class="num">${moneyShort(tot.valor)}</b><small>a precio de lista</small></div>
+    <div class="kpi" id="cxRev2" style="cursor:pointer"><span>Revisados</span><b class="num">${(() => { const a = liveR(); const r = a.filter(x => x.editado).length; return a.length ? Math.round(r / a.length * 100) + "%" : "—"; })()}</b><small>${liveR().filter(x => !x.editado).length} sin revisar · ver en orden</small></div>
   </div>
   <div class="row" style="justify-content:space-between; margin-bottom:10px">
     <div class="chips"><button class="chip" data-pl="todas" aria-pressed="${pl === "todas"}">Todas</button>${plantasUsadas.map(p => `<button class="chip" data-pl="${p}" aria-pressed="${pl === p}">${PLANTA_N[p]}</button>`).join("")}</div>
@@ -2010,6 +2078,8 @@ function renderCasa(){
   $$("[data-zona]", el).forEach(b => { b.onclick = () => openZona(b.dataset.zona); b.onkeydown = e => { if (e.key === "Enter" || e.key === " "){ e.preventDefault(); openZona(b.dataset.zona); } }; });
   $("#cxNew").onclick = () => openZonaForm();
   $("#cxXlsx").onclick = () => exportCasaXLSX();
+  $("#cxRev2").onclick = () => $("#cxRev").click();
+  $("#cxRev").onclick = () => { S.casa.zona = "__rev"; S.casa.q = ""; S.casa.rlim = 60; renderCasa(); window.scrollTo(0, 0); };
 }
 function openZona(id){ S.casa.zona = id; S.casa.q = ""; S.casa.tipo = "todo"; S.casa.est = "todos"; setView("casa"); }
 function zcardHTML(z, c){
@@ -2142,7 +2212,10 @@ function renderZona(z){
   const q = norm(cs.q);
   const list = all.filter(r => (cs.tipo === "todo" || r.tipo === cs.tipo) && (!q || norm(r.nombre + " " + r.categoria + " " + (r.para || "")).includes(q)))
     .filter(r => { const k = reqCalc(r); return cs.est === "todos" || (cs.est === "faltan" && k.falta > 0) || (cs.est === "completos" && k.nec > 0 && !k.falta) || (cs.est === "sinprecio" && k.precio == null) || (cs.est === "tengo" && k.ex > 0); });
-  const groups = new Map(); for (const r of list){ const g = r.categoria || "Sin categoría"; if (!groups.has(g)) groups.set(g, []); groups.get(g).push(r); }
+  const groups = new Map();
+  if (cs.orden === "viejos"){ list.sort(porAntiguedad); groups.set("Más viejos primero", list); }
+  else for (const r of list){ const g = r.categoria || "Sin categoría"; if (!groups.has(g)) groups.set(g, []); groups.get(g).push(r); }
+  const revisados = all.filter(r => r.editado).length;
   const f = (z.fotos || []).find(x => x.data); const real = m2(z.largo, z.ancho), min = m2(z.minL, z.minA);
   const medida = real ? `${fmtM(z.largo)} × ${fmtM(z.ancho)} m = <b>${real} m²</b>` : "Sin medidas reales";
   const chk = real && min ? (real >= min && Math.min(z.largo, z.ancho) >= Math.min(z.minL, z.minA) ? `<span class="badge ok">Cumple el mínimo</span>` : `<span class="badge warn">Menor al mínimo</span>`) : "";
@@ -2169,9 +2242,11 @@ function renderZona(z){
   <div class="toolbar">
     <input type="search" id="zq" placeholder="Buscar en ${esc(z.nombre)}…" value="${esc(cs.q)}" aria-label="Buscar">
     ${tipos.length > 1 ? `<div class="chips"><button class="chip" data-zt="todo" aria-pressed="${cs.tipo === "todo"}">Todo<span class="n">${all.length}</span></button>${tipos.map(t => `<button class="chip" data-zt="${t}" aria-pressed="${cs.tipo === t}">${R_TIPO_CORTO[t]}<span class="n">${all.filter(r => r.tipo === t).length}</span></button>`).join("")}</div>` : ""}
-    <div class="seg" role="group" aria-label="Estado">${[["todos","Todos"],["faltan","Faltan"],["completos","Completos"],["tengo","Lo que tengo"],["sinprecio","Sin precio"]].map(([v,t]) => `<button type="button" data-ze="${v}" aria-pressed="${cs.est === v}">${t}</button>`).join("")}</div>
+    <div class="row" style="justify-content:space-between"><div class="seg" role="group" aria-label="Estado">${[["todos","Todos"],["faltan","Faltan"],["completos","Completos"],["tengo","Lo que tengo"],["sinprecio","Sin precio"]].map(([v,t]) => `<button type="button" data-ze="${v}" aria-pressed="${cs.est === v}">${t}</button>`).join("")}</div>
+    <div class="seg" role="group" aria-label="Orden"><button type="button" data-zo="grupo" aria-pressed="${cs.orden !== "viejos"}">Por grupo</button><button type="button" data-zo="viejos" aria-pressed="${cs.orden === "viejos"}">Más viejos primero</button></div></div>
+    <div class="small muted">Revisados ${revisados} de ${all.length}${all.length ? ` (${Math.round(revisados / all.length * 100)}%)` : ""}</div>
   </div>
-  ${list.length ? [...groups].map(([g, rs]) => { const gc = rs.reduce((s,r) => s + reqCalc(r).costoFalta, 0); return `<div class="rgroup"><div class="rghead"><h3>${esc(g)}</h3><span class="small muted">${rs.length}${gc ? ` · falta ${moneyShort(gc)}` : ""}</span></div>${rs.map(reqRowHTML).join("")}</div>`; }).join("")
+  ${list.length ? [...groups].map(([g, rs]) => { const gc = rs.reduce((s,r) => s + reqCalc(r).costoFalta, 0); return `<div class="rgroup"><div class="rghead"><h3>${esc(g)}</h3><span class="small muted">${rs.length}${gc ? ` · falta ${moneyShort(gc)}` : ""}</span></div>${rs.map(r => reqRowHTML(r)).join("")}</div>`; }).join("")
     : `<div class="panel empty"><b>${all.length ? "Nada coincide con este filtro" : "Esta zona no tiene artículos"}</b>${all.length ? "Cambia la búsqueda o el filtro." : "Agrega lo que necesita esta zona" + (hayTpl ? " o usa la lista sugerida." : ".")}</div>`}`;
   $("#zBack").onclick = () => { S.casa.zona = null; renderCasa(); window.scrollTo(0, 0); };
   const mp = $(".minipl", el); if (mp) mp.ontoggle = () => { S.casa.verPlano = mp.open; };
@@ -2185,30 +2260,31 @@ function renderZona(z){
   $("#zq").addEventListener("input", debounce(e => { S.casa.q = e.target.value; const pos = e.target.selectionStart; renderZona(z); const i = $("#zq"); i.focus(); try { i.setSelectionRange(pos, pos); } catch(_){} }, 220));
   $$("[data-zt]", el).forEach(b => b.onclick = () => { S.casa.tipo = b.dataset.zt; renderZona(z); });
   $$("[data-ze]", el).forEach(b => b.onclick = () => { S.casa.est = b.dataset.ze; renderZona(z); });
+  $$("[data-zo]", el).forEach(b => b.onclick = () => { S.casa.orden = b.dataset.zo; try { localStorage.setItem("casa-orden", S.casa.orden); } catch(_){} renderZona(z); });
   wireReqRows(el, z);
 }
-function reqRowHTML(r){
-  const k = reqCalc(r); const f = (r.fotos || []).find(x => x.data);
-  const svc = r.tipo === "Servicio", dig = r.tipo === "Digital";
+function reqRowHTML(r, conZona = false){
+  const k = reqCalc(r); const svc = r.tipo === "Servicio", dig = r.tipo === "Digital"; const e = edadEdit(r);
+  const meta = [conZona ? zonaNombre(r.zonaId) : "", r.marca || "", r.tipo !== "Mueble o equipo" ? r.tipo : "", r.para && r.para !== "Todos" ? "Para " + r.para : "", r.tipo === "Consumible" && r.consumoMes ? `${r.consumoMes}/mes` : "", svc ? (r.periodo === "anual" ? "anual" : "mensual") : "", k.reg ? `+${k.reg} en Objetos` : ""].filter(Boolean).join(" · ");
   return `<div class="rq" data-rid="${r.id}">
     <button class="rqn" data-redit="${r.id}">${thumbHTML(r)}
-      <span style="min-width:0"><b>${esc(r.nombre)}</b><span class="small muted">${esc([r.marca || "", r.tipo !== "Mueble o equipo" ? r.tipo : "", r.para && r.para !== "Todos" ? "Para " + r.para : "", r.tipo === "Consumible" && r.consumoMes ? `usas ${r.consumoMes}/mes` : "", svc ? (r.periodo === "anual" ? "anual" : "mensual") : "", k.reg ? `${k.reg} registrado(s) en Objetos` : ""].filter(Boolean).join(" · "))}</span></span>
-      <span class="badge ${EST_CLS[k.estado] || ""}">${k.estado}</span></button>
+      <span class="rqt"><b>${esc(r.nombre)}</b><span class="small muted">${esc(meta)}</span></span></button>
     <div class="rqc">
-      <span class="rql">${svc ? "Contratado" : dig ? "Lo tengo" : "Tengo"}</span>
-      <span class="stp"><button type="button" data-st="-1" aria-label="Uno menos">−</button><input type="number" inputmode="numeric" min="0" step="1" value="${k.man}" data-f="existente" aria-label="Cuántos tengo" id="ex-${r.id}"><button type="button" data-st="1" aria-label="Uno más">+</button></span>
-      ${k.reg ? `<span class="small muted">+${k.reg}</span>` : ""}
-      <span class="rql">de</span><input class="rqi" type="number" inputmode="numeric" min="0" step="1" value="${k.nec}" data-f="necesaria" aria-label="Cuántos necesito" id="ne-${r.id}">
-      <span class="rqpw"><span class="rql">${r.unidad && r.unidad !== "pza" ? esc(r.unidad) + " a " : ""}$</span><input class="rqi rqp" type="number" inputmode="decimal" min="0" step="0.01" value="${k.precio ?? ""}" placeholder="precio" data-f="precio" aria-label="Precio unitario" id="pr-${r.id}">${r.precioEst && k.precio != null ? `<span class="small muted" title="Precio estimado">≈</span>` : ""}</span>
-      <span class="rqf num">${k.falta && k.precio != null ? "Falta " + money(k.costoFalta) : k.mensual ? money(k.mensual) + "/mes" : ""}</span>
+      <span class="badge ${EST_CLS[k.estado] || ""}">${k.estado}</span>
+      <span class="stp" title="${svc ? "Contratado" : dig ? "Lo tengo" : "Cuántos tengo"}"><button type="button" data-st="-1" aria-label="Uno menos">−</button><input type="number" inputmode="numeric" min="0" step="1" value="${k.man}" data-f="existente" aria-label="Cuántos tengo" id="ex-${r.id}"><button type="button" data-st="1" aria-label="Uno más">+</button></span>
+      <span class="rql">de</span><input class="rqi" type="number" inputmode="numeric" min="0" step="1" value="${k.nec}" data-f="necesaria" aria-label="Cuántos necesito" id="ne-${r.id}" title="Cuántos necesito">
+      <span class="rqpw"><span class="rql">$</span><input class="rqi rqp" type="number" inputmode="decimal" min="0" step="0.01" value="${k.precio ?? ""}" placeholder="precio" data-f="precio" aria-label="Precio unitario" id="pr-${r.id}" title="Precio unitario${r.unidad && r.unidad !== "pza" ? " por " + esc(r.unidad) : ""}">${r.precioEst && k.precio != null ? `<span class="rql" title="Precio de referencia">≈</span>` : ""}</span>
+      <span class="rqf num">${k.falta && k.precio != null ? "−" + moneyShort(k.costoFalta) : k.mensual ? moneyShort(k.mensual) + "/mes" : ""}</span>
+      <button type="button" class="rqok ${e.cls}" data-ok title="${r.editado ? "Última modificación: " + new Date(r.editado).toLocaleString("es-MX", {dateStyle: "medium", timeStyle: "short"}) + ". Toca para marcar como revisado hoy." : "Nunca lo has revisado. Toca si los datos están bien."}">${e.d === 0 ? "✓ " : ""}${e.txt}</button>
     </div></div>`;
 }
 function wireReqRows(el, z){ $$(".rq", el).forEach(row => wireReqRow(row, z)); }
 function wireReqRow(row, z){
   const r = S.reqs.find(x => x.id === row.dataset.rid); if (!r) return;
-  $("[data-redit]", row).onclick = () => openReqForm(r.id, z.id);
+  $("[data-redit]", row).onclick = () => openReqForm(r.id, r.zonaId);
+  $("[data-ok]", row).onclick = () => { touchReq(r); refresh(); toast("Marcado como revisado"); };
   // Actualiza solo esta fila para no perder el foco al pasar al siguiente campo
-  const refresh = () => { const box = document.createElement("div"); box.innerHTML = reqRowHTML(r); const fresh = box.firstElementChild; row.replaceWith(fresh); wireReqRow(fresh, z); };
+  const refresh = () => { const box = document.createElement("div"); box.innerHTML = reqRowHTML(r, row.dataset.cz === "1"); const fresh = box.firstElementChild; if (row.dataset.cz) fresh.dataset.cz = row.dataset.cz; row.replaceWith(fresh); wireReqRow(fresh, z); };
   $$("[data-st]", row).forEach(b => b.onclick = () => { r.existente = Math.max(0, (+r.existente || 0) + +b.dataset.st); touchReq(r); refresh(); });
   $$("input[data-f]", row).forEach(inp => inp.onchange = () => {
     const fld = inp.dataset.f; const v = inp.value === "" ? (fld === "precio" ? null : 0) : Math.max(0, +inp.value);
@@ -2301,8 +2377,8 @@ function openReqForm(id, zonaId){
     const d = read(); if (!d) return;
     if (addToList("tiendas", d.tienda)) touchSettings();
     let it;
-    if (src){ Object.assign(src, d, {updatedAt: nowISO()}); it = src; }
-    else { it = {...d, id: uid("r"), kind: "req", origen: "Agregado a mano", createdAt: nowISO(), updatedAt: nowISO()}; S.reqs.push(it); }
+    if (src){ Object.assign(src, d, {updatedAt: nowISO(), editado: nowISO()}); it = src; }
+    else { it = {...d, id: uid("r"), kind: "req", origen: "Agregado a mano", createdAt: nowISO(), updatedAt: nowISO(), editado: nowISO()}; S.reqs.push(it); }
     persist(); syncReq(it); closeSheet(); render(); toast(src ? "Guardado" : "Agregado a " + zonaNombre(it.zonaId));
   };
   $("#frq").addEventListener("submit", e => { e.preventDefault(); $("#rqSave").click(); });
@@ -2387,7 +2463,7 @@ function casaRows(){
   return liveZ().flatMap(z => liveR().filter(r => r.zonaId === z.id).map(r => { const k = reqCalc(r); return {
     Zona: z.nombre, Planta: PLANTA_N[z.planta] || z.planta, Grupo: r.categoria || "", "Artículo": r.nombre, Tipo: r.tipo, "Para quién": r.para || "", "Necesito": k.nec, "Tengo": k.ex,
     "Faltan": k.falta, "Precio unitario": k.precio ?? "", "Costo de lo que falta": k.costoFalta, "Valor de lo que tengo": k.valor, Estado: k.estado, "Uso al mes": r.consumoMes ?? "", "Gasto mensual": k.mensual,
-    Prioridad: r.prioridad || "", Unidad: r.unidad || "", "Precio estimado": r.precioEst ? "Sí" : "", Notas: r.notas || "", ID: r.id }; }));
+    Prioridad: r.prioridad || "", Unidad: r.unidad || "", "Precio estimado": r.precioEst ? "Sí" : "", Notas: r.notas || "", "Última modificación": r.editado ? r.editado.slice(0, 10) : "Sin revisar", "Marca sugerida": r.marca || "", ID: r.id }; }));
 }
 async function exportCasaXLSX(){
   const rows = casaRows();
@@ -2451,7 +2527,7 @@ document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("#notes
   const nc = applyCasaSeed();
   applyPlanoCasa();
   applyPreciosCasa();
-  try { const m = localStorage.getItem("casa-modo"); if (m) S.casa.modo = m; } catch(e){}
+  try { const m = localStorage.getItem("casa-modo"); if (m) S.casa.modo = m; const o = localStorage.getItem("casa-orden"); if (o) S.casa.orden = o; } catch(e){}
   notasCount();
   applyLayout(); setView(VIEWS.some(v => v[0] === S.settings.inicio) ? S.settings.inicio : "inicio");
   if (n) setTimeout(() => toast(`Agregué ${n} adquisiciones de tus compras. Revísalas en Objetos › Por verificar.`, 5200), 400);
